@@ -279,13 +279,15 @@ format_long        (char a_side)
 {
    if (a_side == 'r') strcpy(win_title, "metis_column");
    else               strcpy(win_title, "metis_sidebar");
-   win_h  = tex_h  =  960 - 15;   /* room for twelve scantasks with gaps      */
+   /*> win_h  = tex_h  =  960 - 15;   /+ room for twelve scantasks with gaps      +/   <*/
+   win_h  = tex_h  = 1500 - 15;   /* room for twelve scantasks with gaps      */
    win_w  = tex_w  =  300;        /* scancard width                           */
    my.format = 'l';
    my.ncols  =   1;
    my.nrows  =   0;
    my.wcols  =   1;
-   my.wrows  =  16;
+   /*> my.wrows  =  16;                                                               <*/
+   my.wrows  =  25;
    my.action =   0;
    my.incr   = STOP;
    my.move   =   0;
@@ -417,6 +419,25 @@ format_change      (char a_which)
 /*====================------------------------------------====================*/
 static void      o___BASICS__________________o (void) {;}
 
+char      verstring    [500];
+
+char*        /*-> return library versio --------------[ leaf   [gs.420.012.00]*/ /*-[00.0000.012.!]-*/ /*-[--.---.---.--]-*/
+PROG_version       (void)
+{
+   char    t [20] = "";
+#if    __TINYC__ > 0
+   strncpy (t, "[tcc built  ]", 15);
+#elif  __GNUC__  > 0
+   strncpy (t, "[gnu gcc    ]", 15);
+#elif  __CBANG__  > 0
+   strncpy (t, "[cbang      ]", 15);
+#else
+   strncpy (t, "[unknown    ]", 15);
+#endif
+   snprintf (verstring, 100, "%s   %s : %s", t, P_VERNUM, P_VERTXT);
+   return verstring;
+}
+
 char             /* [------] immediate program initialization ----------------*/
 PROG_init          (void)
 {
@@ -429,10 +450,6 @@ PROG_init          (void)
    DEBUG_PROG   yLOG_info     ("yURG"    , yURG_version    ());
    DEBUG_PROG   yLOG_info     ("ySTR"    , ySTR_version    ());
    DEBUG_PROG   yLOG_info     ("yLOG"    , yLOGS_version   ());
-   DEBUG_PROG   yLOG_info     ("yRPN"    , yRPN_version    ());
-   DEBUG_PROG   yLOG_info     ("yVIKEYS" , yVIKEYS_version ());
-   DEBUG_PROG   yLOG_info     ("yCALC"   , yCALC_version   ());
-   DEBUG_PROG   yLOG_info     ("yPARSE"  , yPARSE_version  ());
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(set globals)--------------------*/
@@ -444,6 +461,7 @@ PROG_init          (void)
    ctask     = 0;
    DATA_init ();
    /*---(complete)-----------------------*/
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -453,6 +471,8 @@ PROG_args          (int argc, char *argv[])
    char     *a         = NULL;         /* current argument                    */
    int       i         = 0;            /* loop iterator -- arguments          */
    int       len       = 0;            /* argument length                     */
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    format_column('r');
    for (i = 1; i < argc; ++i) {
       a = argv[i];
@@ -497,18 +517,25 @@ PROG_args          (int argc, char *argv[])
        *> printf("      tex_h   = %d\n", tex_h);                                      <* 
        *> printf("\n");                                                               <*/
    /*---(complete)-----------------------*/
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char             /* [------] drive program setup activities ------------------*/
 PROG_begin         (void)
 {
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
+   return 0;
 }
 
 char             /* [------] drive program setup activities ------------------*/
 PROG_final         (void)
 {
    char rc;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    if (debug_top == 'n')  rc = daemon (1, 0);
    if (rc != 0) return rc;
    /*---(load basics)---------------------------*/
@@ -527,20 +554,28 @@ PROG_final         (void)
    draw_resize(win_w, win_h);
    prog_signals();
    /*---(complete)------------------------------*/
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char             /* [------] drive the program closure activities ------------*/
 PROG_wrap          (void)
 {
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    font_delete();
    yX11_end();                  /* close window and xwin context            */
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char             /* [------] drive the program closure activities ------------*/
 PROG_end           (void)
 {
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
+   return 0;
 }
 
 

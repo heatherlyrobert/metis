@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1a"
-#define     P_VERTXT    "added basics of yURG"
+#define     P_VERNUM    "1.1b"
+#define     P_VERTXT    "cleaned up and simplfied some display logic"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -173,6 +173,10 @@ extern      char          unit_answer [LEN_FULL];
 
 
 
+extern char        g_urg    [LEN_LABEL];
+extern char        g_imp    [LEN_LABEL];
+extern char        g_est    [LEN_LABEL];
+extern char        g_prog   [LEN_LABEL];
 
 /*---(task data structure)------------*/
 typedef     struct cCARD   tCARD;

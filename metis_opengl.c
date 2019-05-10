@@ -585,9 +585,9 @@ draw_card     (int a_index)
 {
    /*> printf("draw = %2d\n", a_index);                                               <*/
    card_base  (g_tasks [a_index].flg);
+   urgency    (g_tasks [a_index].urg);
    estimate   (g_tasks [a_index].est);
    importance (g_tasks [a_index].imp);
-   urgency    (g_tasks [a_index].urg);
    bullets    ();
    text       (a_index);
    borders    ();
@@ -623,7 +623,7 @@ text          (int a_index)
    /*---(major text)----------------------------*/
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      glTranslatef(  53.0,  -8.0,  20.0);
+      glTranslatef(  53.0,  -8.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
       /*> snprintf(temp, 10, "%1d/%1d", a_index + 1, g_ntask - 1);                     <*/
       snprintf(temp, 10, "%d", a_index + 1);
@@ -634,14 +634,14 @@ text          (int a_index)
       glTranslatef( 105.0,   0,   0);
       yFONT_print  (txf_sm,  7, YF_MIDCEN, g_tasks [a_index].two);
       glTranslatef(-160.0, -10.0,   0.0);
-      glTranslatef(   0.0, txf_off,   0.0);
+      glTranslatef(   0.0, txf_off - 2.0,   0.0);
       glColor4f (0.0, 0.0, 0.0, 1.0);
       yFONT_printw (txf_sm,  7, YF_TOPLEF, g_tasks [a_index].txt, 205, 35, txf_space);
    } glPopMatrix();
    /*---(letters)-------------------------------*/
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      glTranslatef(  20.0, -15.0,  20.0);
+      glTranslatef(  20.0, -15.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
       snprintf(temp, 4, "%c", g_tasks [a_index].urg);
       yFONT_print(txf_sm,  9, YF_BASCEN, temp);
@@ -656,6 +656,40 @@ text          (int a_index)
        *> yFONT_print(txf_bg, 16, YF_MIDCEN, temp);                                   <*/
    } glPopMatrix();
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   return 0;
+}
+
+char
+colors             (char *a_valid, char a_color)
+{
+   char       *p           = NULL;
+   char        i           =    0;
+   p = strchr (a_valid, a_color);
+   if (p == NULL)   i = 100;
+   else             i = p - a_valid;
+   switch (i) {
+   case  0  : glColor3f(  0.000,  0.000,  0.000); break;
+   case  1  : glColor3f(  1.000,  0.000,  0.000); break;
+   case  2  : glColor3f(  1.000,  0.455,  0.000); break;
+   case  3  : glColor3f(  0.800,  0.733,  0.000); break;
+   case  4  : glColor3f(  0.200,  0.667,  0.200); break;
+   case  5  : glColor3f(  0.000,  0.600,  0.600); break;
+   case  6  : glColor3f(  0.400,  0.000,  0.600); break;
+   case  7  : glColor3f(  0.800,  0.000,  0.800); break;
+   case  8  : glColor3f(  0.400,  0.400,  0.400); break;
+   default  : glColor3f(  0.000,  0.000,  0.000); break;
+   }
+   /*> switch (a_color) {                                                             <* 
+    *> case 'r' : glColor3f(  1.000,  0.000,  0.000); break;                          <* 
+    *> case 'o' : glColor3f(  1.000,  0.455,  0.000); break;                          <* 
+    *> case 'y' : glColor3f(  0.800,  0.733,  0.000); break;                          <* 
+    *> case 'g' : glColor3f(  0.200,  0.667,  0.200); break;                          <* 
+    *> case 'b' : glColor3f(  0.000,  0.600,  0.600); break;                          <* 
+    *> case 'p' : glColor3f(  0.400,  0.000,  0.600); break;                          <* 
+    *> case 'v' : glColor3f(  0.800,  0.000,  0.800); break;                          <* 
+    *> case '-' : glColor3f(  0.400,  0.400,  0.400); break;                          <* 
+    *> default  : glColor3f(  0.000,  0.000,  0.000); break;                          <* 
+    *> }                                                                              <*/
    return 0;
 }
 
@@ -731,89 +765,64 @@ bullets            (void)
 }
 
 char
-urgency     (char  a_value)
-{
-   glBegin(GL_POLYGON); {
-      glColor4f (0.0, 0.0, 0.0, 1.0);
-      glVertex3f(    0.0,    0.0,    0.0);
-      glVertex3f(  300.0,    0.0,    0.0);
-      glVertex3f(  300.0,  -17.0,    0.0);
-      glVertex3f(    0.0,  -17.0,    0.0);
-   } glEnd();
-   /*---(color)---------------------------------*/
-   switch (a_value) {
-   case 't' : glColor3f(  1.000,  0.000,  0.000); break;
-   case 'd' : glColor3f(  1.000,  0.455,  0.000); break;
-   case 'w' : glColor3f(  0.800,  0.733,  0.000); break;
-   case 'm' : glColor3f(  0.200,  0.667,  0.200); break;
-   case 'q' : glColor3f(  0.000,  0.600,  0.600); break;
-   case 'y' : glColor3f(  0.800,  0.000,  0.800); break;
-   case 'b' : glColor3f(  0.400,  0.400,  0.400); break;
-   default  : glColor3f(  0.400,  0.400,  0.400); break;
-   }
-   /*---(bar)-----------------------------------*/
-   glBegin(GL_POLYGON); {
-      glVertex3f(    0.0,   -2.0,    2.0);
-      glVertex3f(  300.0,   -2.0,    2.0);
-      glVertex3f(  300.0,  -15.0,    2.0);
-      glVertex3f(    0.0,  -15.0,    2.0);
-   } glEnd();
-   /*---(complete)------------------------------*/
-   return 0;
-}
-
-char
-polygon     (float *a_array)
+OPENGL__polygon         (float *a_array)
 {
    glPushMatrix(); {
+      /*> glDisable(GL_BLEND);                                                        <*/
       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      /*> glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                <*/
+      /*> glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);                                 <*/
       glBegin(GL_POLYGON); {
-         glVertex3fv(a_array +  0);
-         glVertex3fv(a_array +  3);
-         glVertex3fv(a_array +  6);
-         glVertex3fv(a_array +  9);
+         glVertex3fv (a_array +  0);
+         glVertex3fv (a_array +  3);
+         glVertex3fv (a_array +  6);
+         glVertex3fv (a_array +  9);
       } glEnd();
       glTranslatef(0.0, 0.0, -2.0);
       glBegin(GL_LINE_STRIP); {
-         glVertex3fv(a_array +  0);
-         glVertex3fv(a_array +  3);
-         glVertex3fv(a_array +  6);
-         glVertex3fv(a_array +  9);
-         glVertex3fv(a_array +  0);
+         glVertex3fv (a_array +  0);
+         glVertex3fv (a_array +  3);
+         glVertex3fv (a_array +  6);
+         glVertex3fv (a_array +  9);
+         glVertex3fv (a_array +  0);
       } glEnd();
+      /*> glEnable(GL_BLEND);                                                         <*/
    } glPopMatrix();
    return 0;
 }
 
-float   impf[12] = {
-   -00.0,   -2.0,   12.0,
-   +22.0,   -2.0,   12.0,
-   +62.0,  -43.0,   12.0,
-   +40.0,  -43.0,   12.0,
-};
-float   impb[12] = {
-   -20.0,   -2.0,   10.0,
-   +25.0,   -2.0,   10.0,
-   +65.0,  -43.0,   10.0,
-   +20.0,  -43.0,   10.0,
-};
+/*                              ---top/left--------- ---top/right-------- ---bot/right-------- ---bot/left--------- */
+static float   s_urg_bg [12] = {   0.0,   0.0,   0.0, 300.0,   0.0,   0.0, 300.0, -17.0,   0.0,   0.0, -17.0,   0.0, };
+static float   s_urg_fg [12] = {   0.0,  -2.0,   2.0, 300.0,  -2.0,  12.0, 300.0, -15.0,   2.0,   0.0, -15.0,   2.0, };
+
+/*                              ---top/left--------- ---top/right-------- ---bot/right-------- ---bot/left--------- */
+static float   s_est_bg [12] = {  30.0, -15.0,   5.0,  58.0, -15.0,   5.0,  58.0, -45.0,   5.0,  30.0, -45.0,   5.0, };
+static float   s_est_fg [12] = {   0.0, -17.0,   7.0,  56.0, -17.0,   7.0,  56.0, -45.0,   7.0,   0.0, -45.0,   7.0, };
+
+/*                              ---top/left--------- ---top/right-------- ---bot/right-------- ---bot/left--------- */
+/*> static float   s_imp_bg [12] = { -23.0,   0.0,  10.0,  25.0,   0.0,  10.0,  70.0, -45.0,  10.0,  23.0, -45.0,  10.0, };   <*/
+static float   s_imp_sh [12] = {   0.0,   0.0,  10.0,  25.0,   0.0,  10.0,  25.0, -22.5,  10.0,   0.0, -22.5,  10.0, };
+static float   s_imp_bg [12] = {   0.0, -22.5,  10.0,  25.0,   0.0,  10.0,  70.0, -45.0,  10.0,  23.0, -45.0,  10.0, };
+static float   s_imp_fg [12] = {   0.0,   0.0,  12.0,  22.0,   0.0,  12.0,  67.0, -45.0,  12.0,  45.0, -45.0,  12.0, };
+
+char
+urgency     (char  a_value)
+{
+   glColor4f (  0.000,  0.000,  0.000,  1.000);
+   OPENGL__polygon (s_urg_bg);
+   colors (g_urg , a_value);
+   OPENGL__polygon (s_urg_fg);
+   return 0;
+}
 
 char
 importance  (char  a_value)
 {
-   glColor3f(  0.000,  0.000,  0.000);
-   polygon (impb);
-   switch (a_value) {
-   case 'a' : glColor3f(  1.000,  0.000,  0.000); break;
-   case 'n' : glColor3f(  1.000,  0.455,  0.000); break;
-   case 'w' : glColor3f(  0.800,  0.733,  0.000); break;
-   case 'l' : glColor3f(  0.200,  0.667,  0.200); break;
-   case 'm' : glColor3f(  0.000,  0.600,  0.600); break;
-   case 'i' : glColor3f(  0.800,  0.000,  0.800); break;
-   case 's' : glColor3f(  0.400,  0.400,  0.400); break;
-   default  : glColor3f(  0.000,  0.000,  0.000); break;
-   }
-   polygon (impf);
+   glColor4f (  0.000,  0.000,  0.000,  1.000);
+   OPENGL__polygon (s_imp_bg);
+   OPENGL__polygon (s_imp_sh);
+   colors (g_imp , a_value);
+   OPENGL__polygon (s_imp_fg);
    return 0;
 }
 
@@ -821,28 +830,9 @@ char
 estimate    (char  a_value)
 {
    glColor4f (0.0, 0.0, 0.0, 1.0);
-   glBegin(GL_POLYGON); {
-      glVertex3f(   30.0,  -15.0,    0.0);
-      glVertex3f(   58.0,  -15.0,    0.0);
-      glVertex3f(   58.0,  -45.0,    0.0);
-      glVertex3f(   30.0,  -45.0,    0.0);
-   } glEnd();
-   switch (a_value) {
-   case '!' : glColor3f(  1.000,  0.000,  0.000); break;
-   case 's' : glColor3f(  1.000,  0.455,  0.000); break;
-   case 'm' : glColor3f(  0.800,  0.733,  0.000); break;
-   case '1' : glColor3f(  0.200,  0.667,  0.200); break;
-   case '2' : glColor3f(  0.000,  0.600,  0.600); break;
-   case '4' : glColor3f(  0.800,  0.000,  0.800); break;
-   case '8' : glColor3f(  0.400,  0.400,  0.400); break;
-   default  : glColor3f(  0.000,  0.000,  0.000); break;
-   }
-   glBegin(GL_POLYGON); {
-      glVertex3f(    0.0,  -17.0,    0.0);
-      glVertex3f(   56.0,  -17.0,    0.0);
-      glVertex3f(   56.0,  -45.0,    0.0);
-      glVertex3f(    0.0,  -45.0,    0.0);
-   } glEnd();
+   OPENGL__polygon (s_est_bg);
+   colors (g_est , a_value);
+   OPENGL__polygon (s_est_fg);
    return 0;
 }
 

@@ -132,6 +132,8 @@ DATA_init               (void)
    /*---(locals)-----------+-----+-----+-*/
    char        i           =    0;
    char        t           [LEN_LABEL];
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    for (i = 0; i < MAX_DECODE; ++i) {
       sprintf (t, "%c", g_decode [i].abbr);
       switch (g_decode [i].type) {
@@ -141,10 +143,11 @@ DATA_init               (void)
       case 'p' : strlcat (g_prog, t, LEN_LABEL);   break;
       }
    }
-   for (i = 0; i < MAX_CARDS; ++i) {
-      DATA__clear (i);
-   }
+   /*> for (i = 0; i < MAX_CARDS; ++i) {                                              <* 
+    *>    DATA__clear (i);                                                            <* 
+    *> }                                                                              <*/
    g_ntask = 0;
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
