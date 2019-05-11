@@ -7,7 +7,7 @@
 
 #define     P_FOCUS     "PT (productivity/time mgmt)"
 #define     P_NICHE     "td (todo list)"
-#define     P_PURPOSE   "simple, clean task consolitation and navigation system"
+#define     P_PURPOSE   "task consolitation, visualization, and navigation system"
 
 #define     P_NAMESAKE  "metis"
 #define     P_HERITAGE  "titan goddess of wisdom, wise counsel, cunning, prudence, and deep thought"
@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1d"
-#define     P_VERTXT    "added source line to DATA__detail and updated unit tests"
+#define     P_VERNUM    "1.1e"
+#define     P_VERTXT    "working support for data sources : pipe, custom, master, and sources"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -34,27 +34,45 @@
 
 /*
  * metis  tn1#·  create a github project and get changes uploaded
+ * metis  dw1#·  remove older debugging logic, replace with yURG
+ */
+
+/*
+ * major cat      project name
+ *
+ * minor cat      source file or other grouping
+ *
+ * urgency        (t)oday     (s)oonest   (d)ays      (w)eeks
+ *                (m)onths    (q)uarters  (y)ears     (·) tbd
+ *
+ * importance     (a)bsolute  (n)eed      (w)ant
+ *                (l)like     (m)ight     (i)dea      (·) tbd
+ *
+ * description    actual task
+ *
+ * estimate       (!) 5m      (s) 15m     (m) 30m     (1) 1h
+ *                (2) 2hs     (4) 4hrs    (8) hours   (·) tbd     (+) bigger
+ *
+ * status         (<) focus   (o) wip     (>) closing
+ *                (#) done    (x) cancel  (·) backlog 
+ *
+ *
+ * source file example (today, need, 1hr, and focus) categories are auto
+ *  metis  tn1<  create a github project and get changes uploaded
+ *
+ *
+ * task file example (same) categories must be explicit
+ *  metis  metis_prog.c
+ *     tn1<  create a github project and get changes uploaded
+ *
+ *
+ *
+ *
+ *
+ *
  */
 
 
-/*===[[ HEADER ]]=============================================================*
-
- *   focus         : (MH) mind_hacking
- *   niche         : (ta) task_mgmt
- *   heritage      : metis (titan goddess of cunning and wise counsel)
- *   purpose       : simple, light, clean, and powerful task management system
- *
- *   base_system   : gnu/linux   (powerful, ubiquitous, technical, and hackable)
- *   lang_name     : ansi-c      (righteous, limitless, universal, and forever)
- *   dependencies  : opengl, yX11, yFONT
- *   size goal     : small       (around 1,000 slocL)
- *
- *   author        : the_heatherlys
- *   created       : 2008-06 (ported to opengl 2010-09)
- *   priorities    : direct, simple, brief, vigorous, and lucid (h.w. fowler)
- *   end goal      : loosely coupled, strict interface, maintainable, portable
- * 
- */
 /*===[[ SUMMARY ]]============================================================*
 
  *   metis is a simple, clean, and powerful todo framework allowing us to
@@ -222,11 +240,19 @@ extern char      imp;
 extern char      est;
 extern char      flg;
 
+#define     FILE_MASTER    "/home/member/g_hlosdo/metis.tasks"
 
+#define     DATA_SOURCES   's'
+#define     DATA_MASTER    'm'
+#define     DATA_CUSTOM    'c'
+#define     DATA_PIPE      'p'
 
 
 typedef     struct cMY     tMY;
 struct cMY {
+   /*---(program)------------------------*/
+   char      source;                   /* data sourcing location              */
+   char      file         [LEN_RECD];  /* file for reading tasks              */
    /*---(window)-------------------------*/
    char      format;                   /* display style                       */
    char      sighup;                   /* force a refresh/redraw              */
@@ -259,19 +285,6 @@ extern tMY   my;
 
 
 /*---(debugging)-------------------------*/
-#define   DEBUG_T    if (debug_top   == 'y')
-#define   DEBUG_E    if (debug_event == 'y')
-#define   DEBUG_M    if (debug_mem   == 'y')
-#define   DEBUG_A    if (debug_args  == 'y')
-#define   DEBUG_I    if (debug_input == 'y')
-#define   DEBUG_G    if (debug_graph == 'y')
-
-extern char      debug_top;
-extern char      debug_event;
-extern char      debug_mem;
-extern char      debug_args;
-extern char      debug_input;
-extern char      debug_graph;
 
 
 extern char arg_heads;
@@ -303,9 +316,6 @@ char       prog_event        (void);
 char       font_load         (void);
 char       font_change       (void);
 char       font_delete       (void);
-
-char             /* [G-----] read all tasks from the file --------------------*/
-DATA_read          (void);
 
 char             /* [G-----] output a formatted report of tasks --------------*/
 task_list          (void);
@@ -341,7 +351,11 @@ char        DATA_init               (void);
 char        DATA__header            (char *a_recd);
 char        DATA__stats             (char *a_stats);
 char        DATA__detail            (char *a_recd, int a_line);
-char        DATA_sources            (void);
+char        DATA__read              (char *a_filename);
+char        DATA__master            (void);
+char        DATA__custom            (void);
+char        DATA__sources           (void);
+char        DATA_refresh            (void);
 char*       DATA__unit              (char *a_question, int a_num);
 
 char        PROG_init               (void);

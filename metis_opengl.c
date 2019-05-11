@@ -20,7 +20,7 @@
  * metis  tl1#·  increase font sizes to fit current limits and show better
  * metis  tw1#·  update card backgroud colors to be simplier and more rational
  * metis  wl1··  remove red/grn/blu colors from g_decode table
- * metis  dw2>·  all views make open/missing task slots transparent
+ * metis  dw2#·  all views make open/missing task slots transparent
  */
 
 float     alpha     = 0.0;
@@ -63,25 +63,20 @@ prog_event    (void)
       /*---(start)----------------------------*/
       switch(EVNT.type) {
       case FocusIn:
-         DEBUG_E  printf("   prog_event () focus in\n");
          if ((int) (alpha * 10) == 3) alpha = 0.0;
          break;
 
       case FocusOut:
-         DEBUG_E  printf("   prog_event () focus out\n");
          if ((int) (alpha * 10) == 0) alpha = 0.3;
          break;
 
       case Expose:
-         DEBUG_E  printf("   prog_event () expose\n");
          break;
 
       case ConfigureNotify:
-         DEBUG_E  printf("   prog_event () configure\n");
          break;
 
       case KeyPress:
-         DEBUG_E  printf("   prog_event () keypress\n");
          key_event  = (XKeyEvent *) &EVNT;
          x_bytes = XLookupString((XKeyEvent *) &EVNT, x_keys, 5, NULL, NULL);
          if (x_bytes < 1) break;
@@ -175,7 +170,6 @@ prog_event    (void)
          break;
 
       default:
-         DEBUG_E  printf("   prog_event () default\n");
          break;
       }
       /*---(check for automation)--------*/
@@ -206,7 +200,6 @@ prog_event    (void)
       /*> usleep( 5000);                                                              <*/
       /*> usleep(  50);                                                               <*/
    }
-   DEBUG_E  printf("prog_event () end\n");
    /*---(complete)------------------------------*/
    DEBUG_LOOP   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -587,7 +580,6 @@ draw_init(void)
 char
 draw_main          (void)
 {
-   DEBUG_G  printf("draw_main () beg\n");
    /*---(locals)-------------------------*/
    int       i;                             /* loop iterator -- word          */
    int       j;                             /* loop iterator -- word          */

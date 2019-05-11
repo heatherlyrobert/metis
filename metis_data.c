@@ -9,9 +9,9 @@
  * metis  dw4··  switch g_tasks to linked-list rather that array
  * metis  dw4··  switch g_tasks string elements to malloc rather than array
  * metis  dw8··  add g_tasks sorting field, sort chosing, and sorting function
- * metis  sn2>·  quick reporting on accepted tasks for debugging, validation
+ * metis  sn2#·  quick reporting on accepted tasks for debugging, validation
  * metis  tw1#·  remove repeating of tasks in lists for clarity
- * metis  tn1··  fix refresh tasks to increase/decrease count also
+ * metis  tn1#·  fix refresh tasks to increase/decrease count also
  * metis  dw1#·  add source file line to task record to help updates
  *
  */
@@ -381,30 +381,29 @@ DATA__file         (char *a_source)
 }
 
 char             /* [G-----] read all tasks from the file --------------------*/
-DATA_read          (void)
+DATA__stdin        (void)
 {
    /*---(locals)--------------------------------*/
    char    rc = 0;
    char    msg[100];
-   char      card_file[200] = "";
+   /*> char      card_file[200] = "";                                                 <*/
    int         a            =    0;
+   /*---(header)-------------------------*/
+   DEBUG_INPT   yLOG_enter   (__FUNCTION__);
    /*---(process)-------------------------------*/
-   DEBUG_I  printf("task_read\n");
    nactive  = 0;
    /*---(identify file)------------------*/
-   /*> snprintf(card_file, 190, "%s/g_hlosdo/metis.tasks", getenv("HOME"));           <*/
-   snprintf(card_file, 190, "/home/member/g_hlosdo/metis_new.tasks", getenv("HOME"));
-   DEBUG_I  printf("   file = %s\n", card_file);
+   /*> snprintf(card_file, 190, "/home/member/g_hlosdo/metis_new.tasks", getenv("HOME"));   <*/
    /*---(open)---------------------------*/
-   f = fopen(card_file, "r");
-   if (f == NULL) {
-      DEBUG_I  printf("   FAILURE, file could not be openned\n\n");
-      printf("FATAL : can not open card file <<%s>>\n", card_file);
-      exit (-2);
-   }
-   DEBUG_I  printf("   openned for read-only access\n");
-   DEBUG_I  printf("   reading tasks\n");
-   while (DATA__recd() == 0) {
+   while (1) {
+      DEBUG_INPT   yLOG_value   ("a"         , a);
+      fgets (g_recd, MAXLINE, stdin);
+      if (feof(stdin))   break;
+      /*---(get rid of the newline)-------------*/
+      p = strchr(g_recd, '\n');              /* look for a newline              */
+      if (p != NULL)   strcpy(p, "\0");    /* if found, copy '\0' over it     */
+      /*---(defenses)---------------------------*/
+      if (strncmp(g_recd, "# end_of_visible", 16) == 0)   break;
       ++a;
       if (g_recd [0] == '#')   continue;
       if (g_recd [0] == '\0')  continue;
@@ -414,41 +413,59 @@ DATA_read          (void)
       /*> if (rc < 0)                         return 0;                               <* 
        *> if (g_ntask >=  MAX_CARDS - 2)    break;                                     <*/
    }
-   DEBUG_I  printf("   closing task file\n");
+   /*---(complete)------------------------------*/
+   filter_primary ();
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char             /* [G-----] read all tasks from the file --------------------*/
+DATA__read         (char *a_filename)
+{
+   /*---(locals)--------------------------------*/
+   char    rc = 0;
+   char    msg[100];
+   /*> char      card_file[200] = "";                                                 <*/
+   int         a            =    0;
+   /*---(process)-------------------------------*/
+   nactive  = 0;
+   /*---(identify file)------------------*/
+   /*> snprintf(card_file, 190, "/home/member/g_hlosdo/metis_new.tasks", getenv("HOME"));   <*/
+   /*---(open)---------------------------*/
+   f = fopen(a_filename, "r");
+   if (f == NULL) {
+      printf("FATAL : can not open card file <<%s>>\n", a_filename);
+      exit (-2);
+   }
+   while (1) {
+      fgets (g_recd, MAXLINE, f);
+      if (feof(f))   break;
+      /*---(get rid of the newline)-------------*/
+      p = strchr(g_recd, '\n');              /* look for a newline              */
+      if (p != NULL)   strcpy(p, "\0");    /* if found, copy '\0' over it     */
+      /*---(defenses)---------------------------*/
+      if (strncmp(g_recd, "# end_of_visible", 16) == 0)   break;
+      ++a;
+      if (g_recd [0] == '#')   continue;
+      if (g_recd [0] == '\0')  continue;
+      if (strncmp (g_recd, "  ", 2) == 0) rc = DATA__detail (g_recd, a);
+      else                                rc = DATA__header (g_recd);
+      /*> rc = DATA__detail ();                                                       <*/
+      /*> if (rc < 0)                         return 0;                               <* 
+       *> if (g_ntask >=  MAX_CARDS - 2)    break;                                     <*/
+   }
    if (f == NULL) return 0;
    fclose(f);
-   DEBUG_I  printf("   total of %d tasks\n", g_ntask);
-   /*> printf("read %d tasks\n", g_ntask);                                             <*/
-   /*---(final card)----------------------------*/
-   /*> if (arg_heads == 1) {                                                                        <* 
-    *>    strcpy(g_tasks [g_ntask].one, "criteria");                                                    <* 
-    *>    if (g_ntask >  0) {                                                                        <* 
-    *>       snprintf(msg, 100, "found = %d", g_ntask);                                              <* 
-    *>       strcpy(g_tasks [g_ntask].two, msg);                                                        <* 
-    *>    } else if (g_ntask <= 0) {                                                                 <* 
-    *>       strcpy(g_tasks [g_ntask].two, "NO CARDS");                                                 <* 
-    *>    }                                                                                         <* 
-    *>    g_tasks [g_ntask].urg      = ' ';                                                             <* 
-    *>    g_tasks [g_ntask].imp      = ' ';                                                             <* 
-    *>    g_tasks [g_ntask].est      = ' ';                                                             <* 
-    *>    g_tasks [g_ntask].flg      = '+';                                                             <* 
-    *>    snprintf(msg, 100, "u=<%c>, i=<%c>, e=<%c>, f=<%c>, <<%s>>", urg, imp, est, flg, one);    <* 
-    *>    strcpy(g_tasks [g_ntask].txt, msg);                                                           <* 
-    *>    DEBUG_I  printf("   adding criteria task\n");                                             <* 
-    *>    DEBUG_I  printf("      %2d) %c.%c.%c.%c %-60.60s <|\n", g_ntask + 1,                       <* 
-    *>          g_tasks [g_ntask].urg , g_tasks [g_ntask].imp ,                                             <* 
-    *>          g_tasks [g_ntask].est , g_tasks [g_ntask].flg,                                              <* 
-    *>          g_tasks [g_ntask].txt );                                                                <* 
-    *>    ++g_ntask;                                                                                 <* 
-    *> }                                                                                            <*/
    /*---(complete)------------------------------*/
-   DEBUG_I  printf("   complete\n\n");
    filter_primary ();
    return 0;
 }
 
+char DATA__master        (void) { return DATA__read    (FILE_MASTER); }
+char DATA__custom        (void) { return DATA__read    (my.file);     }
+
 char         /*--> make a list of input files --------------------------------*/
-DATA_sources       (void)
+DATA__sources       (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    int         rc          =    0;          /* generic return code            */
@@ -521,6 +538,33 @@ DATA_sources       (void)
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return 0;
+}
+
+char
+DATA_refresh       (void)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rc          =    0;
+   static int  c           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_INPT   yLOG_enter   (__FUNCTION__);
+   DEBUG_INPT   yLOG_char    ("source"    , my.source);
+   DEBUG_INPT   yLOG_value   ("c"         , c);
+   /*---(initialize)---------------------*/
+   if (my.source == DATA_PIPE && c > 0) {
+      DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   DATA_init ();
+   switch (my.source) {
+   case DATA_SOURCES :  rc = DATA__sources ();   break;
+   case DATA_MASTER  :  rc = DATA__master  ();   break;
+   case DATA_CUSTOM  :  rc = DATA__custom  ();   break;
+   case DATA_PIPE    :  rc = DATA__stdin   ();   break;
+   }
+   ++c;
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return rc;
 }
 
 

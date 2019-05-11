@@ -2,7 +2,7 @@
 #include   "metis.h"
 
 /*
- * metis  dw2··  make task file name command line configurable
+ * metis  dw2#·  make task file name command line configurable
  */
 
 
@@ -28,12 +28,6 @@ char        g_minor   = ' ';
 long        gpu_mem_bef = 0;
 long        gpu_mem_aft = 0;
 
-char        debug_top    = 'n';
-char        debug_event  = 'n';
-char        debug_mem    = 'n';
-char        debug_args   = 'n';
-char        debug_input  = 'n';
-char        debug_graph  = 'n';
 
 /*> char      format       = 't';                                                     <*/
 
@@ -137,8 +131,7 @@ task_refresh       (void)
    yXINIT__gdestroy();
    yXINIT__gsetup();
    /*---(build back up)------------------*/
-   DATA_init ();
-   DATA_read ();
+   DATA_refresh ();
    font_load();
    draw_init();
    draw_main();
@@ -196,6 +189,7 @@ PROG_init          (void)
    nactive   = 0;
    ctask     = 0;
    DATA_init ();
+   my.source = DATA_PIPE;
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -212,13 +206,9 @@ PROG_args          (int argc, char *argv[])
    format_column('r');
    for (i = 1; i < argc; ++i) {
       a = argv[i];
+      if (a[0] == '@')  continue;
       len = strlen(a);
-      if      (strncmp(a, "@m",     5) == 0)     debug_top   = debug_mem   = 'y';
-      else if (strncmp(a, "@e",     5) == 0)     debug_top   = debug_event = 'y';
-      else if (strncmp(a, "@i",     5) == 0)     debug_top   = debug_input = 'y';
-      else if (strncmp(a, "@a",     5) == 0)     debug_top   = debug_args  = 'y';
-      else if (strncmp(a, "@g",     5) == 0)     debug_top   = debug_graph = 'y';
-      else if (strncmp(a, "-u",     2) == 0 && len == 3)       urg         = a[2];
+      if      (strncmp(a, "-u",     2) == 0 && len == 3)       urg         = a[2];
       else if (strncmp(a, "-i",     2) == 0 && len == 3)       imp         = a[2];
       else if (strncmp(a, "-e",     2) == 0 && len == 3)       est         = a[2];
       else if (strncmp(a, "-f",     2) == 0 && len == 3)       flg         = a[2];
@@ -240,18 +230,15 @@ PROG_args          (int argc, char *argv[])
       else if (strncmp(a, "-stream", 7) == 0)     format_streamer();
       else if (strncmp(a, "-h"     , 7) == 0)     arg_heads = 1;
       else if (strncmp(a, "--heads", 7) == 0)     arg_heads = 1;
+      else if (strncmp(a, "--master"   ,  9) == 0)   my.source = DATA_MASTER;
+      else if (strncmp(a, "--source"   ,  9) == 0)   my.source = DATA_SOURCES;
+      else if (strncmp(a, "--code"     ,  9) == 0)   my.source = DATA_SOURCES;
       else if (strncmp(a, "-"      , 1) == 0)     printf("arg not understood\n");
-      else                                        strncpy(one, a, 20);
+      else {
+         strncpy (my.file, a, LEN_RECD);
+         my.source = DATA_CUSTOM;
+      }
    }
-   /*---(display args)-------------------*/
-   DEBUG_T  printf("\nmetis : task management system\n\n");
-      /*> printf("PROG_args()\n");                                                    <* 
-       *> printf("   sizes\n");                                                       <* 
-       *> printf("      win_w   = %d\n", win_w);                                      <* 
-       *> printf("      win_h   = %d\n", win_h);                                      <* 
-       *> printf("      tex_w   = %d\n", tex_w);                                      <* 
-       *> printf("      tex_h   = %d\n", tex_h);                                      <* 
-       *> printf("\n");                                                               <*/
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -272,12 +259,14 @@ PROG_final         (void)
    char rc;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   DATA_sources ();
+   rc = DATA_refresh ();
+   if (g_ntask <= 0) {
+      printf ("no data found\n");
+      return -1;
+   }
    /*> task_list ();                                                                  <*/
-   if (debug_top == 'n')  rc = daemon (1, 0);
+   rc = daemon (1, 0);
    if (rc != 0) return rc;
-   /*---(load basics)---------------------------*/
-   /*> DATA_read ();                                                                  <*/
    /*---(open window)---------------------------*/
    yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);
    /*---(create texture)------------------------*/
@@ -286,8 +275,6 @@ PROG_final         (void)
    draw_init ();
    draw_main();
    mask();
-   gpu_mem_aft = ati_meminfo();
-   DEBUG_M printf("gpu memory used %ldm of %ldm \n", (gpu_mem_bef - gpu_mem_aft) / 1000, gpu_mem_bef / 1000);
    /*---(ready display)-------------------------*/
    draw_resize(win_w, win_h);
    prog_signals();
@@ -327,21 +314,21 @@ prog_catch         (int a_signal)
 {
    switch (a_signal) {
    case  SIGHUP:
-      DEBUG_T  printf ("SIGNAL : SIGHUP  means refresh tasks from metis.tasks\n");
+      /*> DEBUG_T  printf ("SIGNAL : SIGHUP  means refresh tasks from metis.tasks\n");   <*/
       my.sighup  = 1;
       my.update  = 1;
       break;
    case  SIGUSR2:
-      DEBUG_T  printf ("SIGNAL : SIGUSR2 means to jumble the font\n");
+      /*> DEBUG_T  printf ("SIGNAL : SIGUSR2 means to jumble the font\n");            <*/
       my.sigusr2 = 1;
       my.update  = 1;
       break;
    case  SIGTERM:
-      DEBUG_T  printf ("SIGNAL : SIGTERM means forced terminate\n");
+      /*> DEBUG_T  printf ("SIGNAL : SIGTERM means forced terminate\n");              <*/
       exit (-3);
       break;
    case  SIGSEGV:
-      DEBUG_T  printf ("SIGNAL : SIGSEGV means program blew up\n");
+      /*> DEBUG_T  printf ("SIGNAL : SIGSEGV means program blew up\n");               <*/
       exit (-4);
       break;
    }

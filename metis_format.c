@@ -249,6 +249,8 @@ format_change      (char a_which)
    /*---(clear out)-----------------------------*/
    texture_free ();
    font_delete  ();
+   /*---(update the data)-----------------------*/
+   DATA_refresh ();
    /*---(change format)-------------------------*/
    DEBUG_USER   yLOG_char     ("format"    , a_which);
    switch (a_which) {
@@ -269,7 +271,6 @@ format_change      (char a_which)
    /*---(get tasks back)------------------------*/
    DEBUG_USER   yLOG_note     ("format calcs");
    /*> printf("did the formatting\n");                                                <*/
-   /*> DATA_read    ();                                                               <*/
    /*> format_calcs ();                                                               <*/
    /*> printf("did the reading\n");                                                   <*/
    /*---(setup window)--------------------------*/
