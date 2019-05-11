@@ -349,12 +349,12 @@ DATA__file         (char *a_source)
       if (x_recd [x_len - 1] == '\n')  x_recd [--x_len] = '\0';
       DEBUG_DATA   yLOG_info     ("x_recd"    , x_recd);
       /*---(read)------------------------*/
-      if      (strncmp (x_recd, "\* metis ", 10) == 0) {
+      if      (strncmp (x_recd, "/* metis ", 10) == 0) {
          DEBUG_DATA   yLOG_note     ("single-line or open comment (1)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
          DATA__detail (x_recd + 10, a);
       }
-      else if (strncmp (x_recd, "   \* metis ", 13) == 0) {
+      else if (strncmp (x_recd, "   /* metis ", 13) == 0) {
          DEBUG_DATA   yLOG_note     ("single-line or open comment (2)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
          DATA__detail (x_recd + 13, a);

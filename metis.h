@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1e"
-#define     P_VERTXT    "working support for data sources : pipe, custom, master, and sources"
+#define     P_VERNUM    "1.1f"
+#define     P_VERTXT    "added basic unit test for a source code read"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
