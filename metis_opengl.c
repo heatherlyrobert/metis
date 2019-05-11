@@ -12,8 +12,16 @@
  */
 /*============================================================================*/
 
+
+
 #include   "metis.h"
 
+/*
+ * metis  tl1#·  increase font sizes to fit current limits and show better
+ * metis  tw1#·  update card backgroud colors to be simplier and more rational
+ * metis  wl1··  remove red/grn/blu colors from g_decode table
+ * metis  dw2>·  all views make open/missing task slots transparent
+ */
 
 float     alpha     = 0.0;
 float     step      = 0;
@@ -820,7 +828,7 @@ text          (int a_index)
       glTranslatef( 105.0,   0,   0);
       yFONT_print  (txf_sm,  8, YF_MIDCEN, g_tasks [a_index].two);
       glTranslatef(-160.0, -10.0,   0.0);
-      glTranslatef(   0.0, txf_off - 2.0,   0.0);
+      glTranslatef(   0.0, txf_off - 1.0,   0.0);
       glColor4f (0.0, 0.0, 0.0, 1.0);
       yFONT_printw (txf_sm,  8, YF_TOPLEF, g_tasks [a_index].txt, 205, 35, txf_space);
    } glPopMatrix();
@@ -840,8 +848,11 @@ text          (int a_index)
       glTranslatef( 247.0,   2.0,   0.0);
       snprintf(temp, 4, "%c", g_tasks [a_index].flg);
       yFONT_print(txf_bg,  8, YF_MIDCEN, temp);
-      glTranslatef( -10.0,   0.0,   0.0);
+      glTranslatef( -15.0,   0.0,   0.0);
       snprintf(temp, 4, "%d", g_ntask);
+      yFONT_print(txf_bg,  8, YF_MIDCEN, temp);
+      glTranslatef( -15.0,   0.0,   0.0);
+      snprintf(temp, 4, "%d", g_tasks [a_index].line);
       yFONT_print(txf_bg,  8, YF_MIDCEN, temp);
    } glPopMatrix();
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

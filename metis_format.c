@@ -1,7 +1,7 @@
 #include   "metis.h"
 
 /*
- * metis  tw1<·  break out window format logic into separate source file
+ * metis  tw1#·  break out window format logic into separate source file
  */
 
 

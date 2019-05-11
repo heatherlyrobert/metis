@@ -1,43 +1,20 @@
 /*============================----beg-of-source---============================*/
-/*===[[ HEADER ]]=============================================================*
+#include   "metis.h"
 
- *   focus         : (MH) mind_hacking
- *   niche         : (ta) task_mgmt
- *   application   : metis       (titan goddess of cunning and wise counsel)
- *   purpose       : simple, light, clean, and powerful task management system
- *
- *   module        : metis_data
- *   purpose       : segregate data management from other program elements
- * 
- */
-/*===[[ MODULE SUMMARY ]]=====================================================*
-
- *   metis_data deals with all aspects of reading and parsing tasks from the
- *   input files.
- *
- */
-/*============================================================================*/
 
 /*
- * metis  tl1#·  increase font sizes to fit current limits and show better
- * metis  tn1#·  create a github project and get changes uploaded
  * metis  dw1#·  define task format when included in source file
  * metis  dw4#·  filter all source files in current directory for metis tasks
- * metis  dw2>·  all views make open/missing task slots transparent
  * metis  wl2··  add descriptions to g_decode table
- * metis  wl1··  remove red/grn/blu colors from g_decode table
  * metis  dw4··  switch g_tasks to linked-list rather that array
  * metis  dw4··  switch g_tasks string elements to malloc rather than array
  * metis  dw8··  add g_tasks sorting field, sort chosing, and sorting function
  * metis  sn2>·  quick reporting on accepted tasks for debugging, validation
- * metis  tw1··  remove repeating of tasks in lists for clarity
- * metis  tw1#·  update card backgroud colors to be simplier and more rational
+ * metis  tw1#·  remove repeating of tasks in lists for clarity
  * metis  tn1··  fix refresh tasks to increase/decrease count also
- * metis  dw1>·  add source file line to task record to help updates
+ * metis  dw1#·  add source file line to task record to help updates
  *
  */
-
-#include   "metis.h"
 
 
 tCARD       g_tasks [MAX_CARDS];
@@ -62,7 +39,7 @@ struct cDECODE {
 };
 tDECODE   g_decode   [MAX_DECODE] = {
    /*---(urgency)------------------------*/
-   { 'u', '?', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'u', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 't', "today"       , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 's', "soonest"     , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 'd', "days"        , ""                                               , 0.000, 0.000, 0.000 },
@@ -72,7 +49,7 @@ tDECODE   g_decode   [MAX_DECODE] = {
    { 'u', 'y', "years"       , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 'b', "backlog"     , ""                                               , 0.000, 0.000, 0.000 },
    /*---(importance)---------------------*/
-   { 'i', '?', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'i', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'a', "absolute"    , "true life or death for project, app, or me"     , 0.000, 0.000, 0.000 },
    { 'i', 'n', "need"        , "must be completed to finish objective"          , 0.000, 0.000, 0.000 },
    { 'i', 'w', "want"        , ""                                               , 0.000, 0.000, 0.000 },
@@ -80,7 +57,7 @@ tDECODE   g_decode   [MAX_DECODE] = {
    { 'i', 'm', "might"       , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'i', "idea"        , ""                                               , 0.000, 0.000, 0.000 },
    /*---(estimate)-----------------------*/
-   { 'e', '?', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'e', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', '!', "5m-ish"      , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', 's', "15m"         , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', 'm', "30m"         , ""                                               , 0.000, 0.000, 0.000 },
@@ -90,7 +67,7 @@ tDECODE   g_decode   [MAX_DECODE] = {
    { 'e', '8', "480m"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', '+', "longer"      , ""                                               , 0.000, 0.000, 0.000 },
    /*---(progress)-----------------------*/
-   { 'p', '?', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'p', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', '<', "starting"    , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', 'o', "active"      , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', '>', "checking"    , ""                                               , 0.000, 0.000, 0.000 },
@@ -265,7 +242,7 @@ DATA__header            (char *a_recd)
 }
 
 char             /* [p-----] parse task detail -------------------------------*/
-DATA__detail       (char *a_recd)
+DATA__detail       (char *a_recd, int a_line)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -315,6 +292,7 @@ DATA__detail       (char *a_recd)
    /*---(categories)--------------------*/
    strlcpy  (g_tasks [g_ntask].one, s_one, LEN_LABEL);
    strlcpy  (g_tasks [g_ntask].two, s_two, LEN_LABEL);
+   g_tasks [g_ntask].line  = a_line;
    ++g_ntask;
    ++nactive;
    DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
@@ -357,7 +335,8 @@ DATA__file         (char *a_source)
    --rce;  while (1) {
       /*---(read)------------------------*/
       fgets (x_recd, LEN_RECD, f);
-      DEBUG_DATA   yLOG_value    ("a"         , ++a);
+      ++a;
+      DEBUG_DATA   yLOG_value    ("a"         , a);
       if (feof (f))  {
          DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
          return rce;
@@ -370,34 +349,29 @@ DATA__file         (char *a_source)
       if (x_recd [x_len - 1] == '\n')  x_recd [--x_len] = '\0';
       DEBUG_DATA   yLOG_info     ("x_recd"    , x_recd);
       /*---(read)------------------------*/
-      if      (strncmp (x_recd, " * metis_header ", 17) == 0) {
-         DEBUG_DATA   yLOG_note     ("single-line or open comment (1)");
-         /*> if (strncmp (x_recd + x_len - 3, "+/", 2) == 0)  x_recd [x_len - 3] = '\0';   <* 
-          *> DATA__header (x_recd + 17);                                                   <*/
-      }
-      else if (strncmp (x_recd, "\* metis ", 10) == 0) {
+      if      (strncmp (x_recd, "\* metis ", 10) == 0) {
          DEBUG_DATA   yLOG_note     ("single-line or open comment (1)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 10);
+         DATA__detail (x_recd + 10, a);
       }
       else if (strncmp (x_recd, "   \* metis ", 13) == 0) {
          DEBUG_DATA   yLOG_note     ("single-line or open comment (2)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 13);
+         DATA__detail (x_recd + 13, a);
       }
       else if (strncmp (x_recd, " * metis " , 10) == 0) {
          DEBUG_DATA   yLOG_note     ("continuing comment (1)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 10);
+         DATA__detail (x_recd + 10, a);
       }
       else if (strncmp (x_recd, "    * metis " , 13) == 0) {
          DEBUG_DATA   yLOG_note     ("continuing comment (2)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 13);
+         DATA__detail (x_recd + 13, a);
       }
       else if (strncmp (x_recd, "# metis " ,  9) == 0) {
          DEBUG_DATA   yLOG_note     ("unit test comment");
-         DATA__detail (x_recd + 9);
+         DATA__detail (x_recd + 9, a);
       }
    }
    fclose(f);
@@ -413,6 +387,7 @@ DATA_read          (void)
    char    rc = 0;
    char    msg[100];
    char      card_file[200] = "";
+   int         a            =    0;
    /*---(process)-------------------------------*/
    DEBUG_I  printf("task_read\n");
    nactive  = 0;
@@ -430,9 +405,10 @@ DATA_read          (void)
    DEBUG_I  printf("   openned for read-only access\n");
    DEBUG_I  printf("   reading tasks\n");
    while (DATA__recd() == 0) {
+      ++a;
       if (g_recd [0] == '#')   continue;
       if (g_recd [0] == '\0')  continue;
-      if (strncmp (g_recd, "  ", 2) == 0) rc = DATA__detail (g_recd);
+      if (strncmp (g_recd, "  ", 2) == 0) rc = DATA__detail (g_recd, a);
       else                                rc = DATA__header (g_recd);
       /*> rc = DATA__detail ();                                                       <*/
       /*> if (rc < 0)                         return 0;                               <* 
@@ -520,8 +496,8 @@ DATA_sources       (void)
       /*---(cut on suffix)---------------*/
       x_type = x_name [x_len - 1];
       DEBUG_INPT   yLOG_char    ("x_len - 1" , x_type);
-      if (x_name [x_len - 1] != 'c') {
-         DEBUG_INPT   yLOG_note    ("not a c file, SKIP");
+      if (strchr ("ch", x_name [x_len - 1]) == NULL) {
+         DEBUG_INPT   yLOG_note    ("not a c or h file, SKIP");
          continue;
       }
       /*---(filter unit test)*-----------*/
@@ -633,9 +609,9 @@ DATA__unit         (char *a_question, int a_num)
    }
    else if (strcmp (a_question, "stats"         ) == 0) {
       if (a_num < g_ntask) {
-         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg %c, imp %c, est %c, prog %c", a_num, g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].flg);
+         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg %c, imp %c, est %c, prog %c   %3d", a_num, g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].flg, g_tasks [a_num].line);
       } else {
-         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg -, imp -, est -, prog -", a_num);
+         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg -, imp -, est -, prog -     -", a_num);
       }
    }
    else if (strcmp (a_question, "header"        ) == 0) {

@@ -7,7 +7,7 @@
 
 #define     P_FOCUS     "PT (productivity/time mgmt)"
 #define     P_NICHE     "td (todo list)"
-#define     P_PURPOSE   "simple, light, clean, powerful task manangement system"
+#define     P_PURPOSE   "simple, clean task consolitation and navigation system"
 
 #define     P_NAMESAKE  "metis"
 #define     P_HERITAGE  "titan goddess of wisdom, wise counsel, cunning, prudence, and deep thought"
@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1c"
-#define     P_VERTXT    "much better texture drawing logic"
+#define     P_VERNUM    "1.1d"
+#define     P_VERTXT    "added source line to DATA__detail and updated unit tests"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -32,6 +32,9 @@
 
 
 
+/*
+ * metis  tn1#·  create a github project and get changes uploaded
+ */
 
 
 /*===[[ HEADER ]]=============================================================*
@@ -189,6 +192,7 @@ struct      cCARD
    /*---(task data)--------+-----------+-*/
    char        one         [  15];     /* major category                      */
    char        two         [  15];     /* minor category                      */
+   int         line;                   /* source line in file                 */
    char        urg;                    /* urgency code                        */
    char        imp;                    /* importance code                     */
    char        est;                    /* estimated work                      */
@@ -336,7 +340,7 @@ char       prog_signals      (void);
 char        DATA_init               (void);
 char        DATA__header            (char *a_recd);
 char        DATA__stats             (char *a_stats);
-char        DATA__detail            (char *a_recd);
+char        DATA__detail            (char *a_recd, int a_line);
 char        DATA_sources            (void);
 char*       DATA__unit              (char *a_question, int a_num);
 
