@@ -30,23 +30,23 @@ float  txf_space = 1.15;
 
 
 /*---(opengl objects)--------------------*/
-uint      tex       =     0;                /* texture for image              */
-uint      fbo       =     0;                /* framebuffer                    */
-uint      depth     =     0;                /* depth buffer                   */
+uint      g_tex     =     0;                /* texture for image              */
+uint      g_fbo     =     0;                /* framebuffer                    */
+uint      g_dep     =     0;                /* depth buffer                   */
 
 
 char        /* PURPOSE : process the xwindows event stream                    */
 prog_event    (void)
 {
    /*---(locals)--------------------------------*/
-   XKeyEvent *key_event;
-   char       the_key[5];
-   int        the_bytes;
-   char       x_search[100];
+   XKeyEvent  *key_event;
+   char        x_keys      [LEN_TERSE];
+   int         x_bytes     =    0;
+   char        x_search    [LEN_HUND];
    my.update = 0;
    int        loop = 0;
-   /*---(event loop)----------------------------*/
-   DEBUG_E  printf("prog_event () begin\n");
+   /*---(header)-------------------------*/
+   DEBUG_LOOP   yLOG_enter    (__FUNCTION__);
    while (1) {
       XNextEvent(DISP, &EVNT);
       my.update = 1;
@@ -75,39 +75,40 @@ prog_event    (void)
       case KeyPress:
          DEBUG_E  printf("   prog_event () keypress\n");
          key_event  = (XKeyEvent *) &EVNT;
-         the_bytes = XLookupString((XKeyEvent *) &EVNT, the_key, 5, NULL, NULL);
-         if (the_bytes < 1) break;
-         if (arg_keys == ' ') {
+         x_bytes = XLookupString((XKeyEvent *) &EVNT, x_keys, 5, NULL, NULL);
+         if (x_bytes < 1) break;
+         g_minor = x_keys [0];
+         DEBUG_LOOP   yLOG_char     ("g_major"   , g_major);
+         DEBUG_LOOP   yLOG_char     ("g_minor"   , g_minor);
+         if (g_major == ' ') {
             /*---(mode changes)-------*/
-            switch (the_key[0]) {
+            switch (g_minor) {
             case 'Q': return 1;                   break;
-            case 'u': alpha = 0.8; arg_keys = 'u';       break;
-            case 'i': alpha = 0.8; arg_keys = 'i';       break;
-            case 'e': alpha = 0.8; arg_keys = 'e';       break;
-            case 'f': alpha = 0.8; arg_keys = 'f';       break;
+            case 'u': alpha = 0.8; g_major = 'u';       break;
+            case 'i': alpha = 0.8; g_major = 'i';       break;
+            case 'e': alpha = 0.8; g_major = 'e';       break;
+            case 'f': alpha = 0.8; g_major = 'f';       break;
             case '/':  
-            case 's': alpha = 0.8; arg_keys = 's'; x_search[0] = '\0'; break;
+            case 's': alpha = 0.8; g_major = 's'; x_search[0] = '£'; break;
             }
             /*---(filters and tasks)--*/
-            switch (the_key[0]) {
+            switch (g_minor) {
             case '[':
             case '?': my.incr  = STOP;   my.move   = 0.0;   break;
             case '_': my.incr  = STOP;   my.move   = 0.0;  my.ccol = my.crow = 0; my.move = 0.0;  break;
             case 'l': my.incr  = STOP;   ++my.ccol;      break;
-            case '>': my.incr  = STOP;   ++my.ccol;      break;
             case 'j': my.incr  = STOP;   ++my.crow;      break;
             case ',': my.incr  = my.play;                break;
             case '+': my.incr += my.change;              break;
             case '-': my.incr -= my.change;              break;
             case '.': my.incr  = STOP;                   break;
             case 'h': my.incr  = STOP;   --my.ccol;      break;
-            case '<': my.incr  = STOP;   --my.ccol;      break;
             case 'k': my.incr  = STOP;   --my.crow;      break;
-            case ']':
-            case 'G': my.incr  = STOP;   my.move   = 0.0; my.ccol = my.ncols - my.wcols; my.crow = my.nrows - my.wrows; break;
+            /*> case ']':                                                             <*/
+            /*> case '~': my.incr  = STOP;   my.move   = 0.0; my.crow = my.nrows - 1; break;   <*/
             }
             /*---(task related)-------*/
-            switch (the_key[0]) {
+            switch (g_minor) {
             case 'p': task_list();                       break;
             case 'r': task_refresh();                    break;
             case 'J': font_change(); task_refresh();                    break;
@@ -116,7 +117,7 @@ prog_event    (void)
             case 'F': if (arg_filter) arg_filter = 0; else arg_filter = 1; return my.format;                    break;
             }
             /*---(format changes)-----*/
-            switch (the_key[0]) {
+            switch (g_minor) {
             case 'C' : return 'c';    break;
             case 'L' : return 'l';    break;
             case 'S' : return 's';    break;
@@ -130,29 +131,31 @@ prog_event    (void)
             case '0' : urg = imp = est = ' '; strcpy(one, "all"); flg = '<'; return 't'; break;
             }
             /*---(verify currents)----*/
+            DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
+            DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
             range_check();
 
          } else {
-            if (arg_keys == 's' && the_key[0] != 13) {
-               char   ch  = the_key[0];
+            if (g_major == 's' && g_minor != 13) {
+               char   ch  = g_minor;
                /*> printf("ch = %3d\n", ch);                                       <*/
                if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == 8) {
                   char   temp[10];
-                  sprintf(temp, "%c", the_key[0]);
+                  sprintf(temp, "%c", g_minor);
                   strcat(x_search, temp);
                   /*> printf("search = <<%s>>\n", x_search);                       <*/
                }
             } else {
-               switch (arg_keys) {
-               case 'u': if (strchr(" tdwmqyb", the_key[0]) != 0) urg  = the_key[0];  else urg  = ' '; break;
-               case 'i': if (strchr(" anwlmis", the_key[0]) != 0) imp  = the_key[0];  else imp  = ' '; break;
-               case 'e': if (strchr(" 0123456", the_key[0]) != 0) est  = the_key[0];  else est  = ' '; break;
-               case 'f': if (strchr(" -x#<o>" , the_key[0]) != 0) flg  = the_key[0];  else flg  = ' '; break;
+               switch (g_major) {
+               case 'u': if (strchr(g_urg , g_minor) != 0) urg  = g_minor;  else urg  = ' '; break;
+               case 'i': if (strchr(g_imp , g_minor) != 0) imp  = g_minor;  else imp  = ' '; break;
+               case 'e': if (strchr(g_est , g_minor) != 0) est  = g_minor;  else est  = ' '; break;
+               case 'f': if (strchr(g_prog, g_minor) != 0) flg  = g_minor;  else flg  = ' '; break;
                case 's': if (x_search[0] == '\0') strcpy(one, "all");
                             else strncpy(one, x_search, 20);
                             break;
                }
-               arg_keys = ' ';
+               g_major = ' ';
                alpha    = 0.0;
                /*> task_refresh();                                                 <*/
                return my.format;
@@ -189,6 +192,7 @@ prog_event    (void)
        *>    draw_texture();                                                                    <* 
        *>    if (my.format == 'p' && my.ccol != my.pcol) mask();                                <* 
        *> }                                                                                     <*/
+      DEBUG_LOOP   yLOG_value    ("my.ccol"   , my.ccol);
       my.update = 0;
       draw_texture();
       /*> usleep( 5000);                                                              <*/
@@ -196,6 +200,7 @@ prog_event    (void)
    }
    DEBUG_E  printf("prog_event () end\n");
    /*---(complete)------------------------------*/
+   DEBUG_LOOP   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -258,15 +263,16 @@ font_delete(void)
 static void      o___OPENGL__________________o (void) {;}
 
 char       /* PURPOSE : place the texture in the window ----------------------*/
-draw_texture       (void)
+draw_texture_OLD   (void)
 {
-   DEBUG_G  printf("draw_texture () beg\n");
    /*---(locals)-------------------------*/
    float     offset, ratio;
    float     tx1, ty1, tx2, ty2;
    float     wx1, wy1, wx2, wy2;
    float     z;
    int       i;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(horizontal views)---------------*/
    if (strchr("tbwpx"  , my.format) != 0) {
       offset    = (my.ccol * 320.0) / tex_w;
@@ -290,6 +296,14 @@ draw_texture       (void)
       tx1     = 0.0;
       tx2     = 1.0;
    }
+   DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
+   DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
+   DEBUG_GRAF   yLOG_double   ("offset"    , offset);
+   DEBUG_GRAF   yLOG_double   ("ratio"     , ratio);
+   DEBUG_GRAF   yLOG_double   ("ty1"       , ty1);
+   DEBUG_GRAF   yLOG_double   ("ty2"       , ty2);
+   DEBUG_GRAF   yLOG_double   ("tx1"       , tx1);
+   DEBUG_GRAF   yLOG_double   ("tx2"       , tx2);
    /*---(window coordinates)-------------*/
    wx1     = 0.0;
    wx2     = win_w;
@@ -302,7 +316,7 @@ draw_texture       (void)
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glLoadIdentity();
    /*---(draw it)------------------------*/
-   glBindTexture   (GL_TEXTURE_2D, tex);
+   glBindTexture   (GL_TEXTURE_2D, g_tex);
    glBegin(GL_POLYGON); {
       glTexCoord2f ( tx1,  ty2);
       glVertex3f   ( wx1,  wy1,    z);
@@ -316,7 +330,7 @@ draw_texture       (void)
    glBindTexture   (GL_TEXTURE_2D, 0);
    z = -5.0;
    /*---(shade if not-focused)-----------*/
-   if (arg_keys != ' ') {
+   if (g_major != ' ') {
       glColor4f (0.0f, 0.0f, 0.0f, 0.5);
       glBegin(GL_POLYGON); {
          glVertex3f   ( wx1,  wy1,    z);
@@ -335,25 +349,175 @@ draw_texture       (void)
    /*---(force the redraw)---------------*/
    glXSwapBuffers(DISP, BASE);
    glFlush();
-   DEBUG_G  printf("draw_texture () end\n");
    /*---(complete)-------------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+draw__panel          (float a_wtop, float a_wlef, float a_wbot, float a_wrig, float a_ttop, float a_tlef, float a_tbot, float a_trig)
+{
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(display)------------------------*/
+   DEBUG_GRAF   yLOG_double   ("a_wtop"     , a_wtop);
+   DEBUG_GRAF   yLOG_double   ("a_wlef"     , a_wlef);
+   DEBUG_GRAF   yLOG_double   ("a_wbot"     , a_wbot);
+   DEBUG_GRAF   yLOG_double   ("a_wrig"     , a_wrig);
+   DEBUG_GRAF   yLOG_double   ("a_ttop"     , a_ttop);
+   DEBUG_GRAF   yLOG_double   ("a_tlef"     , a_tlef);
+   DEBUG_GRAF   yLOG_double   ("a_tbot"     , a_tbot);
+   DEBUG_GRAF   yLOG_double   ("a_trig"     , a_trig);
+   /*---(draw it)------------------------*/
+   glBindTexture   (GL_TEXTURE_2D, g_tex);
+   glBegin(GL_POLYGON); {
+      /*---(top/lef)--------*/
+      glTexCoord2f ( a_tlef,  a_ttop);
+      glVertex3f   ( a_wlef,  a_wtop,  -10.0);
+      /*---(top/rig)--------*/
+      glTexCoord2f ( a_trig,  a_ttop);
+      glVertex3f   ( a_wrig,  a_wtop,  -10.0);
+      /*---(bot/rig)--------*/
+      glTexCoord2f ( a_trig,  a_tbot);
+      glVertex3f   ( a_wrig,  a_wbot,  -10.0);
+      /*---(bot/lef)--------*/
+      glTexCoord2f ( a_tlef,  a_tbot);
+      glVertex3f   ( a_wlef,  a_wbot,  -10.0);
+      /*---(done)-----------*/
+   } glEnd();
+   glBindTexture   (GL_TEXTURE_2D, 0);
+   /*---(complete)-------------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+   /*> wx1     = 0.0;                                                                                                         <* 
+    *> wx2     = win_w;                                                                                                       <* 
+    *> wy1     = 0.0;                                                                                                         <* 
+    *> wy2     = -win_h;                                                                                                      <* 
+    *> z       = -10.0;                                                                                                       <* 
+    *> /+> printf("win_h = %d, tex_h = %d, ratio = %f, win_w = %d, tex_w = %d\n", win_h, tex_h, ratio, win_w, tex_w);   <+/   <* 
+    *> /+> printf("wy1 = %f, wy2 = %f, ty1 = %f, ty2 = %f\n", wy1, wy2, ty1, ty2);        <+/                                 <* 
+    *> /+---(prepare drawing)----------------+/                                                                               <* 
+    *> glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                                                                    <* 
+    *> glLoadIdentity();                                                                                                      <* 
+    *> /+---(draw it)------------------------+/                                                                               <* 
+    *> glBindTexture   (GL_TEXTURE_2D, g_tex);                                                                                <* 
+    *> glBegin(GL_POLYGON); {                                                                                                 <* 
+    *>    glTexCoord2f ( tx1,  ty2);                                                                                          <* 
+    *>    glVertex3f   ( wx1,  wy1,    z);                                                                                    <* 
+    *>    glTexCoord2f ( tx2,  ty2);                                                                                          <* 
+    *>    glVertex3f   ( wx2,  wy1,    z);                                                                                    <* 
+    *>    glTexCoord2f ( tx2,  ty1);                                                                                          <* 
+    *>    glVertex3f   ( wx2,  wy2,    z);                                                                                    <* 
+    *>    glTexCoord2f ( tx1,  ty1);                                                                                          <* 
+    *>    glVertex3f   ( wx1,  wy2,    z);                                                                                    <* 
+    *> } glEnd();                                                                                                             <*/
+
+char       /* PURPOSE : place the texture in the window ----------------------*/
+draw_texture       (void)
+{
+   /*---(locals)-------------------------*/
+   float     offset, ratio;
+   float     tx1, ty1, tx2, ty2;
+   float     wx1, wy1, wx2, wy2;
+   float     x_tlef, x_trig, x_ttop, x_tbot;
+   float     x_wlef, x_wrig, x_wtop, x_wbot;
+   float     x_cnt;
+   float     x_max;
+   float     z;
+   int       i;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(prepare drawing)----------------*/
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   glLoadIdentity();
+   /*---(horizontal views)---------------*/
+   if (strchr("tbwpx"  , my.format) != 0) {
+      offset    = (my.ccol * 320.0) / tex_w;
+      if (my.format == 't') offset    = (my.ccol * 300.0) / tex_w;
+      if (my.format == 'b') offset    = (my.ccol * 325.0) / tex_w;
+      offset += my.move;
+      ratio   = (float) win_w / tex_w;
+      ty1     = 0.0;
+      ty2     = 1.0;
+      tx1     = 0.0 + offset;
+      tx2     = 0.0 + offset + ratio;
+   }
+   /*---(vertical views)-----------------*/
+   else {
+      /*---(before)----------------------*/
+      DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
+      DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
+      DEBUG_GRAF   yLOG_value    ("tex_h"     , tex_h);
+      DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
+      DEBUG_GRAF   yLOG_value    ("my.nrows"  , my.nrows);
+      DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
+      /*---(panel one)-------------------*/
+      DEBUG_GRAF   yLOG_note     ("panel one-------------------");
+      x_wlef  = 0.0;
+      x_wrig  = win_w;
+      x_tlef  = 0.0;
+      x_trig  = 1.0;
+      x_wtop  = 0.0;
+      x_ttop  = 1.0 - ((my.crow  *  60.0) / tex_h);
+      if (my.nrows - my.crow > my.wrows) {
+         x_max  = my.crow + my.wrows;
+         x_cnt  = my.wrows;
+         x_wbot = -win_h;
+      } else {
+         x_max  = my.nrows;
+         x_cnt  = my.nrows - my.crow;
+         x_wbot = -(x_cnt / my.wrows) * win_h;
+      }
+      x_tbot   = 1.0 - ((x_max    *  60.0) / tex_h);
+      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
+      DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
+      DEBUG_GRAF   yLOG_double   ("x_tbot"    , x_tbot);
+      DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
+      draw__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+      /*---(panel two)-------------------*/
+      if (my.crow > 0) {
+         DEBUG_GRAF   yLOG_note     ("panel two-------------------");
+         x_ttop  = 1.0;
+         x_tbot  = 1.0 - (((my.crow)  *  60.0) / tex_h);
+         x_cnt   = my.nrows - x_cnt;
+         x_wtop  = x_wbot;
+         x_wbot  = x_wtop - (x_cnt / my.wrows) * win_h;
+         DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
+         DEBUG_GRAF   yLOG_double   ("x_ttop"    , x_ttop);
+         DEBUG_GRAF   yLOG_double   ("x_tbot"    , x_tbot);
+         DEBUG_GRAF   yLOG_double   ("x_wtop"    , x_wtop);
+         DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
+         draw__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+      }
+   }
+   DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
+   DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
+   DEBUG_GRAF   yLOG_double   ("offset"    , offset);
+   DEBUG_GRAF   yLOG_double   ("ratio"     , ratio);
+   /*---(force the redraw)---------------*/
+   glXSwapBuffers(DISP, BASE);
+   glFlush();
+   /*---(complete)-------------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char               /* PURPOSE : create a texture -----------------------------*/
 texture_create     (void)
 {
-   DEBUG_G  printf("texture_create () beg\n");
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(generate)-----------------------*/
-   glGenFramebuffersEXT         (1, &fbo);
-   glGenTextures                (1, &tex);
-   glGenRenderbuffersEXT        (1, &depth);
+   glGenFramebuffersEXT         (1, &g_fbo);
+   glGenTextures                (1, &g_tex);
+   glGenRenderbuffersEXT        (1, &g_dep);
    /*---(bind)---------------------------*/
-   DEBUG_G  printf("texture_create () bind\n");
-   glBindFramebufferEXT         (GL_FRAMEBUFFER_EXT,  fbo);
-   glBindTexture                (GL_TEXTURE_2D,       tex);
+   DEBUG_GRAF   yLOG_note     ("bind");
+   glBindFramebufferEXT         (GL_FRAMEBUFFER_EXT,  g_fbo);
+   glBindTexture                (GL_TEXTURE_2D,       g_tex);
    /*---(settings)-----------------------*/
-   DEBUG_G  printf("texture_create () settings\n");
+   DEBUG_GRAF   yLOG_note     ("settings");
    glTexParameteri              (GL_TEXTURE_2D,  GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
    glTexParameteri              (GL_TEXTURE_2D,  GL_TEXTURE_MAG_FILTER, GL_LINEAR);
    glTexParameteri              (GL_TEXTURE_2D,  GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -361,33 +525,33 @@ texture_create     (void)
    glTexEnvi                    (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
    glTexParameteri              (GL_TEXTURE_2D,  GL_GENERATE_MIPMAP, GL_TRUE);
    /*---(copy)---------------------------*/
-   DEBUG_G  printf("texture_create () allocate\n");
+   DEBUG_GRAF   yLOG_note     ("allocate");
    glTexImage2D                 (GL_TEXTURE_2D, 0, GL_RGBA, tex_w, tex_h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-   DEBUG_G  printf("texture_create () copy\n");
-   glFramebufferTexture2DEXT    (GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tex, 0);
+   DEBUG_GRAF   yLOG_note     ("copy");
+   glFramebufferTexture2DEXT    (GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, g_tex, 0);
    /*---(depth)--------------------------*/
-   DEBUG_G  printf("texture_create () depth\n");
-   glBindRenderbufferEXT        (GL_RENDERBUFFER_EXT, depth);
+   DEBUG_GRAF   yLOG_note     ("depth");
+   glBindRenderbufferEXT        (GL_RENDERBUFFER_EXT, g_dep);
    glRenderbufferStorageEXT     (GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, tex_w, tex_h);
-   glFramebufferRenderbufferEXT (GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth);
+   glFramebufferRenderbufferEXT (GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, g_dep);
    /*---(unbind)-------------------------*/
-   DEBUG_G  printf("texture_create () unbind\n");
+   DEBUG_GRAF   yLOG_note     ("unbind");
    glBindFramebufferEXT         (GL_FRAMEBUFFER_EXT, 0);
    /*---(complete)-----------------------*/
-   DEBUG_G  printf("texture_create () end\n");
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char               /* PURPOSE : delete a framebuffer -------------------------*/
 texture_free       (void)
 {
-   DEBUG_G  printf("texture_free () beg\n");
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(generate)-----------------------*/
-   glDeleteTextures                (1, &tex);
-   glDeleteRenderbuffersEXT        (1, &depth);
-   glDeleteFramebuffersEXT         (1, &fbo);
+   glDeleteTextures                (1, &g_tex);
+   glDeleteRenderbuffersEXT        (1, &g_dep);
+   glDeleteFramebuffersEXT         (1, &g_fbo);
    /*---(complete)-----------------------*/
-   DEBUG_G  printf("texture_free () end\n");
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -422,27 +586,34 @@ draw_main          (void)
    int       rc      = 0;                   /* simple return code             */
    int       w       = 0;
    int       pos     = 0;
+   int       x_max   = 0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(create objects)-----------------*/
    /*> printf("   entered\n");                                                        <*/
+   DEBUG_GRAF   yLOG_note     ("create texture");
    texture_create();
-   /*> printf("   texture create done\n");                                            <*/
    /*---(setup)--------------------------*/
+   DEBUG_GRAF   yLOG_note     ("setup opengl view");
    glViewport(0,  0, tex_w, tex_h);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
    glOrtho(        0,   tex_w, -tex_h,  0, -500.0,  500.0);
    glMatrixMode(GL_MODELVIEW);
    glBindTexture   (GL_TEXTURE_2D, 0);
-   glBindFramebufferEXT         (GL_FRAMEBUFFER_EXT,  fbo);
+   glBindFramebufferEXT         (GL_FRAMEBUFFER_EXT,  g_fbo);
    /*> printf("   bound texture\n");                                                  <*/
    /*---(draw)---------------------------*/
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    /*---(tasks)--------------------------*/
+   DEBUG_GRAF   yLOG_note     ("draw tasks");
    glColor4f (0.0f, 0.0f, 0.0f, 1.0f);
    /*> printf("g_ntask = %3d\n", g_ntask);                                              <*/
    /*> printf("   starting draw\n");                                                  <*/
    glPushMatrix(); {
       BASELINE {
+         x_max = 10;
+         if (x_max >= g_ntask)  x_max = g_ntask - 1;
          for (i = 0; i < 10; ++i) {
             draw_card(i);
             glTranslatef(  325.0,   0.0,   0.0);
@@ -450,6 +621,8 @@ draw_main          (void)
             g_tasks [i].pos = pos;
          }
       } else TICKER {
+         x_max = 10;
+         if (x_max >= g_ntask)  x_max = g_ntask - 1;
          for (i = 0; i < 10; ++i) {
             draw_card(i);
             glTranslatef(  300.0,   0.0,   0.0);
@@ -533,12 +706,12 @@ draw_main          (void)
    /*> printf("width = %d\n", w);                                                     <*/
    /*---(mipmaps)------------------------*/
    glBindFramebufferEXT         (GL_FRAMEBUFFER_EXT, 0);
-   glBindTexture   (GL_TEXTURE_2D, tex);
+   glBindTexture   (GL_TEXTURE_2D, g_tex);
    glGenerateMipmapEXT(GL_TEXTURE_2D);
    glBindTexture   (GL_TEXTURE_2D, 0);
    /*> printf("   draw complete\n");                                                  <*/
    /*---(complete)-------------------------*/
-   DEBUG_G  printf("draw_main () end\n");
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -583,6 +756,20 @@ draw_title    (void)
 char
 draw_card     (int a_index)
 {
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   DEBUG_GRAF   yLOG_value    ("a_index"   , a_index);
+   --rce;  if (a_index < 0) {
+      DEBUG_GRAF   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
+   --rce;  if (a_index >= g_ntask) {
+      DEBUG_GRAF   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    /*> printf("draw = %2d\n", a_index);                                               <*/
    card_base  (g_tasks [a_index].flg);
    urgency    (g_tasks [a_index].urg);
@@ -591,8 +778,7 @@ draw_card     (int a_index)
    bullets    ();
    text       (a_index);
    borders    ();
-   /*> if (g_tasks [a_index].flg == '#') complete   ();                                 <*/
-   /*> if (g_tasks [a_index].flg == 'X') complete   ();                                 <*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -628,20 +814,20 @@ text          (int a_index)
       /*> snprintf(temp, 10, "%1d/%1d", a_index + 1, g_ntask - 1);                     <*/
       snprintf(temp, 10, "%d", a_index + 1);
       /*> if (a_index < g_ntask - 1) yFONT_print  (txf_sm,  7, YF_MIDCEN, temp);    <*/
-      yFONT_print  (txf_sm,  7, YF_MIDCEN, temp);
+      yFONT_print  (txf_sm,  8, YF_MIDCEN, temp);
       glTranslatef(  72.0,   0.0,   0.0);
-      yFONT_print  (txf_sm,  7, YF_MIDCEN, g_tasks [a_index].one);
+      yFONT_print  (txf_sm,  8, YF_MIDCEN, g_tasks [a_index].one);
       glTranslatef( 105.0,   0,   0);
-      yFONT_print  (txf_sm,  7, YF_MIDCEN, g_tasks [a_index].two);
+      yFONT_print  (txf_sm,  8, YF_MIDCEN, g_tasks [a_index].two);
       glTranslatef(-160.0, -10.0,   0.0);
       glTranslatef(   0.0, txf_off - 2.0,   0.0);
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      yFONT_printw (txf_sm,  7, YF_TOPLEF, g_tasks [a_index].txt, 205, 35, txf_space);
+      yFONT_printw (txf_sm,  8, YF_TOPLEF, g_tasks [a_index].txt, 205, 35, txf_space);
    } glPopMatrix();
    /*---(letters)-------------------------------*/
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      glTranslatef(  20.0, -15.0,  40.0);
+      glTranslatef(  21.0, -15.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
       snprintf(temp, 4, "%c", g_tasks [a_index].urg);
       yFONT_print(txf_sm,  9, YF_BASCEN, temp);
@@ -651,9 +837,12 @@ text          (int a_index)
       glTranslatef(  12.0, -12.0,   0.0);
       snprintf(temp, 4, "%c", g_tasks [a_index].est);
       yFONT_print(txf_sm,  9, YF_BASCEN, temp);
-      /*> glTranslatef( 245.0,  10.0,   0.0);                                         <* 
-       *> snprintf(temp, 4, "%c", g_tasks [a_index].flg);                             <* 
-       *> yFONT_print(txf_bg, 16, YF_MIDCEN, temp);                                   <*/
+      glTranslatef( 247.0,   2.0,   0.0);
+      snprintf(temp, 4, "%c", g_tasks [a_index].flg);
+      yFONT_print(txf_bg,  8, YF_MIDCEN, temp);
+      glTranslatef( -10.0,   0.0,   0.0);
+      snprintf(temp, 4, "%d", g_ntask);
+      yFONT_print(txf_bg,  8, YF_MIDCEN, temp);
    } glPopMatrix();
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    return 0;
@@ -679,17 +868,6 @@ colors             (char *a_valid, char a_color)
    case  8  : glColor3f(  0.400,  0.400,  0.400); break;
    default  : glColor3f(  0.000,  0.000,  0.000); break;
    }
-   /*> switch (a_color) {                                                             <* 
-    *> case 'r' : glColor3f(  1.000,  0.000,  0.000); break;                          <* 
-    *> case 'o' : glColor3f(  1.000,  0.455,  0.000); break;                          <* 
-    *> case 'y' : glColor3f(  0.800,  0.733,  0.000); break;                          <* 
-    *> case 'g' : glColor3f(  0.200,  0.667,  0.200); break;                          <* 
-    *> case 'b' : glColor3f(  0.000,  0.600,  0.600); break;                          <* 
-    *> case 'p' : glColor3f(  0.400,  0.000,  0.600); break;                          <* 
-    *> case 'v' : glColor3f(  0.800,  0.000,  0.800); break;                          <* 
-    *> case '-' : glColor3f(  0.400,  0.400,  0.400); break;                          <* 
-    *> default  : glColor3f(  0.000,  0.000,  0.000); break;                          <* 
-    *> }                                                                              <*/
    return 0;
 }
 
@@ -720,20 +898,6 @@ borders            (void)
       glVertex3f( 300.0,     0.0,    50.0);
       glVertex3f( 300.0,   -45.0,    50.0);
       glVertex3f( 298.0,   -45.0,    50.0);
-   } glEnd();
-   /*---(complete)------------------------------*/
-   return 0;
-}
-
-char               /* PURPOSE : draw two and bottom borders ------------------*/
-complete           (void)
-{
-   glColor4f (0.0f, 0.0f, 0.0f, 0.3f);
-   glBegin(GL_POLYGON); {
-      glVertex3f(   0.0,     0.0,    70.0);
-      glVertex3f( 300.0,     0.0,    70.0);
-      glVertex3f( 300.0,   -45.0,    70.0);
-      glVertex3f(   0.0,   -45.0,    70.0);
    } glEnd();
    /*---(complete)------------------------------*/
    return 0;
@@ -839,17 +1003,29 @@ estimate    (char  a_value)
 char          /*----: lay down the base color --------------------------------*/
 card_base          (char  a_value)
 {
+   /*> switch (a_value) {                                                             <* 
+    *> case '?' : case '+' : case '·' :                                               <* 
+    *>    glColor3f(  0.700,  0.500,  0.700); break;                                  <* 
+    *>    glColor3f(  0.800,  0.800,  0.800);                                         <* 
+    *>    break;                                                                      <* 
+    *> case '<' : glColor3f(  0.900,  0.500,  0.500); break;                          <* 
+    *> case 'o' : glColor3f(  0.500,  0.900,  0.900); break;                          <* 
+    *> case '>' : glColor3f(  0.700,  0.500,  0.700); break;                          <* 
+    *> case '-' : glColor3f(  0.500,  0.900,  0.500); break;                          <* 
+    *> case '#' : glColor3f(  0.000,  0.600,  0.400); break;                          <* 
+    *> case 'x' : glColor3f(  0.450,  0.450,  0.450); break;                          <* 
+    *> default  : glColor3f(  0.400,  0.400,  0.400); break;                          <* 
+    *> }                                                                              <*/
    switch (a_value) {
    case '?' : case '+' : case '·' :
+      glColor3f(  0.700,  0.500,  0.300);
+      break;
+   case '<' : case 'o' : case '>' :
       glColor3f(  0.800,  0.800,  0.800);
       break;
-   case '<' : glColor3f(  0.900,  0.500,  0.500); break;
-   case 'o' : glColor3f(  0.500,  0.900,  0.900); break;
-   case '>' : glColor3f(  0.700,  0.500,  0.700); break;
-   case '-' : glColor3f(  0.500,  0.900,  0.500); break;
-   case '#' : glColor3f(  0.000,  0.600,  0.400); break;
-   case 'x' : glColor3f(  0.450,  0.450,  0.450); break;
-   default  : glColor3f(  0.400,  0.400,  0.400); break;
+   case '#' : case 'x' : default  :
+      glColor3f(  0.400,  0.400,  0.400);
+      break;
    }
    glBegin(GL_POLYGON); {
       glVertex3f(    0.0,    0.0,   -1.0);
@@ -863,12 +1039,13 @@ card_base          (char  a_value)
 char
 mask       (void)
 {
-   /*---(locals)-------------------------*/
+   /*---(locals)-----------+-----+-----+-*/
    int       i         = 0;
    int       j         = 0;
    int       k         = 0;
    Pixmap    bounds    = XCreatePixmap(DISP, BASE, win_w, win_h, 1);
-   int       _col      = 0;
+   int       x_col      = 0;
+   int       x_max         =    0;
    /*---(prepare)------------------------*/
    GC        gc        = XCreateGC(DISP, bounds, 0, NULL);
    XSetForeground(DISP, gc, 0);
@@ -890,12 +1067,16 @@ mask       (void)
        *> }                                                                           <*/
       XFillRectangle(DISP, bounds, gc,   0, 0, 300, 44 * g_ntask + 45);
    } else COLUMN {
-      for (i = 0; i < my.wrows; ++i) {
-         if (g_tasks [i].imp != '?') XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
+      x_max = my.wrows;
+      if (x_max >= g_ntask)  x_max = g_ntask;
+      for (i = 0; i < x_max; ++i) {
+         XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
       }
    } else LONG   {
-      for (i = 0; i < my.wrows; ++i) {
-         if (g_tasks [i].imp != '?') XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
+      x_max = my.wrows;
+      if (x_max >= g_ntask)  x_max = g_ntask;
+      for (i = 0; i < x_max; ++i) {
+         XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
       }
    } else WIDEVIEW {
       for (j = 0; j < 4; ++j) {
@@ -905,11 +1086,11 @@ mask       (void)
       }
    } else PROJECT  {
       for (j = 0; j < my.wcols; ++j) {
-         _col = my.ccol + j;
-         if (_col >= my.ncols) _col -= my.ncols;
+         x_col = my.ccol + j;
+         if (x_col >= my.ncols) x_col -= my.ncols;
          for (i = 0; i < my.wrows; ++i) {
             for (k = 0; k < g_ntask; ++k) {
-               if (g_tasks [k].col != _col + 1)           continue;
+               if (g_tasks [k].col != x_col + 1)           continue;
                if (g_tasks [k].row != i + 1)              continue;
                XFillRectangle(DISP, bounds, gc,  j * 320, i * 60, 300, 45);
             }

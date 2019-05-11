@@ -18,6 +18,25 @@
  */
 /*============================================================================*/
 
+/*
+ * metis  tl1#·  increase font sizes to fit current limits and show better
+ * metis  tn1#·  create a github project and get changes uploaded
+ * metis  dw1#·  define task format when included in source file
+ * metis  dw4#·  filter all source files in current directory for metis tasks
+ * metis  dw2>·  all views make open/missing task slots transparent
+ * metis  wl2··  add descriptions to g_decode table
+ * metis  wl1··  remove red/grn/blu colors from g_decode table
+ * metis  dw4··  switch g_tasks to linked-list rather that array
+ * metis  dw4··  switch g_tasks string elements to malloc rather than array
+ * metis  dw8··  add g_tasks sorting field, sort chosing, and sorting function
+ * metis  sn2>·  quick reporting on accepted tasks for debugging, validation
+ * metis  tw1··  remove repeating of tasks in lists for clarity
+ * metis  tw1#·  update card backgroud colors to be simplier and more rational
+ * metis  tn1··  fix refresh tasks to increase/decrease count also
+ * metis  dw1>·  add source file line to task record to help updates
+ *
+ */
+
 #include   "metis.h"
 
 
@@ -54,8 +73,8 @@ tDECODE   g_decode   [MAX_DECODE] = {
    { 'u', 'b', "backlog"     , ""                                               , 0.000, 0.000, 0.000 },
    /*---(importance)---------------------*/
    { 'i', '?', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
-   { 'i', 'a', "absolute"    , ""                                               , 0.000, 0.000, 0.000 },
-   { 'i', 'n', "need"        , ""                                               , 0.000, 0.000, 0.000 },
+   { 'i', 'a', "absolute"    , "true life or death for project, app, or me"     , 0.000, 0.000, 0.000 },
+   { 'i', 'n', "need"        , "must be completed to finish objective"          , 0.000, 0.000, 0.000 },
    { 'i', 'w', "want"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'l', "like"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'm', "might"       , ""                                               , 0.000, 0.000, 0.000 },
@@ -255,29 +274,52 @@ DATA__detail       (char *a_recd)
    int         x_len       =    0;
    char       *p           = NULL;
    char       *q           = "";
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
+   DEBUG_DATA   yLOG_info     ("a_recd"    , a_recd);
    /*---(cleanse)-----------------------*/
    DATA__clear  (g_ntask);
    /*---(defenses)----------------------*/
-   --rce;  if (a_recd     == NULL)          return  rce;
+   --rce;  if (a_recd     == NULL) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
    strlcpy (x_recd, a_recd, LEN_RECD);
    x_len = strlen (x_recd);
-   --rce;  if (x_len <  10)                 return  rce;
+   DEBUG_DATA   yLOG_value    ("x_len"     , x_len);
+   --rce;  if (x_len <  10) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
    /*---(task prefix)-------------------*/
    p = strtok  (x_recd, q);
-   --rce;  if (p == NULL)                   return rce;
+   --rce;  if (p == NULL) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
    strltrim (p, ySTR_BOTH, LEN_LABEL);
    rc = DATA__stats (p);
-   --rce;  if (rc < 0)                      return rce;
+   --rce;  if (rc < 0) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
    /*---(text)--------------------------*/
    p = strtok  (NULL, q);
-   if (p == NULL)        return -3;
+   if (p == NULL) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
    strltrim (p, ySTR_BOTH, LEN_HUND);
    strlcpy  (g_tasks [g_ntask].txt, p, LEN_HUND);
    /*---(categories)--------------------*/
    strlcpy  (g_tasks [g_ntask].one, s_one, LEN_LABEL);
    strlcpy  (g_tasks [g_ntask].two, s_two, LEN_LABEL);
-   /*---(complete)-----------------------*/
    ++g_ntask;
+   ++nactive;
+   DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -287,6 +329,82 @@ DATA__detail       (char *a_recd)
 /*===----                            driver                            ----===*/
 /*====================------------------------------------====================*/
 static void      o___DRIVER__________________o (void) {;}
+
+char
+DATA__file         (char *a_source)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char       *p           = NULL;
+   char        x_proj      [LEN_LABEL];
+   char        x_recd      [LEN_RECD];
+   int         x_len       =    0;
+   int         a           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   /*---(open)---------------------------*/
+   f = fopen (a_source, "r");
+   --rce;  if (f == NULL) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
+   strlcpy (x_proj, a_source, LEN_LABEL);
+   p = strchr (x_proj, '_');
+   if (p != NULL)  p [0] = '\0';
+   sprintf (x_recd, "%s  %s ", x_proj, a_source);
+   DATA__header (x_recd);
+   nactive  = 0;
+   --rce;  while (1) {
+      /*---(read)------------------------*/
+      fgets (x_recd, LEN_RECD, f);
+      DEBUG_DATA   yLOG_value    ("a"         , ++a);
+      if (feof (f))  {
+         DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+         return rce;
+      }
+      /*---(filter)----------------------*/
+      x_len = strlen (x_recd);
+      DEBUG_DATA   yLOG_value    ("x_len"     , x_len);
+      if (x_len < 10)    continue;
+      /*---(remove newline)--------------*/
+      if (x_recd [x_len - 1] == '\n')  x_recd [--x_len] = '\0';
+      DEBUG_DATA   yLOG_info     ("x_recd"    , x_recd);
+      /*---(read)------------------------*/
+      if      (strncmp (x_recd, " * metis_header ", 17) == 0) {
+         DEBUG_DATA   yLOG_note     ("single-line or open comment (1)");
+         /*> if (strncmp (x_recd + x_len - 3, "+/", 2) == 0)  x_recd [x_len - 3] = '\0';   <* 
+          *> DATA__header (x_recd + 17);                                                   <*/
+      }
+      else if (strncmp (x_recd, "\* metis ", 10) == 0) {
+         DEBUG_DATA   yLOG_note     ("single-line or open comment (1)");
+         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
+         DATA__detail (x_recd + 10);
+      }
+      else if (strncmp (x_recd, "   \* metis ", 13) == 0) {
+         DEBUG_DATA   yLOG_note     ("single-line or open comment (2)");
+         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
+         DATA__detail (x_recd + 13);
+      }
+      else if (strncmp (x_recd, " * metis " , 10) == 0) {
+         DEBUG_DATA   yLOG_note     ("continuing comment (1)");
+         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
+         DATA__detail (x_recd + 10);
+      }
+      else if (strncmp (x_recd, "    * metis " , 13) == 0) {
+         DEBUG_DATA   yLOG_note     ("continuing comment (2)");
+         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
+         DATA__detail (x_recd + 13);
+      }
+      else if (strncmp (x_recd, "# metis " ,  9) == 0) {
+         DEBUG_DATA   yLOG_note     ("unit test comment");
+         DATA__detail (x_recd + 9);
+      }
+   }
+   fclose(f);
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
 
 char             /* [G-----] read all tasks from the file --------------------*/
 DATA_read          (void)
@@ -350,6 +468,82 @@ DATA_read          (void)
    /*---(complete)------------------------------*/
    DEBUG_I  printf("   complete\n\n");
    filter_primary ();
+   return 0;
+}
+
+char         /*--> make a list of input files --------------------------------*/
+DATA_sources       (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   int         rc          =    0;          /* generic return code            */
+   char        rce         =  -10;          /* return code for errors         */
+   DIR        *x_dir       = NULL;          /* directory pointer              */
+   tDIRENT    *x_file      = NULL;          /* directory entry pointer        */
+   char        x_name      [LEN_TITLE];      /* file name                      */
+   int         x_len       =    0;
+   char        x_type      =  '-';
+   int         x_read      =    0;          /* count of entries reviewed      */
+   int         x_good      =    0;          /* count of entries processed     */
+   /*---(header)-------------------------*/
+   DEBUG_INPT   yLOG_enter   (__FUNCTION__);
+   /*---(open dir)-----------------------*/
+   x_dir = opendir(".");
+   DEBUG_INPT   yLOG_point   ("x_dir"      , x_dir);
+   --rce;  if (x_dir == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return  rce;
+   }
+   DEBUG_INPT   yLOG_note    ("openned successfully");
+   /*---(process entries)----------------*/
+   DEBUG_INPT   yLOG_note    ("processing entries");
+   while (1) {
+      /*---(read a directory entry)------*/
+      x_file = readdir (x_dir);
+      DEBUG_INPT   yLOG_point   ("x_file"    , x_file);
+      if (x_file == NULL)  break;
+      ++x_read;
+      /*---(filter by name)--------------*/
+      strlcpy (x_name, x_file->d_name, LEN_TITLE);
+      DEBUG_INPT   yLOG_info    ("x_name"    , x_name);
+      x_len = strlen (x_name);
+      DEBUG_INPT   yLOG_value   ("x_len"     , x_len);
+      if (x_name [0] == '.')  {
+         DEBUG_INPT   yLOG_note    ("hidden, SKIP");
+         continue;
+      }
+      /*---(cut on suffix len)-----------*/
+      DEBUG_INPT   yLOG_char    ("x_len - 2" , x_name [x_len - 2]);
+      if (x_name [x_len - 2] != '.')  {
+         DEBUG_INPT   yLOG_note    ("does not have a one-char suffix, SKIP");
+         continue;
+      }
+      /*---(cut on suffix)---------------*/
+      x_type = x_name [x_len - 1];
+      DEBUG_INPT   yLOG_char    ("x_len - 1" , x_type);
+      if (x_name [x_len - 1] != 'c') {
+         DEBUG_INPT   yLOG_note    ("not a c file, SKIP");
+         continue;
+      }
+      /*---(filter unit test)*-----------*/
+      if (x_len > 7 && strcmp ("_unit.c", x_name + x_len - 7) == 0) {
+         DEBUG_INPT   yLOG_note    ("cut the unit testing code files, SKIP");
+         continue;
+      }
+      /*---(save)------------------------*/
+      DATA__file (x_name);
+      ++x_good;
+      DEBUG_INPT   yLOG_note    ("added to inventory");
+      /*---(done)------------------------*/
+   }
+   DEBUG_INPT   yLOG_value   ("x_read"    , x_read);
+   DEBUG_INPT   yLOG_value   ("x_good"    , x_good);
+   /*---(close dir)----------------------*/
+   DEBUG_INPT   yLOG_note    ("closing directory");
+   rc = closedir (x_dir);
+   DEBUG_INPT   yLOG_value   ("close_rc"  , rc);
+   /*> printf ("   end-of-files\n\n\n");                                              <*/
+   /*---(complete)------------------------------*/
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 

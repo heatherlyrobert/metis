@@ -11,7 +11,7 @@
 
 #define     P_NAMESAKE  "metis"
 #define     P_HERITAGE  "titan goddess of wisdom, wise counsel, cunning, prudence, and deep thought"
-#define     P_IMAGERY   "sindularly graceful, stately, and regal goddess"
+#define     P_IMAGERY   "singularly graceful, stately, and regal goddess"
 
 #define     P_SYSTEM    "gnu/linux   (powerful, ubiquitous, technical, and hackable)"
 #define     P_LANGUAGE  "ansi-c      (wicked, limitless, universal, and everlasting)"
@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1b"
-#define     P_VERTXT    "cleaned up and simplfied some display logic"
+#define     P_VERNUM    "1.1c"
+#define     P_VERTXT    "much better texture drawing logic"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -151,9 +151,12 @@
 #include   <unistd.h>
 #include   <time.h>
 #include   <signal.h>                  /* signal(), sigalarm()                */
+#include   <dirent.h>
+
 
 
 typedef   unsigned int  uint;
+typedef     struct      dirent      tDIRENT;
 
 /*---(title)-----------------------------*/
 extern char      win_title[100];
@@ -165,9 +168,9 @@ int       tex_w;                            /* texture width                  */
 int       tex_h;                            /* texture height                 */
 
 /*---(opengl objects)--------------------*/
-extern uint      tex;
-extern uint      fbo;
-extern uint      depth;
+extern uint      g_tex;
+extern uint      g_fbo;
+extern uint      g_dep;
 
 extern      char          unit_answer [LEN_FULL];
 
@@ -222,17 +225,20 @@ typedef     struct cMY     tMY;
 struct cMY {
    /*---(window)-------------------------*/
    char      format;                   /* display style                       */
-   int       wrows;                    /* number of window rows               */
-   int       wcols;                    /* number of window columns            */
    char      sighup;                   /* force a refresh/redraw              */
    char      sigusr2;                  /* cause a font jumble                 */
-   /*---(counts)-------------------------*/
-   int       nrows;                    /* number of rows                      */
-   int       ncols;                    /* number of columns                   */
-   /*---(currents)-----------------------*/
+   /*---(rows)---------------------------*/
+   int       nrows;                    /* number of rows of data              */
+   int       wrows;                    /* number of rows in window            */
+   int       trows;                    /* number of rows on texture           */
+   int       arows;                    /* number of rows available/shown      */
    int       crow;                     /* current topmost visible row         */
-   int       ccol;                     /* current leftmost visible column     */
    int       prow;                     /* previous topmost visible row        */
+   /*---(columns)------------------------*/
+   int       wcols;                    /* number of cols in window            */
+   int       tcols;                    /* number of cols on texture           */
+   int       ncols;                    /* number of cols                      */
+   int       ccol;                     /* current leftmost visible column     */
    int       pcol;                     /* previous leftmost visible column    */
    /*---(movement)-----------------------*/
    char      action;                   /* moving (0 = no, 1 = yes)            */
@@ -266,7 +272,8 @@ extern char      debug_graph;
 
 extern char arg_heads;
 extern char arg_filter;
-extern char arg_keys;
+extern char g_major;
+extern char g_minor;
 
 extern int   max_disp;
 
@@ -330,6 +337,7 @@ char        DATA_init               (void);
 char        DATA__header            (char *a_recd);
 char        DATA__stats             (char *a_stats);
 char        DATA__detail            (char *a_recd);
+char        DATA_sources            (void);
 char*       DATA__unit              (char *a_question, int a_num);
 
 char        PROG_init               (void);

@@ -1,6 +1,10 @@
 /*============================----beg-of-source---============================*/
-
 #include   "metis.h"
+
+/*
+ * metis  dw2··  make task file name command line configurable
+ */
+
 
 char      win_title[100]    = "metis_column";
 
@@ -18,7 +22,8 @@ char        flg   = ' ';
 
 char        arg_heads  = 0;
 char        arg_filter = 1;
-char        arg_keys   = ' ';
+char        g_major   = ' ';
+char        g_minor   = ' ';
 
 long        gpu_mem_bef = 0;
 long        gpu_mem_aft = 0;
@@ -72,18 +77,34 @@ time_stamp()                      /* PURPOSE : timestamp in microseconds      */
 char          /*----: keep row and column values in correct ranges -----------*/
 range_check        (void)
 {
+   /*---(header)-------------------------*/
+   DEBUG_LOOP   yLOG_enter    (__FUNCTION__);
+   DEBUG_LOOP   yLOG_char     ("my.format" , my.format);
+   DEBUG_LOOP   yLOG_value    ("g_ntask"   , g_ntask);
+   DEBUG_LOOP   yLOG_value    ("my.wcols"  , my.wcols);
+   DEBUG_LOOP   yLOG_value    ("my.wrows"  , my.wrows);
+   DEBUG_LOOP   yLOG_value    ("my.ncols"  , my.ncols);
+   DEBUG_LOOP   yLOG_value    ("my.nrows"  , my.nrows);
+   DEBUG_LOOP   yLOG_value    ("my.ccol"   , my.ccol);
+   DEBUG_LOOP   yLOG_value    ("my.crow"   , my.crow);
    /*---(format constraints)-------------*/
-   if (strchr("tbwpx"  , my.format) != 0)  my.crow = 0;
-   if (strchr("cl12"   , my.format) != 0)  my.ccol = 0;
-   /*---(range wrapping)-----------------*/
-   if (my.ccol >= my.ncols) my.ccol = 0;
-   if (my.ccol <  0       ) my.ccol = my.ncols - 1;
-   if (my.crow >= my.nrows) my.crow = 0;
-   if (my.crow <  0       ) my.crow = my.nrows - 1;
+   switch (my.format) {
+   case 'c' : case 'l' : case '1' : case '2' :  /* verticals */
+      my.ccol = 0;
+      if (my.crow >= g_ntask) my.crow = 0;
+      if (my.crow <  0      ) my.crow = g_ntask - 1;
+      break;
+   case 't' : case 'b' : case 'w' : case 'p' : case 'x' :  /* horizontals */
+      my.crow = 0;
+      if (my.ccol >= g_ntask) my.ccol = 0;
+      if (my.ccol <  0      ) my.ccol = g_ntask - 1;
+      break;
+   }
    /*---(output)-------------------------*/
-   /*> printf ("ccol %2d of %3d, crow %2d of %3d, ctask %3d of %3d\n",                <* 
-    *>       my.ccol, my.ncols, my.crow, my.nrows, ctask, g_ntask);              <*/
+   DEBUG_LOOP   yLOG_value    ("my.ccol"   , my.ccol);
+   DEBUG_LOOP   yLOG_value    ("my.crow"   , my.crow);
    /*---(complete)-----------------------*/
+   DEBUG_LOOP   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -125,291 +146,6 @@ task_refresh       (void)
    my.ccol = 0;
    my.crow = 0;
    draw_resize(win_w, win_h);
-   return 0;
-}
-
-
-/*====================------------------------------------====================*/
-/*===----                          polymorphism                        ----===*/
-/*====================------------------------------------====================*/
-static void      o___POLYMORPH_______________o (void) {;}
-
-char
-format_calcs       (void)
-{
-   /*---(update format)-------------------------*/
-   COLUMN {
-      tex_h     = 60 * nactive;
-      my.ncols  = 1;
-      my.nrows  = nactive;
-   } else LONG {
-      tex_h     = 60 * nactive;
-      my.ncols  = 1;
-      my.nrows  = nactive;
-   } else STREAMER {
-      tex_h     = 44 * nactive + 45;
-      my.ncols  = 1;
-      my.nrows  = nactive;
-      my.change =  (1.000 / nactive) * 0.005;
-      my.play   =  - my.change;
-      my.mspeed =  3.0 * my.change;
-   } else TICKER {
-      nactive = 11;
-      my.ncols  = 10;
-      my.nrows  = 1;
-      /*> my.play   = -0.0001;                                                        <* 
-       *> my.mspeed =  0.0005;                                                        <* 
-       *> my.change =  0.0001;                                                        <*/
-      my.play   = -0.0001;
-      my.mspeed =  0.0005;
-      my.change =  0.0001;
-   } else BASELINE {
-      nactive = 11;
-      my.ncols  = 10;
-      my.nrows  = 1;
-   } else WIDEVIEW {
-      my.nrows  = 12;
-      my.ncols  = nactive / my.nrows;
-      if (nactive % my.nrows > 0) ++my.ncols;
-      if (my.ncols < 4) my.ncols = 4;
-      if (my.ncols > MAX_COLS) my.ncols = MAX_COLS;
-      tex_w = 320 * my.ncols;
-   } else PROJECT {
-      my.nrows = 12;
-      if (my.ncols < 4) my.ncols = 4;
-      if (my.ncols > MAX_COLS) my.ncols = MAX_COLS;
-      tex_w = 320 * my.ncols;
-   } else EXTRA {
-      my.nrows = 16;
-      my.ncols = nactive / my.nrows;
-      if (nactive % my.nrows > 0) ++my.ncols;
-      if (my.ncols < 4) my.ncols = 4;
-      if (my.ncols > MAX_COLS) my.ncols = MAX_COLS;
-      tex_w = 320 * my.ncols;
-   }
-   /*---(set step)------------------------------*/
-   step  = 1.0 / (float) nactive;
-   if      (strchr("tb"     , my.format) != 0) step  = 1.0 / 10.0;
-   else if (strchr("wpx"    , my.format) != 0) step  = 1.0 / my.ncols;
-   my.ccol = 0;
-   my.crow = 0;
-   DEBUG_I  printf("   format %c so nactive = %d, ncols = %d, nrows = %d\n", my.format, nactive, my.ncols, my.nrows);
-   DEBUG_I  printf("      tex_h = %d, tex_w = %d, step = %f\n", tex_h, tex_w, step);
-   DEBUG_I  printf("      win_h = %d, win_w = %d\n", win_h, win_w);
-   return 0;
-}
-
-
-
-
-char
-format_streamer    (void)
-{
-   strcpy(win_title, "metis_streamer");
-   win_h  = tex_h  =  (35 * 44) + 45;   /* window height                      */
-   win_w  =           300;        /* scancard width                           */
-   tex_w  =           300;        /* room for ten tasks                       */
-   my.format = 's';
-   my.nrows  =   0;
-   my.ncols  =   0;
-   my.wcols  =   0;
-   my.wrows  =  24;
-   my.action =   1;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_ticker      (void)
-{
-   strcpy(win_title, "metis_ticker");
-   win_h  = tex_h  =   45;        /* scancard height                          */
-   win_w  =          1600;        /* our standard screen size                 */
-   tex_w  =          3000;        /* room for ten tasks                       */
-   my.format = 't';
-   my.nrows  =   1;
-   my.ncols  =  10;
-   my.wcols  =   4;
-   my.wrows  =   1;
-   my.action =   1;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_baseline    (void)
-{
-   strcpy(win_title, "metis_baseline");
-   win_h  = tex_h  =   45;        /* scancard height                          */
-   win_w  =          1600;        /* our standard screen size                 */
-   tex_w  =          3250;        /* room for ten tasks                       */
-   my.format = 'b';
-   my.nrows  =   1;
-   my.ncols  =  10;
-   my.wcols  =   4;
-   my.wrows  =   1;
-   my.action =   0;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_column      (char a_side)
-{
-   if (a_side == 'r') strcpy(win_title, "metis_column");
-   else               strcpy(win_title, "metis_sidebar");
-   win_h  = tex_h  =  720 - 15;   /* room for twelve scantasks with gaps      */
-   win_w  = tex_w  =  300;        /* scancard width                           */
-   my.format = 'c';
-   my.ncols  =   1;
-   my.nrows  =   0;
-   my.wcols  =   1;
-   my.wrows  =  12;
-   my.action =   0;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_long        (char a_side)
-{
-   if (a_side == 'r') strcpy(win_title, "metis_column");
-   else               strcpy(win_title, "metis_sidebar");
-   /*> win_h  = tex_h  =  960 - 15;   /+ room for twelve scantasks with gaps      +/   <*/
-   win_h  = tex_h  = 1500 - 15;   /* room for twelve scantasks with gaps      */
-   win_w  = tex_w  =  300;        /* scancard width                           */
-   my.format = 'l';
-   my.ncols  =   1;
-   my.nrows  =   0;
-   my.wcols  =   1;
-   /*> my.wrows  =  16;                                                               <*/
-   my.wrows  =  25;
-   my.action =   0;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_wideview    (void)
-{
-   strcpy(win_title, "metis_wideview");
-   win_h  = tex_h  =  720 - 15;   /* room for twelve scantasks with gaps      */
-   win_w  = tex_w  = 1260;        /* scancard width times four                */
-   my.format = 'w';
-   my.ncols  =   0;
-   my.nrows  =  12;
-   my.wcols  =   4;
-   my.wrows  =  12;
-   my.action =   0;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_projects    (void)
-{
-   strcpy(win_title, "metis_projects");
-   win_h  = tex_h  =  720 - 15;   /* room for twelve scantasks with gaps      */
-   win_w  = tex_w  = 1260;        /* scancard width times four                */
-   my.format = 'p';
-   my.ncols  =   0;
-   my.nrows  =  12;
-   my.wcols  =   4;
-   my.wrows  =  12;
-   my.action =   0;
-   my.incr   = STOP;
-   my.move   =   0;
-   arg_heads = 1;
-   return 0;
-}
-
-char
-format_extra       (void)
-{
-   strcpy(win_title, "metis_extra");
-   win_h  = tex_h  =  960 - 15;   /* room for twelve scantasks with gaps      */
-   win_w  = tex_w  = 1260;        /* scancard width times four                */
-   my.format = 'x';
-   my.ncols  =   0;
-   my.nrows  =  16;
-   my.wcols  =   4;
-   my.wrows  =  16;
-   my.action =   0;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_change      (char a_which)
-{
-   printf ("format_change (%c)\n", a_which);
-   /*---(clear out)-----------------------------*/
-   texture_free();
-   font_delete();
-   /*---(change format)-------------------------*/
-   switch (a_which) {
-   case 's' : format_streamer ();     break;
-   case 't' : format_ticker   ();     break;
-   case 'b' : format_baseline ();     break;
-   case 'c' : format_column   ('r');  break;
-   case '1' : format_column   ('l');  break;
-   case 'l' : format_long     ('r');  break;
-   case '2' : format_long     ('l');  break;
-   case 'w' : format_wideview ();     break;
-   case 'p' : format_projects ();     break;
-   case 'x' : format_extra    ();     break;
-   default  :                         break;
-   }
-   /*---(get tasks back)------------------------*/
-   /*> printf("did the formatting\n");                                                <*/
-   /*> DATA_read    ();                                                               <*/
-   format_calcs ();
-   /*> printf("did the reading\n");                                                   <*/
-   /*---(setup window)--------------------------*/
-   yX11_end   ();
-   yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);
-   /*> yXINIT__gdestroy();                                                                                                                                             <* 
-    *> XUnmapWindow(DISP, BASE);                                                                                                                                       <* 
-    *> XDestroyWindow(DISP, BASE);                                                                                                                                     <* 
-    *> if (a_which != '-') {                                                                                                                                           <* 
-    *>    XSetWindowAttributes   attr;                                                                                                                                 <* 
-    *>    XColor         xc1, xc2;                                                                                                                                     <* 
-    *>    attr.colormap  = DefaultColormap(DISP, SCRN);                                                                                                                <* 
-    *>    attr.background_pixel = XAllocNamedColor(DISP, CMAP, "black"      ,  &xc1, &xc2);                                                                            <* 
-    *>    BASE = XCreateWindow(DISP, ROOT,                                                                                                                             <* 
-    *>          0, 0, win_w, win_h, 0,                                                                                                                                 <* 
-    *>          CopyFromParent, InputOutput, CopyFromParent,                                                                                                           <* 
-    *>          CWBackPixel|CWColormap, &attr);                                                                                                                        <* 
-    *>    XStoreName(DISP, BASE, win_title);                                                                                                                           <* 
-    *>    XSelectInput(DISP, BASE, KeyPressMask|KeyReleaseMask|ButtonPressMask|ButtonMotionMask|ButtonReleaseMask|ExposureMask|StructureNotifyMask|FocusChangeMask);   <* 
-    *>    XMapWindow(DISP, BASE);                                                                                                                                      <* 
-    *>    XFlush(DISP);                                                                                                                                                <* 
-    *>    yXINIT__gsetup();                                                                                                                                            <* 
-    *> }                                                                                                                                                               <*/
-   /*> printf("did the gsetup\n");                                                    <*/
-   /*---(populate the window)-------------------*/
-   font_load();
-   /*> printf("did the font_load\n");                                                 <*/
-   draw_init();
-   /*> printf("did the init\n");                                                      <*/
-   draw_main();
-   /*> printf("did the draw_main\n");                                                 <*/
-   mask();
-   /*> printf("did the mask\n");                                                      <*/
-   my.ccol = 0;
-   my.crow = 0;
-   draw_resize(win_w, win_h);
-   gpu_mem_aft = ati_meminfo();
-   /*> if (strchr("ts", my.format) != 0) my.action = 1;                               <*/
-   DEBUG_M printf("gpu memory used %ldm of %ldm \n", (gpu_mem_bef - gpu_mem_aft) / 1000, gpu_mem_bef / 1000);
-   /*---(complete)------------------------------*/
    return 0;
 }
 
@@ -536,10 +272,12 @@ PROG_final         (void)
    char rc;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   DATA_sources ();
+   /*> task_list ();                                                                  <*/
    if (debug_top == 'n')  rc = daemon (1, 0);
    if (rc != 0) return rc;
    /*---(load basics)---------------------------*/
-   DATA_read ();
+   /*> DATA_read ();                                                                  <*/
    /*---(open window)---------------------------*/
    yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);
    /*---(create texture)------------------------*/
