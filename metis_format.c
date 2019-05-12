@@ -1,7 +1,9 @@
 #include   "metis.h"
 
-/*
- * metis  tw1#·  break out window format logic into separate source file
+
+/*===[[ METIS BACKLOG ]]======================================================*
+ *  metis  -----  tbd
+ *
  */
 
 
@@ -31,15 +33,18 @@ format_streamer    (void)
 char
 format_ticker      (char a_type)
 {
+   int         x_wide      =    0;
    /*---(header)-------------------------*/
    DEBUG_USER   yLOG_enter    (__FUNCTION__);
    /*---(format)-------------------------*/
    if (strchr ("t", a_type) != NULL) {
       strcpy (win_title, "metis_ticker");
       my.format = 't';
+      x_wide = 300;
    } else {
       strcpy (win_title, "metis_baseline");
-      my.format = 't';
+      my.format = 'b';
+      x_wide = 325;
    }
    /*---(rows)---------------------------*/
    my.wrows  =   1;
@@ -53,8 +58,8 @@ format_ticker      (char a_type)
    /*---(win/tex)------------------------*/
    win_h     = my.wrows *  45.0;
    tex_h     = my.trows *  45.0;
-   win_w     = my.wcols * 300.0;
-   tex_w     = my.tcols * 300.0;
+   win_w     = my.wcols * x_wide;
+   tex_w     = my.tcols * x_wide;
    /*---(playing)------------------------*/
    my.action =   0;
    my.incr   = STOP;

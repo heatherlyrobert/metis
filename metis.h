@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1h"
-#define     P_VERTXT    "filter, sort, unsort, search all built into interface now"
+#define     P_VERNUM    "1.1i"
+#define     P_VERTXT    "caught refresh issue and further cleaned display logic (not done)"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -32,9 +32,52 @@
 
 
 
+/*===[[ METIS BACKLOG ]]======================================================*
+ *  metis  -----  tbd
+ *
+ */
+
+
 /*
- * metis  tn1#·  create a github project and get changes uploaded
- * metis  dw1#·  remove older debugging logic, replace with yURG
+ *
+ * people naturally keep focused lists of tasks near usage...
+ *    -- meeting action items in a spreadsheet
+ *    -- errand list in car
+ *    -- grocery list on refrigerator
+ *
+ * when attempting to move to a better solution, only a few can hang on...
+ *    -- project managers can delegate to a pmo
+ *    -- business managers can delegate to their secretaries
+ *    -- desk bound workers can use post-its or spreadsheets
+ * even with these solutions, people just quit because its overwhelming and
+ * simply forgetting many things can actually help.  90% of the effort is
+ * tracking and closing useless things -- totally lose the big picture.
+ * all these become an avalanch of minutia.
+ *
+ *
+ *
+ * first, distributing the lists to their sources keeps the scary volume
+ * of tasks hidden.  switch focuses, switch lists.  easy and big picture.
+ *
+ * second, i think covey had it right with the urgent/important matrix from
+ * eisenhower or truman.  it allows the mind to cut the list down.
+ *
+ * third, put a category of effort on tasks so that you can pick off smaller
+ * ones when you have little time, or big ones when your are able to focus.
+ *
+ * fourth, skip on tracking dates and actual effort.  this is a obviously cool
+ * thing that is a total time trap.
+ *
+ * fifth, do not "imagine" possible tasks for some future scenario.  it adds
+ * a lot of frightening, speculative bs to the lists.  focus on real tasks.
+ *
+ * sixth, do not calendar/schedule.  this requires a lot of time control which
+ * most people do not have.  review the list, do what you can, move on.
+ *
+ * seventh, do frequent sweeps to delete completed tasks.  do not save history
+ * that you will never use.  its hard to delete accomplishments, but do it.
+ *
+ *
  */
 
 /*

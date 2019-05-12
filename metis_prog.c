@@ -1,8 +1,9 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
-/*
- * metis  dw2#·  make task file name command line configurable
+/*===[[ METIS BACKLOG ]]======================================================*
+ *  metis  -----  tbd
+ *
  */
 
 
@@ -123,7 +124,9 @@ task_refresh       (void)
    yXINIT__gdestroy();
    yXINIT__gsetup();
    /*---(build back up)------------------*/
-   DATA_refresh ();
+   DATA_refresh   ();
+   SORT_refresh   ();
+   FILTER_refresh ();
    font_load();
    draw_init();
    draw_main();
@@ -244,7 +247,9 @@ PROG_final         (void)
    char rc;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   rc = DATA_refresh ();
+   DATA_refresh   ();
+   SORT_refresh   ();
+   FILTER_refresh ();
    if (g_ntask <= 0) {
       printf ("no data found\n");
       return -1;

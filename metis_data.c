@@ -2,18 +2,11 @@
 #include   "metis.h"
 
 
-/*
- * metis  dw1#·  define task format when included in source file
- * metis  dw4#·  filter all source files in current directory for metis tasks
+
+/*===[[ METIS BACKLOG ]]======================================================*
  * metis  wl2··  add descriptions to g_decode table
  * metis  dw4··  switch g_tasks to linked-list rather that array
  * metis  dw4··  switch g_tasks string elements to malloc rather than array
- * metis  dw8#·  add g_tasks sorting field, sort chosing, and sorting function
- * metis  sn2#·  quick reporting on accepted tasks for debugging, validation
- * metis  tw1#·  remove repeating of tasks in lists for clarity
- * metis  tn1#·  fix refresh tasks to increase/decrease count also
- * metis  dw1#·  add source file line to task record to help updates
- * metis  tnm#·  "intentionally left blank" card for null sets
  *
  */
 
@@ -364,27 +357,27 @@ DATA__file         (char *a_source)
       DEBUG_DATA   yLOG_info     ("x_recd"    , x_recd);
       /*---(read)------------------------*/
       if      (strncmp (x_recd, "/* metis ", 10) == 0) {
-         DEBUG_DATA   yLOG_note     ("single-line or open comment (1)");
+         DEBUG_DATA   yLOG_note     ("FOUND, single-line or open comment (1)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
          DATA__detail (x_recd + 10, a);
       }
       else if (strncmp (x_recd, "   /* metis ", 13) == 0) {
-         DEBUG_DATA   yLOG_note     ("single-line or open comment (2)");
+         DEBUG_DATA   yLOG_note     ("FOUND, single-line or open comment (2)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
          DATA__detail (x_recd + 13, a);
       }
       else if (strncmp (x_recd, " * metis " , 10) == 0) {
-         DEBUG_DATA   yLOG_note     ("continuing comment (1)");
+         DEBUG_DATA   yLOG_note     ("FOUND, continuing comment (1)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
          DATA__detail (x_recd + 10, a);
       }
       else if (strncmp (x_recd, "    * metis " , 13) == 0) {
-         DEBUG_DATA   yLOG_note     ("continuing comment (2)");
+         DEBUG_DATA   yLOG_note     ("FOUND, continuing comment (2)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
          DATA__detail (x_recd + 13, a);
       }
       else if (strncmp (x_recd, "# metis " ,  9) == 0) {
-         DEBUG_DATA   yLOG_note     ("unit test comment");
+         DEBUG_DATA   yLOG_note     ("FOUND, unit test comment");
          DATA__detail (x_recd + 9, a);
       }
    }

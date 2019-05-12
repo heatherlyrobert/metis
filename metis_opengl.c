@@ -16,11 +16,10 @@
 
 #include   "metis.h"
 
-/*
- * metis  tl1#·  increase font sizes to fit current limits and show better
- * metis  tw1#·  update card backgroud colors to be simplier and more rational
- * metis  wl1··  remove red/grn/blu colors from g_decode table
- * metis  dw2#·  all views make open/missing task slots transparent
+
+/*===[[ METIS BACKLOG ]]======================================================*
+ *  metis  -----  tbd
+ *
  */
 
 float     alpha     = 0.0;
@@ -418,6 +417,8 @@ draw_texture       (void)
    float     x_max;
    float     z;
    int       i;
+   float       x_wide      =  300;
+   float       x_tall      =   60;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(prepare drawing)----------------*/
@@ -445,10 +446,11 @@ draw_texture       (void)
       x_wbot  = -win_h;
       x_ttop  = 1.0;
       x_tbot  = 0.0;
+      if (my.format != 't')  x_wide = 325;
       /*---(panel one/lef)---------------*/
       DEBUG_GRAF   yLOG_note     ("panel one/lef---------------");
       x_wlef  = 0.0;
-      x_tlef  = (my.ccol  * 300.0) / tex_w;
+      x_tlef  = (my.ccol  * x_wide) / tex_w;
       if (my.ncols - my.ccol > my.wcols) {
          x_max  = my.ccol + my.wcols;
          x_cnt  = my.wcols;
@@ -458,7 +460,7 @@ draw_texture       (void)
          x_cnt  = my.ncols - my.ccol;
          x_wrig = (x_cnt / my.wcols) * win_w;
       }
-      x_trig   = (x_max    * 300.0) / tex_w;
+      x_trig   = (x_max    * x_wide) / tex_w;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
       DEBUG_GRAF   yLOG_double   ("x_tlef"    , x_tlef);
@@ -471,7 +473,7 @@ draw_texture       (void)
          DEBUG_GRAF   yLOG_note     ("panel two/rig---------------");
          x_cnt   = my.wcols - x_cnt;
          x_tlef  = 0.0;
-         x_trig  = (x_cnt  * 300.0) / tex_w;
+         x_trig  = (x_cnt  * x_wide) / tex_w;
          x_wlef  = x_wrig;
          x_wrig  = (x_cnt / my.wcols) * win_w + x_wlef;
          DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
@@ -493,7 +495,7 @@ draw_texture       (void)
       /*---(panel one)-------------------*/
       DEBUG_GRAF   yLOG_note     ("panel one/top---------------");
       x_wtop  = 0.0;
-      x_ttop  = 1.0 - ((my.crow  *  60.0) / tex_h);
+      x_ttop  = 1.0 - ((my.crow  *  x_tall) / tex_h);
       if (my.nrows - my.crow > my.wrows) {
          x_max  = my.crow + my.wrows;
          x_cnt  = my.wrows;
@@ -503,7 +505,7 @@ draw_texture       (void)
          x_cnt  = my.nrows - my.crow;
          x_wbot = -(x_cnt / my.wrows) * win_h;
       }
-      x_tbot   = 1.0 - ((x_max    *  60.0) / tex_h);
+      x_tbot   = 1.0 - ((x_max    *  x_tall) / tex_h);
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
       DEBUG_GRAF   yLOG_double   ("x_ttop"    , x_ttop);
@@ -515,7 +517,7 @@ draw_texture       (void)
       if (my.crow > 0) {
          DEBUG_GRAF   yLOG_note     ("panel two/bot---------------");
          x_ttop  = 1.0;
-         x_tbot  = 1.0 - ((my.crow  *  60.0) / tex_h);
+         x_tbot  = 1.0 - ((my.crow  *  x_tall) / tex_h);
          x_cnt   = my.nrows - x_cnt;
          x_wtop  = x_wbot;
          x_wbot  = x_wtop - (x_cnt / my.wrows) * win_h;
@@ -609,6 +611,36 @@ draw_init(void)
 }
 
 char
+OPENGL__colrow      (int a_max, int a_xinc, int a_yinc)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   int         i           =    0;
+   int         x_pos       =    0;
+   int         c           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(adjust max)---------------------*/
+   DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
+   if (a_max >= my.nact)  a_max = my.nact;
+   DEBUG_GRAF   yLOG_value    ("a_max"     , a_max);
+   glPushMatrix(); {
+      for (i = 0; i <= g_ntask; ++i) {
+         DEBUG_GRAF   yLOG_complex  ("card"      , "%2d, %c %s", i, g_tasks [i].act, g_tasks [i].txt);
+         if (g_tasks [i].act != 'y')  continue;
+         if (i > a_max)               break;      
+         draw_card (i);
+         glTranslatef (a_xinc, a_yinc, 0.0);
+         x_pos += (a_xinc + a_yinc);
+         g_tasks [i].pos = x_pos;
+         DEBUG_GRAF   yLOG_pair     (i           , x_pos);
+      }
+   } glPopMatrix();
+   /*---(complete)-------------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
 draw_main          (void)
 {
    /*---(locals)-------------------------*/
@@ -618,6 +650,7 @@ draw_main          (void)
    int       w       = 0;
    int       pos     = 0;
    int       x_max   = 0;
+   float     x_inc   = 0.0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(create objects)-----------------*/
@@ -641,99 +674,71 @@ draw_main          (void)
    glColor4f (0.0f, 0.0f, 0.0f, 1.0f);
    /*> printf("g_ntask = %3d\n", g_ntask);                                              <*/
    /*> printf("   starting draw\n");                                                  <*/
-   glPushMatrix(); {
-      BASELINE {
-         x_max = my.tcols;
-         if (x_max >= g_ntask)  x_max = g_ntask - 1;
-         for (i = 0; i < x_max; ++i) {
-            draw_card(i);
-            glTranslatef(  325.0,   0.0,   0.0);
-            pos += 325;
-            g_tasks [i].pos = pos;
-         }
-      } else TICKER {
-         x_max = my.tcols;
-         if (x_max >= g_ntask)  x_max = g_ntask - 1;
-         for (i = 0; i < x_max; ++i) {
-            draw_card(i);
-            glTranslatef(  300.0,   0.0,   0.0);
-            pos += 300;
-            g_tasks [i].pos = pos;
-         }
-      } else STREAMER {
-         draw_title ();
-         glTranslatef(    0.0, -45.0,   0.0);
-         pos -=  45;
-         for (i = 0; i < g_ntask; ++i) {
-            draw_card(i);
-            glTranslatef(    0.0, -44.0,   0.0);
-            pos -=  44;
-            g_tasks [i].pos = pos;
-         }
-      } else COLUMN {
-         for (i = 0; i <= g_ntask; ++i) {
-            if (g_tasks [i].act != 'y')  continue;
-            draw_card (i);
-            glTranslatef(    0.0,  -60.0,   0.0);
-            pos -= 60;
-            g_tasks [i].pos = pos;
-         }
-      } else LONG {
-         for (i = 0; i < g_ntask; ++i) {
-            draw_card(i);
-            glTranslatef(    0.0,  -60.0,   0.0);
-            pos -= 60;
-            g_tasks [i].pos = pos;
-         }
-      } else WIDEVIEW {
-         /*> printf("   ncols = %2d\n", my.ncols);                                    <*/
-         for (j = 0; j < my.ncols; ++j) {
-            pos = 0;
-            glPushMatrix(); {
-               for (i = 0; i < 12; ++i) {
-                  if ((j * 12) + i >= MAX_CARDS) continue;
-                  draw_card((j * 12) + i);
-                  glTranslatef(    0.0,  -60.0,   0.0);
-                  pos -= 60;
-                  g_tasks [j * 12 + i].pos = pos;
-               }
-            } glPopMatrix();
-            glTranslatef(    320.0,  0.0,   0.0);
-         }
-      } else PROJECT {
-         for (j = 1; j <= my.ncols; ++j) {
-            /*> printf("drawing col %2d\n", j);                                       <*/
-            pos = 0;
-            glPushMatrix(); {
-               for (i = 0; i < g_ntask; ++i) {
-                  if (g_tasks [i].col != j) continue;
-                  if (pos == 0 && g_tasks [i].row == 2) glTranslatef(    0.0,  -60.0,   0.0);
-                  /*> printf("   card  %3d\n", i);                                    <*/
-                  draw_card(i);
-                  glTranslatef(    0.0,  -60.0,   0.0);
-                  pos -= 60;
-                  g_tasks [i].pos = pos;
-               }
-            } glPopMatrix();
-            glTranslatef(    320.0,  0.0,   0.0);
-         }
-         /*> printf("done drawing\n");                                                <*/
-      } else EXTRA {
-         for (j = 0; j < my.ncols; ++j) {
-            pos = 0;
-            glPushMatrix(); {
-               for (i = 0; i < 16; ++i) {
-                  if ((j * 16) + i >= MAX_CARDS) continue;
-                  draw_card((j * 16) + i);
-                  glTranslatef(    0.0,  -60.0,   0.0);
-                  pos -= 60;
-                  g_tasks [j * 16 + i].pos = pos;
-               }
-            } glPopMatrix();
-            glTranslatef(    320.0,  0.0,   0.0);
-         }
+   DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
+   DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
+   DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
+   switch (my.format) {
+   case FORMAT_TICKER   :
+      OPENGL__colrow (my.tcols, 300.0,   0.0);
+      break;
+   case FORMAT_BASELINE :
+      OPENGL__colrow (my.tcols, 325.0,   0.0);
+      break;
+   case FORMAT_COLUMN   :
+      OPENGL__colrow (my.trows,   0.0, -60.0);
+      break;
+   case FORMAT_LONG     :
+      OPENGL__colrow (my.trows,   0.0, -60.0);
+      break;
+   case FORMAT_WIDE     :
+      for (j = 0; j < my.ncols; ++j) {
+         pos = 0;
+         glPushMatrix(); {
+            for (i = 0; i < 12; ++i) {
+               if ((j * 12) + i >= MAX_CARDS) continue;
+               draw_card((j * 12) + i);
+               glTranslatef(    0.0,  -60.0,   0.0);
+               pos -= 60;
+               g_tasks [j * 12 + i].pos = pos;
+            }
+         } glPopMatrix();
+         glTranslatef(    320.0,  0.0,   0.0);
       }
-   } glPopMatrix();
+      break;
+   case FORMAT_PROJECT  :
+      for (j = 1; j <= my.ncols; ++j) {
+         /*> printf("drawing col %2d\n", j);                                       <*/
+         pos = 0;
+         glPushMatrix(); {
+            for (i = 0; i < g_ntask; ++i) {
+               if (g_tasks [i].col != j) continue;
+               if (pos == 0 && g_tasks [i].row == 2) glTranslatef(    0.0,  -60.0,   0.0);
+               /*> printf("   card  %3d\n", i);                                    <*/
+               draw_card(i);
+               glTranslatef(    0.0,  -60.0,   0.0);
+               pos -= 60;
+               g_tasks [i].pos = pos;
+            }
+         } glPopMatrix();
+         glTranslatef(    320.0,  0.0,   0.0);
+      }
+      break;
+   case FORMAT_EXTRA    :
+      for (j = 0; j < my.ncols; ++j) {
+         pos = 0;
+         glPushMatrix(); {
+            for (i = 0; i < 16; ++i) {
+               if ((j * 16) + i >= MAX_CARDS) continue;
+               draw_card((j * 16) + i);
+               glTranslatef(    0.0,  -60.0,   0.0);
+               pos -= 60;
+               g_tasks [j * 16 + i].pos = pos;
+            }
+         } glPopMatrix();
+         glTranslatef(    320.0,  0.0,   0.0);
+      }
+      break;
+   }
    /*> printf("   ending draw\n");                                                    <*/
    /*> printf("width = %d\n", w);                                                     <*/
    /*---(mipmaps)------------------------*/
@@ -1083,6 +1088,12 @@ mask       (void)
    float       x_inc       =    0;
    /*---(prepare)------------------------*/
    GC        gc        = XCreateGC(DISP, bounds, 0, NULL);
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   DEBUG_GRAF   yLOG_char     ("my.format" , my.format);
+   DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
+   DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
+   DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
    XSetForeground(DISP, gc, 0);
    XFillRectangle(DISP, bounds, gc, 0, 0, win_w, win_h);
    XSetForeground(DISP, gc, 1);
@@ -1091,17 +1102,20 @@ mask       (void)
    case FORMAT_TICKER   :
       x_inc = 300.0;
    case FORMAT_BASELINE :
-      if (x_inc <= 0.0)  x_inc = 325.0;
+      if (x_inc == 0.0)  x_inc = 325.0;
+      DEBUG_GRAF   yLOG_value    ("x_inc"     , x_inc);
       x_max = my.wcols;
       if (x_max >= my.nact)  x_max = my.nact;
-      for (i = 0; i < x_max; ++i)  XFillRectangle(DISP, bounds, gc, i * x_inc, 0, 300, 45);
+      for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc, 0, 300, 45);
       break;
    case FORMAT_COLUMN   :
    case FORMAT_LONG     :
+      x_inc = 60.0;
       x_max = my.wrows;
       if (x_max >= my.nact)  x_max = my.nact;
+      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       for (i = 0; i < x_max; ++i) {
-         XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
+         XFillRectangle (DISP, bounds, gc,   0, i * x_inc, 300, 45);
       }
       break;
    case FORMAT_WIDE     :
@@ -1138,6 +1152,7 @@ mask       (void)
    XFreePixmap (DISP, bounds);
    XFreeGC     (DISP, gc);
    /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
