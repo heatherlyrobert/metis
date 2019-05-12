@@ -15,10 +15,6 @@ int         max_disp   = 16;
 
 
 char        one [20] = "all";
-char        urg   = ' ';
-char        imp   = ' ';
-char        est   = ' ';
-char        flg   = ' ';
 
 char        arg_heads  = 0;
 char        arg_filter = 1;
@@ -182,12 +178,9 @@ PROG_init          (void)
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(set globals)--------------------*/
+   FILTER_clear ();
    my.ncols  = 0;
    my.nrows  = 0;
-   my.xrow   = 0;
-   g_ntask   = 0;
-   nactive   = 0;
-   ctask     = 0;
    DATA_init ();
    my.source = DATA_PIPE;
    /*---(complete)-----------------------*/
@@ -208,10 +201,10 @@ PROG_args          (int argc, char *argv[])
       a = argv[i];
       if (a[0] == '@')  continue;
       len = strlen(a);
-      if      (strncmp(a, "-u",     2) == 0 && len == 3)       urg         = a[2];
-      else if (strncmp(a, "-i",     2) == 0 && len == 3)       imp         = a[2];
-      else if (strncmp(a, "-e",     2) == 0 && len == 3)       est         = a[2];
-      else if (strncmp(a, "-f",     2) == 0 && len == 3)       flg         = a[2];
+      if      (strncmp(a, "-u",     2) == 0 && len == 3)  my.curg  = a[2];
+      else if (strncmp(a, "-i",     2) == 0 && len == 3)  my.cimp  = a[2];
+      else if (strncmp(a, "-e",     2) == 0 && len == 3)  my.cest  = a[2];
+      else if (strncmp(a, "-f",     2) == 0 && len == 3)  my.cflg  = a[2];
       else if (strncmp(a, "-t"     , 7) == 0)     format_ticker();
       else if (strncmp(a, "--tic"  , 7) == 0)     format_ticker();
       else if (strncmp(a, "-b"     , 7) == 0)     format_baseline();
@@ -367,8 +360,8 @@ PROG__unit_quiet        (void)
 char         /*-> set up programgents/debugging ------[ light  [uz.320.011.05]*/ /*-[00.0000.00#.!]-*/ /*-[--.---.---.--]-*/
 PROG__unit_loud         (void)
 {
-   int         x_argc      = 2;
-   char       *x_args [20] = { "metis_unit", "@@kitchen"  };
+   int         x_argc      = 3;
+   char       *x_args [20] = { "metis_unit", "@@kitchen", "@@sort"  };
    yURG_logger (x_argc, x_args);
    PROG_init   ();
    yURG_urgs   (x_argc, x_args);

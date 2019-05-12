@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1f"
-#define     P_VERTXT    "added basic unit test for a source code read"
+#define     P_VERNUM    "1.1g"
+#define     P_VERTXT    "sort logic added and one key order (stats) unit tested"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -197,48 +197,40 @@ extern      char          unit_answer [LEN_FULL];
 
 
 
-extern char        g_urg    [LEN_LABEL];
-extern char        g_imp    [LEN_LABEL];
-extern char        g_est    [LEN_LABEL];
-extern char        g_prog   [LEN_LABEL];
 
 /*---(task data structure)------------*/
 typedef     struct cCARD   tCARD;
 #define     MAX_CARDS  1000            /* how many we can read                */
 struct      cCARD
 {
-   /*---(task data)--------+-----------+-*/
-   char        one         [  15];     /* major category                      */
-   char        two         [  15];     /* minor category                      */
-   int         line;                   /* source line in file                 */
+   /*---(master data)--------------------*/
+   char        one         [LEN_LABEL];/* major category                      */
+   char        two         [LEN_LABEL];/* minor category                      */
    char        urg;                    /* urgency code                        */
    char        imp;                    /* importance code                     */
    char        est;                    /* estimated work                      */
    char        flg;                    /* status flag                         */
-   char        txt         [ 100];     /* text of task                        */
-   /*---(filtering)--------+-----------+-*/
+   char        txt         [LEN_HUND]; /* text of task                        */
+   /*---(source data)--------------------*/
+   int         seq;                    /* original order (to unsort)          */
+   int         line;                   /* source line in file                 */
+   /*---(filtering)----------------------*/
    char        act;                    /* active (y/n)                        */
-   int         seq;                    /* sequence within active tasks        */
-   /*---(visualization)----+-----------+-*/
+   char        key         [LEN_HUND];
+   /*---(visualization)------------------*/
    int         pos;
    int         col;
    int         row;
-   /*---(done)-------------+-----------+-*/
+   /*---(done)---------------------------*/
 };
 extern tCARD g_tasks [MAX_CARDS];
-extern int  g_ntask;                   /* number of tasks                     */
-int         nactive;                   /* number of active tasks              */
-int         ctask;                     /* current task                        */
+extern int   g_ntask;                   /* number of tasks                     */
 
 
 
 /*---(task filtering)--------------------*/
 extern char  g_recd [LEN_RECD];
 extern char      one [20];
-extern char      urg;
-extern char      imp;
-extern char      est;
-extern char      flg;
 
 #define     FILE_MASTER    "/home/member/g_hlosdo/metis.tasks"
 
@@ -250,36 +242,47 @@ extern char      flg;
 
 typedef     struct cMY     tMY;
 struct cMY {
-   /*---(program)------------------------*/
-   char      source;                   /* data sourcing location              */
-   char      file         [LEN_RECD];  /* file for reading tasks              */
+   /*---(data source)--------------------*/
+   char        source;                      /* data sourcing location         */
+   char        file        [LEN_RECD];      /* file for reading tasks         */
+   /*---(validity)-----------------------*/
+   char        urgs        [LEN_LABEL];     /* all valid urgent codes         */
+   char        imps        [LEN_LABEL];     /* all valid importance codes     */
+   char        ests        [LEN_LABEL];     /* all valid estimate codes       */
+   char        flgs        [LEN_LABEL];     /* all valid status flags         */
+   /*---(filtering)----------------------*/
+   int         nact;                        /* number of active tasks         */
+   char        curg;                        /* current urgency filter         */
+   char        cimp;                        /* current importance filter      */
+   char        cest;                        /* current estimating filter      */
+   char        cflg;                        /* current status filter          */
+   char        cone        [LEN_LABEL];     /* current cat one filter         */
+   char        ctwo        [LEN_LABEL];     /* current cat two filter         */
+   char        ctxt        [LEN_HUND];      /* current text filter            */
    /*---(window)-------------------------*/
-   char      format;                   /* display style                       */
-   char      sighup;                   /* force a refresh/redraw              */
-   char      sigusr2;                  /* cause a font jumble                 */
+   char        format;                   /* display style                       */
+   char        sighup;                   /* force a refresh/redraw              */
+   char        sigusr2;                  /* cause a font jumble                 */
    /*---(rows)---------------------------*/
-   int       nrows;                    /* number of rows of data              */
-   int       wrows;                    /* number of rows in window            */
-   int       trows;                    /* number of rows on texture           */
-   int       arows;                    /* number of rows available/shown      */
-   int       crow;                     /* current topmost visible row         */
-   int       prow;                     /* previous topmost visible row        */
+   int         nrows;                    /* number of rows of data              */
+   int         wrows;                    /* number of rows in window            */
+   int         trows;                    /* number of rows on texture           */
+   int         crow;                     /* current topmost visible row         */
+   int         prow;                     /* previous topmost visible row        */
    /*---(columns)------------------------*/
-   int       wcols;                    /* number of cols in window            */
-   int       tcols;                    /* number of cols on texture           */
-   int       ncols;                    /* number of cols                      */
-   int       ccol;                     /* current leftmost visible column     */
-   int       pcol;                     /* previous leftmost visible column    */
+   int         wcols;                    /* number of cols in window            */
+   int         tcols;                    /* number of cols on texture           */
+   int         ncols;                    /* number of cols                      */
+   int         ccol;                     /* current leftmost visible column     */
+   int         pcol;                     /* previous leftmost visible column    */
    /*---(movement)-----------------------*/
-   char      action;                   /* moving (0 = no, 1 = yes)            */
-   char      update;                   /* xevent (0 = no, 1 = yes)            */
-   double    incr;                     /* incemental offset each cycle        */
-   double    move;                     /* position offset due to moving       */
-   double    play;
-   double    mspeed;
-   double    change;
-   /*---(temp)---------------------------*/
-   int       xrow;                     /* temp var for counting rows          */
+   char        action;                   /* moving (0 = no, 1 = yes)            */
+   char        update;                   /* xevent (0 = no, 1 = yes)            */
+   double      incr;                     /* incemental offset each cycle        */
+   double      move;                     /* position offset due to moving       */
+   double      play;
+   double      mspeed;
+   double      change;
 };
 extern tMY   my;
 
@@ -355,6 +358,7 @@ char        DATA__read              (char *a_filename);
 char        DATA__master            (void);
 char        DATA__custom            (void);
 char        DATA__sources           (void);
+char        DATA__blankcard         (void);
 char        DATA_refresh            (void);
 char*       DATA__unit              (char *a_question, int a_num);
 
@@ -368,8 +372,11 @@ char        PROG__unit_quiet        (void);
 char        PROG__unit_loud         (void);
 char        PROG__unit_end          (void);
 
-char             /* [------] perform global filtering on tasks ---------------*/
-filter_primary     (void);
+char        FILTER_clear            (void);
+char        FILTER_refresh          (void);
+char*       FILTER__unit            (char *a_question, int a_num);
+char        SORT_stats              (void);
+char        SORT_unsort             (void);
 
 
 /*============================----end-of-source---============================*/

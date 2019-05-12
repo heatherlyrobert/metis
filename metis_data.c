@@ -13,6 +13,7 @@
  * metis  tw1#·  remove repeating of tasks in lists for clarity
  * metis  tn1#·  fix refresh tasks to increase/decrease count also
  * metis  dw1#·  add source file line to task record to help updates
+ * metis  tnm<·  "intentionally left blank" card for null sets
  *
  */
 
@@ -21,10 +22,6 @@ tCARD       g_tasks [MAX_CARDS];
 int         g_ntask       =  0;
 
 
-char        g_urg    [LEN_LABEL] = "";
-char        g_imp    [LEN_LABEL] = "";
-char        g_est    [LEN_LABEL] = "";
-char        g_prog   [LEN_LABEL] = "";
 
 #define  MAX_DECODE     100
 typedef  struct  cDECODE  tDECODE;
@@ -39,7 +36,6 @@ struct cDECODE {
 };
 tDECODE   g_decode   [MAX_DECODE] = {
    /*---(urgency)------------------------*/
-   { 'u', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 't', "today"       , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 's', "soonest"     , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 'd', "days"        , ""                                               , 0.000, 0.000, 0.000 },
@@ -48,16 +44,16 @@ tDECODE   g_decode   [MAX_DECODE] = {
    { 'u', 'q', "quarters"    , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 'y', "years"       , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 'b', "backlog"     , ""                                               , 0.000, 0.000, 0.000 },
+   { 'u', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    /*---(importance)---------------------*/
-   { 'i', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'a', "absolute"    , "true life or death for project, app, or me"     , 0.000, 0.000, 0.000 },
    { 'i', 'n', "need"        , "must be completed to finish objective"          , 0.000, 0.000, 0.000 },
    { 'i', 'w', "want"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'l', "like"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'm', "might"       , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'i', "idea"        , ""                                               , 0.000, 0.000, 0.000 },
+   { 'i', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    /*---(estimate)-----------------------*/
-   { 'e', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', '!', "5m-ish"      , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', 's', "15m"         , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', 'm', "30m"         , ""                                               , 0.000, 0.000, 0.000 },
@@ -66,13 +62,14 @@ tDECODE   g_decode   [MAX_DECODE] = {
    { 'e', '4', "240m"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', '8', "480m"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', '+', "longer"      , ""                                               , 0.000, 0.000, 0.000 },
+   { 'e', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    /*---(progress)-----------------------*/
-   { 'p', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', '<', "starting"    , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', 'o', "active"      , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', '>', "checking"    , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', '#', "done"        , ""                                               , 0.000, 0.000, 0.000 },
    { 'p', 'x', "cancelled"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'p', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
 };
 
 
@@ -103,7 +100,7 @@ char     *q         = "";         /* strtok() delimiters                 */
 char             /* [p-----] initialize a single task ------------------------*/
 DATA__clear        (int a_num)
 {
-   /*---(task data)-------------------*/
+   /*---(master data)-----------------*/
    g_tasks [a_num].one [0]  = '\0';
    g_tasks [a_num].two [0]  = '\0';
    g_tasks [a_num].urg      = '-';
@@ -111,9 +108,12 @@ DATA__clear        (int a_num)
    g_tasks [a_num].est      = '-';
    g_tasks [a_num].flg      = '-';
    g_tasks [a_num].txt [0]  = '\0';
+   /*---(source data)-----------------*/
+   g_tasks [a_num].line     =  -1;
+   g_tasks [a_num].seq      =  -1;
    /*---(filtering)-------------------*/
    g_tasks [a_num].act      = '-';
-   g_tasks [a_num].seq      = -1;
+   g_tasks [a_num].key [0]  = '\0';
    /*---(visualization)---------------*/
    g_tasks [a_num].pos      =  0;
    g_tasks [a_num].col      = -1;
@@ -133,16 +133,17 @@ DATA_init               (void)
    for (i = 0; i < MAX_DECODE; ++i) {
       sprintf (t, "%c", g_decode [i].abbr);
       switch (g_decode [i].type) {
-      case 'u' : strlcat (g_urg , t, LEN_LABEL);   break;
-      case 'i' : strlcat (g_imp , t, LEN_LABEL);   break;
-      case 'e' : strlcat (g_est , t, LEN_LABEL);   break;
-      case 'p' : strlcat (g_prog, t, LEN_LABEL);   break;
+      case 'u' : strlcat (my.urgs, t, LEN_LABEL);   break;
+      case 'i' : strlcat (my.imps, t, LEN_LABEL);   break;
+      case 'e' : strlcat (my.ests, t, LEN_LABEL);   break;
+      case 'p' : strlcat (my.flgs, t, LEN_LABEL);   break;
       }
    }
-   /*> for (i = 0; i < MAX_CARDS; ++i) {                                              <* 
-    *>    DATA__clear (i);                                                            <* 
-    *> }                                                                              <*/
-   g_ntask = 0;
+   for (i = 0; i < 100; ++i) {
+      DATA__clear (i);
+   }
+   g_ntask  = 0;
+   my.nact  = 0;
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -176,37 +177,51 @@ DATA__stats        (char *a_stats)
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
-   --rce;  if (a_stats == NULL)       return rce;
-   --rce;  if (strlen (a_stats) < 4)  return rce;
-   --rce;  if (strlen (a_stats) > 5)  return rce;
+   int         x_len       =    0;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   DEBUG_DATA   yLOG_point    ("a_stats"   , a_stats);
+   --rce;  if (a_stats == NULL) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
+   x_len = strlen (a_stats);
+   DEBUG_DATA   yLOG_value    ("x_len"     , x_len);
+   --rce;  if (x_len < 4 || x_len > 5) {
+      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(urgency)-------------------------*/
    --rce;
-   if (strchr (g_urg , a_stats [0]) != NULL)  g_tasks [g_ntask].urg = a_stats [0];
+   if (strchr (my.urgs, a_stats [0]) != NULL)  g_tasks [g_ntask].urg = a_stats [0];
    else  {
       g_tasks [g_ntask].urg = '?';
       rc = -rce;
    }
    /*---(importance)----------------------*/
    --rce;
-   if (strchr (g_imp , a_stats [1]) != NULL)  g_tasks [g_ntask].imp = a_stats [1];
+   if (strchr (my.imps, a_stats [1]) != NULL)  g_tasks [g_ntask].imp = a_stats [1];
    else  {
       g_tasks [g_ntask].imp = '?';
       rc = -rce;
    }
    /*---(progress)------------------------*/
    --rce;
-   if (strchr (g_est , a_stats [2]) != NULL)  g_tasks [g_ntask].est = a_stats [2];
+   if (strchr (my.ests, a_stats [2]) != NULL)  g_tasks [g_ntask].est = a_stats [2];
    else  {
       g_tasks [g_ntask].est = '?';
       rc = -rce;
    }
    /*---(tick/flag)-----------------------*/
    --rce;
-   if (strchr (g_prog, a_stats [3]) != NULL)  g_tasks [g_ntask].flg = a_stats [3];
+   if (strchr (my.flgs, a_stats [3]) != NULL)  g_tasks [g_ntask].flg = a_stats [3];
    else  {
       g_tasks [g_ntask].flg = '?';
       rc = -rce;
    }
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_value    ("rc"        , rc);
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return rc;
 }
 
@@ -293,8 +308,8 @@ DATA__detail       (char *a_recd, int a_line)
    strlcpy  (g_tasks [g_ntask].one, s_one, LEN_LABEL);
    strlcpy  (g_tasks [g_ntask].two, s_two, LEN_LABEL);
    g_tasks [g_ntask].line  = a_line;
+   g_tasks [g_ntask].seq   = g_ntask;
    ++g_ntask;
-   ++nactive;
    DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
@@ -331,7 +346,6 @@ DATA__file         (char *a_source)
    if (p != NULL)  p [0] = '\0';
    sprintf (x_recd, "%s  %s ", x_proj, a_source);
    DATA__header (x_recd);
-   nactive  = 0;
    --rce;  while (1) {
       /*---(read)------------------------*/
       fgets (x_recd, LEN_RECD, f);
@@ -390,8 +404,6 @@ DATA__stdin        (void)
    int         a            =    0;
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
-   /*---(process)-------------------------------*/
-   nactive  = 0;
    /*---(identify file)------------------*/
    /*> snprintf(card_file, 190, "/home/member/g_hlosdo/metis_new.tasks", getenv("HOME"));   <*/
    /*---(open)---------------------------*/
@@ -414,7 +426,6 @@ DATA__stdin        (void)
        *> if (g_ntask >=  MAX_CARDS - 2)    break;                                     <*/
    }
    /*---(complete)------------------------------*/
-   filter_primary ();
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -427,8 +438,8 @@ DATA__read         (char *a_filename)
    char    msg[100];
    /*> char      card_file[200] = "";                                                 <*/
    int         a            =    0;
-   /*---(process)-------------------------------*/
-   nactive  = 0;
+   /*---(header)-------------------------*/
+   DEBUG_INPT   yLOG_enter   (__FUNCTION__);
    /*---(identify file)------------------*/
    /*> snprintf(card_file, 190, "/home/member/g_hlosdo/metis_new.tasks", getenv("HOME"));   <*/
    /*---(open)---------------------------*/
@@ -457,7 +468,7 @@ DATA__read         (char *a_filename)
    if (f == NULL) return 0;
    fclose(f);
    /*---(complete)------------------------------*/
-   filter_primary ();
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -470,6 +481,9 @@ DATA__sources       (void)
    /*---(locals)-----------+-----+-----+-*/
    int         rc          =    0;          /* generic return code            */
    char        rce         =  -10;          /* return code for errors         */
+   int         i           =    0;
+   char        x_suf       [LEN_LABEL];
+   int         x_suflen    =    0;
    DIR        *x_dir       = NULL;          /* directory pointer              */
    tDIRENT    *x_file      = NULL;          /* directory entry pointer        */
    char        x_name      [LEN_TITLE];      /* file name                      */
@@ -479,64 +493,82 @@ DATA__sources       (void)
    int         x_good      =    0;          /* count of entries processed     */
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
-   /*---(open dir)-----------------------*/
-   x_dir = opendir(".");
-   DEBUG_INPT   yLOG_point   ("x_dir"      , x_dir);
-   --rce;  if (x_dir == NULL) {
-      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
-      return  rce;
-   }
-   DEBUG_INPT   yLOG_note    ("openned successfully");
    /*---(process entries)----------------*/
-   DEBUG_INPT   yLOG_note    ("processing entries");
-   while (1) {
-      /*---(read a directory entry)------*/
-      x_file = readdir (x_dir);
-      DEBUG_INPT   yLOG_point   ("x_file"    , x_file);
-      if (x_file == NULL)  break;
-      ++x_read;
-      /*---(filter by name)--------------*/
-      strlcpy (x_name, x_file->d_name, LEN_TITLE);
-      DEBUG_INPT   yLOG_info    ("x_name"    , x_name);
-      x_len = strlen (x_name);
-      DEBUG_INPT   yLOG_value   ("x_len"     , x_len);
-      if (x_name [0] == '.')  {
-         DEBUG_INPT   yLOG_note    ("hidden, SKIP");
-         continue;
+   for (i = 0; i < 3; ++i) {
+      switch (i) {
+      case 0 :  strcpy (x_suf, ".h");     break;
+      case 1 :  strcpy (x_suf, ".c");     break;
+      case 2 :  strcpy (x_suf, ".unit");  break;
       }
-      /*---(cut on suffix len)-----------*/
-      DEBUG_INPT   yLOG_char    ("x_len - 2" , x_name [x_len - 2]);
-      if (x_name [x_len - 2] != '.')  {
-         DEBUG_INPT   yLOG_note    ("does not have a one-char suffix, SKIP");
-         continue;
+      x_suflen = strlen (x_suf);
+      DEBUG_INPT   yLOG_info    ("SUFFIX"    , x_suf);
+      /*---(open dir)-----------------------*/
+      x_dir = opendir(".");
+      DEBUG_INPT   yLOG_point   ("x_dir"      , x_dir);
+      --rce;  if (x_dir == NULL) {
+         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+         return  rce;
       }
-      /*---(cut on suffix)---------------*/
-      x_type = x_name [x_len - 1];
-      DEBUG_INPT   yLOG_char    ("x_len - 1" , x_type);
-      if (strchr ("ch", x_name [x_len - 1]) == NULL) {
-         DEBUG_INPT   yLOG_note    ("not a c or h file, SKIP");
-         continue;
+      DEBUG_INPT   yLOG_note    ("openned successfully");
+      while (1) {
+         DEBUG_INPT   yLOG_note    ("processing entries");
+         /*---(read a directory entry)------*/
+         x_file = readdir (x_dir);
+         DEBUG_INPT   yLOG_point   ("x_file"    , x_file);
+         if (x_file == NULL)  break;
+         ++x_read;
+         /*---(filter by name)--------------*/
+         strlcpy (x_name, x_file->d_name, LEN_TITLE);
+         DEBUG_INPT   yLOG_info    ("x_name"    , x_name);
+         if (x_name [0] == '.')  {
+            DEBUG_INPT   yLOG_note    ("hidden, SKIP");
+            continue;
+         }
+         x_len = strlen (x_name);
+         DEBUG_INPT   yLOG_value   ("x_len"     , x_len);
+         if (x_len < x_suflen + 2) {
+            DEBUG_INPT   yLOG_note    ("name too short with suffix, SKIP");
+            continue;
+         }
+         /*---(cut on suffix len)-----------*/
+         DEBUG_INPT   yLOG_info    ("potential" , x_name + x_len - x_suflen);
+         if (strncmp (x_name + x_len - x_suflen, x_suf, x_suflen) != 0) {
+            DEBUG_INPT   yLOG_note    ("suffix does not match, SKIP");
+            continue;
+         }
+         /*---(filter unit test)------------*/
+         if (x_len > 7 && strcmp ("_unit.c", x_name + x_len - 7) == 0) {
+            DEBUG_INPT   yLOG_note    ("cut the unit testing code files, SKIP");
+            continue;
+         }
+         /*---(save)------------------------*/
+         DATA__file (x_name);
+         ++x_good;
+         DEBUG_INPT   yLOG_note    ("added to inventory");
+         /*---(done)------------------------*/
       }
-      /*---(filter unit test)*-----------*/
-      if (x_len > 7 && strcmp ("_unit.c", x_name + x_len - 7) == 0) {
-         DEBUG_INPT   yLOG_note    ("cut the unit testing code files, SKIP");
-         continue;
-      }
-      /*---(save)------------------------*/
-      DATA__file (x_name);
-      ++x_good;
-      DEBUG_INPT   yLOG_note    ("added to inventory");
-      /*---(done)------------------------*/
+      DEBUG_INPT   yLOG_value   ("x_read"    , x_read);
+      DEBUG_INPT   yLOG_value   ("x_good"    , x_good);
+      /*---(close dir)----------------------*/
+      DEBUG_INPT   yLOG_note    ("closing directory");
+      rc = closedir (x_dir);
+      DEBUG_INPT   yLOG_value   ("close_rc"  , rc);
    }
-   DEBUG_INPT   yLOG_value   ("x_read"    , x_read);
-   DEBUG_INPT   yLOG_value   ("x_good"    , x_good);
-   /*---(close dir)----------------------*/
-   DEBUG_INPT   yLOG_note    ("closing directory");
-   rc = closedir (x_dir);
-   DEBUG_INPT   yLOG_value   ("close_rc"  , rc);
    /*> printf ("   end-of-files\n\n\n");                                              <*/
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+DATA__blankcard    (void)
+{
+   DEBUG_INPT   yLOG_bullet  (g_ntask     , "adding blank card");
+   DATA__clear (g_ntask);
+   strlcpy (g_tasks [g_ntask].one, "empty", LEN_LABEL);
+   strlcpy (g_tasks [g_ntask].two, "empty", LEN_LABEL);
+   strlcpy (g_tasks [g_ntask].txt, "this card intentionally left blank", LEN_HUND);
+   g_tasks [g_ntask].act = '-';
    return 0;
 }
 
@@ -556,6 +588,7 @@ DATA_refresh       (void)
       return 0;
    }
    DATA_init ();
+   /*---(update)-------------------------*/
    switch (my.source) {
    case DATA_SOURCES :  rc = DATA__sources ();   break;
    case DATA_MASTER  :  rc = DATA__master  ();   break;
@@ -563,6 +596,9 @@ DATA_refresh       (void)
    case DATA_PIPE    :  rc = DATA__stdin   ();   break;
    }
    ++c;
+   /*---(add placeholder)----------------*/
+   DATA__blankcard ();
+   /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return rc;
 }
@@ -591,12 +627,12 @@ task_list          (void)
       }
       printf ("   %-15s     %-15s  ", g_tasks [i].one, g_tasks [i].two);
       printf ("   %-70.70s  "       , g_tasks [i].txt);
-      printf ("   %c %3d  "         , g_tasks [i].act, g_tasks [i].seq);
+      printf ("   %c  "             , g_tasks [i].act);
       printf ("   %7d %5d %5d   \n" , g_tasks [i].pos, g_tasks [i].col, g_tasks [i].row);
    }
    printf ("\n");
    printf (" num     u i e f     ------one------     ------two------     ----------------------------------text--------------------------------     a seq     --pos-- -col- -row-\n");
-   printf ("g_ntask = %3d, max_disp %3d, nactive = %3d\n", g_ntask, max_disp, nactive);
+   printf ("g_ntask = %3d, max_disp %3d, my.nact = %3d\n", g_ntask, max_disp, my.nact);
    /*---(complete)-----------------------*/
    return 0;
 }
@@ -679,6 +715,7 @@ DATA__unit         (char *a_question, int a_num)
    /*---(complete)-----------------------*/
    return unit_answer;
 }
+
 
 
 /*============================----end-of-source---============================*/

@@ -10,74 +10,6 @@
 /*====================------------------------------------====================*/
 static void      o___POLYMORPH_______________o (void) {;}
 
-/*> char                                                                                                                    <* 
- *> format_calcs       (void)                                                                                               <* 
- *> {                                                                                                                       <* 
- *>    /+---(update format)-------------------------+/                                                                      <* 
- *>    COLUMN {                                                                                                             <* 
- *>       tex_h     = 60 * nactive;                                                                                         <* 
- *>       my.ncols  = 1;                                                                                                    <* 
- *>       my.nrows  = nactive;                                                                                              <* 
- *>    } else LONG {                                                                                                        <* 
- *>       tex_h     = 60 * nactive;                                                                                         <* 
- *>       my.ncols  = 1;                                                                                                    <* 
- *>       /+> my.nrows  = nactive;                                                        <+/                               <* 
- *>    } else STREAMER {                                                                                                    <* 
- *>       tex_h     = 44 * nactive + 45;                                                                                    <* 
- *>       my.ncols  = 1;                                                                                                    <* 
- *>       /+> my.nrows  = nactive;                                                        <+/                               <* 
- *>       my.change =  (1.000 / nactive) * 0.005;                                                                           <* 
- *>       my.play   =  - my.change;                                                                                         <* 
- *>       my.mspeed =  3.0 * my.change;                                                                                     <* 
- *>    } else TICKER {                                                                                                      <* 
- *>       /+> nactive = 11;                                                               <+/                               <* 
- *>       my.ncols  = 10;                                                                                                   <* 
- *>       my.nrows  = 1;                                                                                                    <* 
- *>       /+> my.play   = -0.0001;                                                        <*                                <* 
- *>        *> my.mspeed =  0.0005;                                                        <*                                <* 
- *>        *> my.change =  0.0001;                                                        <+/                               <* 
- *>       my.play   = -0.0001;                                                                                              <* 
- *>       my.mspeed =  0.0005;                                                                                              <* 
- *>       my.change =  0.0001;                                                                                              <* 
- *>    } else BASELINE {                                                                                                    <* 
- *>       /+> nactive = 11;                                                               <+/                               <* 
- *>       my.ncols  = 10;                                                                                                   <* 
- *>       my.nrows  = 1;                                                                                                    <* 
- *>    } else WIDEVIEW {                                                                                                    <* 
- *>       my.nrows  = 12;                                                                                                   <* 
- *>       my.ncols  = nactive / my.nrows;                                                                                   <* 
- *>       if (nactive % my.nrows > 0) ++my.ncols;                                                                           <* 
- *>       if (my.ncols < 4) my.ncols = 4;                                                                                   <* 
- *>       if (my.ncols > MAX_COLS) my.ncols = MAX_COLS;                                                                     <* 
- *>       tex_w = 320 * my.ncols;                                                                                           <* 
- *>    } else PROJECT {                                                                                                     <* 
- *>       my.nrows = 12;                                                                                                    <* 
- *>       if (my.ncols < 4) my.ncols = 4;                                                                                   <* 
- *>       if (my.ncols > MAX_COLS) my.ncols = MAX_COLS;                                                                     <* 
- *>       tex_w = 320 * my.ncols;                                                                                           <* 
- *>    } else EXTRA {                                                                                                       <* 
- *>       my.nrows = 16;                                                                                                    <* 
- *>       my.ncols = nactive / my.nrows;                                                                                    <* 
- *>       if (nactive % my.nrows > 0) ++my.ncols;                                                                           <* 
- *>       if (my.ncols < 4) my.ncols = 4;                                                                                   <* 
- *>       if (my.ncols > MAX_COLS) my.ncols = MAX_COLS;                                                                     <* 
- *>       tex_w = 320 * my.ncols;                                                                                           <* 
- *>    }                                                                                                                    <* 
- *>    /+---(set step)------------------------------+/                                                                      <* 
- *>    step  = 1.0 / (float) nactive;                                                                                       <* 
- *>    if      (strchr("tb"     , my.format) != 0) step  = 1.0 / 10.0;                                                      <* 
- *>    else if (strchr("wpx"    , my.format) != 0) step  = 1.0 / my.ncols;                                                  <* 
- *>    my.ccol = 0;                                                                                                         <* 
- *>    my.crow = 0;                                                                                                         <* 
- *>    DEBUG_I  printf("   format %c so nactive = %d, ncols = %d, nrows = %d\n", my.format, nactive, my.ncols, my.nrows);   <* 
- *>    DEBUG_I  printf("      tex_h = %d, tex_w = %d, step = %f\n", tex_h, tex_w, step);                                    <* 
- *>    DEBUG_I  printf("      win_h = %d, win_w = %d\n", win_h, win_w);                                                     <* 
- *>    return 0;                                                                                                            <* 
- *> }                                                                                                                       <*/
-
-
-
-
 char
 format_streamer    (void)
 {
@@ -153,8 +85,8 @@ format_column      (char a_side)
    if (strchr ("LR", a_side) == NULL)  my.wrows  =  12;
    else                                my.wrows  =  25;
    my.trows  =  60;
-   if (g_ntask <= my.trows)  my.nrows = g_ntask;
-   else                      my.nrows = my.trows;
+   if (my.nact <= my.trows)  my.nrows = my.nact;
+   else                     my.nrows = my.trows;
    /*---(win/tex)------------------------*/
    win_h     = my.wrows *  60.0;
    tex_h     = my.trows *  60.0;
@@ -250,7 +182,8 @@ format_change      (char a_which)
    texture_free ();
    font_delete  ();
    /*---(update the data)-----------------------*/
-   DATA_refresh ();
+   DATA_refresh   ();
+   FILTER_refresh ();
    /*---(change format)-------------------------*/
    DEBUG_USER   yLOG_char     ("format"    , a_which);
    switch (a_which) {

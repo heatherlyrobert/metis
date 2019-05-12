@@ -114,10 +114,10 @@ prog_event    (void)
             switch (g_minor) {
             case 'p': task_list();                       break;
             case 'r': task_refresh();                    break;
-            case 'J': font_change(); task_refresh();                    break;
-            case 'a': urg = imp = est = flg = ' '; strcpy(one, "all"); texture_free(); draw_init(); draw_main(); mask(); my.ccol = my.crow = 0; /* offset = 0.0; */ draw_resize(win_w, win_h); break;
-            case 'H': if (arg_heads)  arg_heads  = 0; else arg_heads  = 1; return my.format;                    break;
-            case 'F': if (arg_filter) arg_filter = 0; else arg_filter = 1; return my.format;                    break;
+            /*> case 'J': font_change(); task_refresh();                    break;    <*/
+            case 'a': my.curg = my.cimp = my.cest = my.cflg = ' '; strcpy (one, "all"); texture_free(); draw_init(); draw_main(); mask(); my.ccol = my.crow = 0; /* offset = 0.0; */ draw_resize(win_w, win_h); break;
+            /*> case 'H': if (arg_heads)  arg_heads  = 0; else arg_heads  = 1; return my.format;                    break;   <*/
+            /*> case 'F': if (arg_filter) arg_filter = 0; else arg_filter = 1; return my.format;                    break;   <*/
             }
             /*---(format changes)-----*/
             switch (g_minor) {
@@ -131,7 +131,7 @@ prog_event    (void)
             case 'W' : return 'w';    break;
             case 'X' : return 'x';    break;
             case 'P' : return 'p';    break;
-            case '0' : urg = imp = est = ' '; strcpy(one, "all"); flg = '<'; return 't'; break;
+            case '0' : my.curg = my.cimp = my.cest = ' '; strcpy(one, "all"); my.cflg = '<'; return 't'; break;
             }
             /*---(verify currents)----*/
             DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
@@ -150,12 +150,12 @@ prog_event    (void)
                }
             } else {
                switch (g_major) {
-               case 'u': if (strchr(g_urg , g_minor) != 0) urg  = g_minor;  else urg  = ' '; break;
-               case 'i': if (strchr(g_imp , g_minor) != 0) imp  = g_minor;  else imp  = ' '; break;
-               case 'e': if (strchr(g_est , g_minor) != 0) est  = g_minor;  else est  = ' '; break;
-               case 'f': if (strchr(g_prog, g_minor) != 0) flg  = g_minor;  else flg  = ' '; break;
-               case 's': if (x_search[0] == '\0') strcpy(one, "all");
-                            else strncpy(one, x_search, 20);
+               case 'u': if (strchr (my.urgs, g_minor) != 0) my.curg  = g_minor;  else my.curg  = ' '; break;
+               case 'i': if (strchr (my.imps, g_minor) != 0) my.cimp  = g_minor;  else my.cimp  = ' '; break;
+               case 'e': if (strchr (my.ests, g_minor) != 0) my.cest  = g_minor;  else my.cest  = ' '; break;
+               case 'f': if (strchr (my.flgs, g_minor) != 0) my.cflg  = g_minor;  else my.cflg  = ' '; break;
+               case 's': if (x_search[0] == '\0') strlcpy (one, "all",    LEN_LABEL);
+                            else                  strlcpy (one, x_search, LEN_LABEL);
                             break;
                }
                g_major = ' ';
@@ -340,13 +340,6 @@ draw_texture_OLD   (void)
          glVertex3f   ( wx1,  wy2,    z);
       } glEnd();
    }
-   /*---(locate current)-----------------*/
-   /*> ctask = 0;                                                                     <* 
-    *> for (i = 0; i < MAX_CARDS; ++i) {                                              <* 
-    *>    if (g_tasks [i].pos >= offset + (step / 12)) break;                            <* 
-    *>    ctask = i;                                                                  <* 
-    *> }                                                                              <*/
-   /*> printf("offset = %f, curr = %2d, pos = %f\n", offset, ctask + 1, g_tasks [ctask].pos);   <*/
    /*---(force the redraw)---------------*/
    glXSwapBuffers(DISP, BASE);
    glFlush();
@@ -640,8 +633,9 @@ draw_main          (void)
             g_tasks [i].pos = pos;
          }
       } else COLUMN {
-         for (i = 0; i < g_ntask; ++i) {
-            draw_card(i);
+         for (i = 0; i <= g_ntask; ++i) {
+            if (g_tasks [i].act != 'y')  continue;
+            draw_card (i);
             glTranslatef(    0.0,  -60.0,   0.0);
             pos -= 60;
             g_tasks [i].pos = pos;
@@ -743,7 +737,7 @@ draw_title    (void)
       glTranslatef(   0.0, txf_off,   0.0);
       yFONT_print  (txf_sm,  7, YF_MIDCEN, "metis, goddess of cunning and wise-counsel");
       glTranslatef(-145.0, -14.0,  20.0);
-      snprintf(msg, 100, "%-3d : u=<%c>, i=<%c>, e=<%c>, f=<%c>, <<%s>>", g_ntask, urg, imp, est, flg, one);
+      snprintf(msg, 100, "%-3d : u=<%c>, i=<%c>, e=<%c>, f=<%c>, <<%s>>", g_ntask, my.curg, my.cimp, my.cest, my.cflg, one);
       yFONT_print  (txf_sm,  7, YF_MIDLEF, msg);
       glTranslatef(   0.0, -14.0,  20.0);
       yFONT_print  (txf_sm,  7, YF_MIDLEF, "mov=jk_G, spc=JrQ, pos=CL12PWXSTB, ani=,.+-");
@@ -977,7 +971,7 @@ urgency     (char  a_value)
 {
    glColor4f (  0.000,  0.000,  0.000,  1.000);
    OPENGL__polygon (s_urg_bg);
-   colors (g_urg , a_value);
+   colors (my.urgs, a_value);
    OPENGL__polygon (s_urg_fg);
    return 0;
 }
@@ -988,7 +982,7 @@ importance  (char  a_value)
    glColor4f (  0.000,  0.000,  0.000,  1.000);
    OPENGL__polygon (s_imp_bg);
    OPENGL__polygon (s_imp_sh);
-   colors (g_imp , a_value);
+   colors (my.imps, a_value);
    OPENGL__polygon (s_imp_fg);
    return 0;
 }
@@ -998,7 +992,7 @@ estimate    (char  a_value)
 {
    glColor4f (0.0, 0.0, 0.0, 1.0);
    OPENGL__polygon (s_est_bg);
-   colors (g_est , a_value);
+   colors (my.ests, a_value);
    OPENGL__polygon (s_est_fg);
    return 0;
 }
@@ -1071,7 +1065,7 @@ mask       (void)
       XFillRectangle(DISP, bounds, gc,   0, 0, 300, 44 * g_ntask + 45);
    } else COLUMN {
       x_max = my.wrows;
-      if (x_max >= g_ntask)  x_max = g_ntask;
+      if (x_max >= my.nact)  x_max = my.nact;
       for (i = 0; i < x_max; ++i) {
          XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
       }
