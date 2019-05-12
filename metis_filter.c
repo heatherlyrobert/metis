@@ -245,6 +245,15 @@ SORT_unsort             (void)
    return rc;
 }
 
+char
+SORT_refresh            (void)
+{
+   switch (my.sort) {
+   case 's'  : SORT_stats  ();  break;
+   }
+   return 0;
+}
+
 
 /*====================------------------------------------====================*/
 /*===----                      unit testing                            ----===*/

@@ -16,13 +16,9 @@ int         max_disp   = 16;
 
 char        one [20] = "all";
 
-char        arg_heads  = 0;
-char        arg_filter = 1;
 char        g_major   = ' ';
 char        g_minor   = ' ';
 
-long        gpu_mem_bef = 0;
-long        gpu_mem_aft = 0;
 
 
 /*> char      format       = 't';                                                     <*/
@@ -81,13 +77,13 @@ range_check        (void)
    switch (my.format) {
    case 'c' : case 'l' : case '1' : case '2' :  /* verticals */
       my.ccol = 0;
-      if (my.crow >= g_ntask) my.crow = 0;
-      if (my.crow <  0      ) my.crow = g_ntask - 1;
+      if (my.crow >= my.nrows) my.crow = 0;
+      if (my.crow <  0       ) my.crow = my.nrows - 1;
       break;
    case 't' : case 'b' : case 'w' : case 'p' : case 'x' :  /* horizontals */
       my.crow = 0;
-      if (my.ccol >= g_ntask) my.ccol = 0;
-      if (my.ccol <  0      ) my.ccol = g_ntask - 1;
+      if (my.ccol >= my.ncols) my.ccol = 0;
+      if (my.ccol <  0       ) my.ccol = my.ncols - 1;
       break;
    }
    /*---(output)-------------------------*/
@@ -179,10 +175,12 @@ PROG_init          (void)
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(set globals)--------------------*/
    FILTER_clear ();
+   my.sort   = '-';
    my.ncols  = 0;
    my.nrows  = 0;
    DATA_init ();
    my.source = DATA_PIPE;
+   my.format = FORMAT_COLUMN;
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -201,36 +199,30 @@ PROG_args          (int argc, char *argv[])
       a = argv[i];
       if (a[0] == '@')  continue;
       len = strlen(a);
-      if      (strncmp(a, "-u",     2) == 0 && len == 3)  my.curg  = a[2];
-      else if (strncmp(a, "-i",     2) == 0 && len == 3)  my.cimp  = a[2];
-      else if (strncmp(a, "-e",     2) == 0 && len == 3)  my.cest  = a[2];
-      else if (strncmp(a, "-f",     2) == 0 && len == 3)  my.cflg  = a[2];
-      else if (strncmp(a, "-t"     , 7) == 0)     format_ticker();
-      else if (strncmp(a, "--tic"  , 7) == 0)     format_ticker();
-      else if (strncmp(a, "-b"     , 7) == 0)     format_baseline();
-      else if (strncmp(a, "--base" , 7) == 0)     format_baseline();
-      else if (strncmp(a, "-c"     , 7) == 0)     format_column('r');
-      else if (strncmp(a, "--col"  , 7) == 0)     format_column('r');
-      else if (strncmp(a, "-1"     , 7) == 0)     format_column('l');
-      else if (strncmp(a, "-l"     , 7) == 0)     format_long('r');
-      else if (strncmp(a, "--long" , 7) == 0)     format_long('r');
-      else if (strncmp(a, "-2"     , 7) == 0)     format_long  ('l');
-      else if (strncmp(a, "-w"     , 7) == 0)     format_wideview();
-      else if (strncmp(a, "--wide" , 7) == 0)     format_wideview();
-      else if (strncmp(a, "-x"     , 7) == 0)     format_extra();
-      else if (strncmp(a, "--extra", 7) == 0)     format_extra();
-      else if (strncmp(a, "-s"     , 7) == 0)     format_streamer();
-      else if (strncmp(a, "-stream", 7) == 0)     format_streamer();
-      else if (strncmp(a, "-h"     , 7) == 0)     arg_heads = 1;
-      else if (strncmp(a, "--heads", 7) == 0)     arg_heads = 1;
-      else if (strncmp(a, "--master"   ,  9) == 0)   my.source = DATA_MASTER;
-      else if (strncmp(a, "--source"   ,  9) == 0)   my.source = DATA_SOURCES;
-      else if (strncmp(a, "--code"     ,  9) == 0)   my.source = DATA_SOURCES;
-      else if (strncmp(a, "-"      , 1) == 0)     printf("arg not understood\n");
-      else {
+      /*---(statistics filtering)--------*/
+      if      (strncmp (a, "-u"          ,  2) == 0 && len == 3)  my.curg  = a[2];
+      else if (strncmp (a, "-i"          ,  2) == 0 && len == 3)  my.cimp  = a[2];
+      else if (strncmp (a, "-e"          ,  2) == 0 && len == 3)  my.cest  = a[2];
+      else if (strncmp (a, "-f"          ,  2) == 0 && len == 3)  my.cflg  = a[2];
+      /*---(initial format)--------------*/
+      else if (strcmp  (a, "--ticker"        ) == 0)  format_ticker ('t');
+      else if (strcmp  (a, "--baseline"      ) == 0)  format_ticker ('b');
+      else if (strcmp  (a, "--column"        ) == 0)  format_column ('r');
+      else if (strcmp  (a, "-1"              ) == 0)  format_column ('l');
+      else if (strcmp  (a, "--long"          ) == 0)  format_column ('R');
+      else if (strcmp  (a, "-2"              ) == 0)  format_column ('L');
+      else if (strcmp  (a, "--wide"          ) == 0)  format_wideview();
+      else if (strcmp  (a, "--extra"         ) == 0)  format_extra();
+      /*---(task/data source)------------*/
+      else if (strcmp  (a, "--master"        ) == 0)  my.source = DATA_MASTER;
+      else if (strcmp  (a, "--source"        ) == 0)  my.source = DATA_SOURCES;
+      else if (strcmp  (a, "--code"          ) == 0)  my.source = DATA_SOURCES;
+      else if (strncmp (a, "-"           ,  1) != 0)  {
          strncpy (my.file, a, LEN_RECD);
          my.source = DATA_CUSTOM;
       }
+      /*---(unknown)---------------------*/
+      else   printf("arg <%s> not understood\n", a);
    }
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
@@ -263,7 +255,6 @@ PROG_final         (void)
    /*---(open window)---------------------------*/
    yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);
    /*---(create texture)------------------------*/
-   gpu_mem_bef = ati_meminfo();
    font_load ();
    draw_init ();
    draw_main();

@@ -86,13 +86,13 @@ prog_event    (void)
          if (g_major == ' ') {
             /*---(mode changes)-------*/
             switch (g_minor) {
-            case 'Q': return 1;                   break;
-            case 'u': alpha = 0.8; g_major = 'u';       break;
-            case 'i': alpha = 0.8; g_major = 'i';       break;
-            case 'e': alpha = 0.8; g_major = 'e';       break;
-            case 'f': alpha = 0.8; g_major = 'f';       break;
-            case '/':  
-            case 's': alpha = 0.8; g_major = 's'; x_search[0] = '£'; break;
+            case 'Q': return 1;                             break;
+            case 'u': alpha = 0.8; g_major = 'u';           break;
+            case 'i': alpha = 0.8; g_major = 'i';           break;
+            case 'e': alpha = 0.8; g_major = 'e';           break;
+            case 'f': alpha = 0.8; g_major = 'f';           break;
+            case 'a': FILTER_clear(); return my.format;     break;
+            case '/': alpha = 0.8; g_major = 's'; x_search[0] = '\0'; break;
             }
             /*---(filters and tasks)--*/
             switch (g_minor) {
@@ -107,23 +107,19 @@ prog_event    (void)
             case '.': my.incr  = STOP;                   break;
             case 'h': my.incr  = STOP;   --my.ccol;      break;
             case 'k': my.incr  = STOP;   --my.crow;      break;
-            /*> case ']':                                                             <*/
-            /*> case '~': my.incr  = STOP;   my.move   = 0.0; my.crow = my.nrows - 1; break;   <*/
+                      /*> case ']':                                                             <*/
+                      /*> case '~': my.incr  = STOP;   my.move   = 0.0; my.crow = my.nrows - 1; break;   <*/
             }
             /*---(task related)-------*/
             switch (g_minor) {
             case 'p': task_list();                       break;
             case 'r': task_refresh();                    break;
-            /*> case 'J': font_change(); task_refresh();                    break;    <*/
-            case 'a': my.curg = my.cimp = my.cest = my.cflg = ' '; strcpy (one, "all"); texture_free(); draw_init(); draw_main(); mask(); my.ccol = my.crow = 0; /* offset = 0.0; */ draw_resize(win_w, win_h); break;
-            /*> case 'H': if (arg_heads)  arg_heads  = 0; else arg_heads  = 1; return my.format;                    break;   <*/
-            /*> case 'F': if (arg_filter) arg_filter = 0; else arg_filter = 1; return my.format;                    break;   <*/
+                      /*> case 'J': font_change(); task_refresh();                    break;    <*/
             }
             /*---(format changes)-----*/
             switch (g_minor) {
             case 'C' : return 'c';    break;
             case 'L' : return 'l';    break;
-            case 'S' : return 's';    break;
             case 'T' : return 't';    break;
             case 'B' : return 'b';    break;
             case '1' : return '1';    break;
@@ -132,6 +128,8 @@ prog_event    (void)
             case 'X' : return 'x';    break;
             case 'P' : return 'p';    break;
             case '0' : my.curg = my.cimp = my.cest = ' '; strcpy(one, "all"); my.cflg = '<'; return 't'; break;
+            case 'S' : my.sort = 's'; return my.format;  break;
+            case 'U' : my.sort = 'u'; return my.format;  break;
             }
             /*---(verify currents)----*/
             DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
@@ -144,8 +142,8 @@ prog_event    (void)
                /*> printf("ch = %3d\n", ch);                                       <*/
                if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == 8) {
                   char   temp[10];
-                  sprintf(temp, "%c", g_minor);
-                  strcat(x_search, temp);
+                  sprintf (temp, "%c", g_minor);
+                  strcat  (my.ctxt, temp);
                   /*> printf("search = <<%s>>\n", x_search);                       <*/
                }
             } else {
@@ -384,28 +382,28 @@ draw__panel          (float a_wtop, float a_wlef, float a_wbot, float a_wrig, fl
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
-   /*> wx1     = 0.0;                                                                                                         <* 
-    *> wx2     = win_w;                                                                                                       <* 
-    *> wy1     = 0.0;                                                                                                         <* 
-    *> wy2     = -win_h;                                                                                                      <* 
-    *> z       = -10.0;                                                                                                       <* 
-    *> /+> printf("win_h = %d, tex_h = %d, ratio = %f, win_w = %d, tex_w = %d\n", win_h, tex_h, ratio, win_w, tex_w);   <+/   <* 
-    *> /+> printf("wy1 = %f, wy2 = %f, ty1 = %f, ty2 = %f\n", wy1, wy2, ty1, ty2);        <+/                                 <* 
-    *> /+---(prepare drawing)----------------+/                                                                               <* 
-    *> glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                                                                    <* 
-    *> glLoadIdentity();                                                                                                      <* 
-    *> /+---(draw it)------------------------+/                                                                               <* 
-    *> glBindTexture   (GL_TEXTURE_2D, g_tex);                                                                                <* 
-    *> glBegin(GL_POLYGON); {                                                                                                 <* 
-    *>    glTexCoord2f ( tx1,  ty2);                                                                                          <* 
-    *>    glVertex3f   ( wx1,  wy1,    z);                                                                                    <* 
-    *>    glTexCoord2f ( tx2,  ty2);                                                                                          <* 
-    *>    glVertex3f   ( wx2,  wy1,    z);                                                                                    <* 
-    *>    glTexCoord2f ( tx2,  ty1);                                                                                          <* 
-    *>    glVertex3f   ( wx2,  wy2,    z);                                                                                    <* 
-    *>    glTexCoord2f ( tx1,  ty1);                                                                                          <* 
-    *>    glVertex3f   ( wx1,  wy2,    z);                                                                                    <* 
-    *> } glEnd();                                                                                                             <*/
+/*> wx1     = 0.0;                                                                                                         <* 
+ *> wx2     = win_w;                                                                                                       <* 
+ *> wy1     = 0.0;                                                                                                         <* 
+ *> wy2     = -win_h;                                                                                                      <* 
+ *> z       = -10.0;                                                                                                       <* 
+ *> /+> printf("win_h = %d, tex_h = %d, ratio = %f, win_w = %d, tex_w = %d\n", win_h, tex_h, ratio, win_w, tex_w);   <+/   <* 
+ *> /+> printf("wy1 = %f, wy2 = %f, ty1 = %f, ty2 = %f\n", wy1, wy2, ty1, ty2);        <+/                                 <* 
+ *> /+---(prepare drawing)----------------+/                                                                               <* 
+ *> glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                                                                    <* 
+ *> glLoadIdentity();                                                                                                      <* 
+ *> /+---(draw it)------------------------+/                                                                               <* 
+ *> glBindTexture   (GL_TEXTURE_2D, g_tex);                                                                                <* 
+ *> glBegin(GL_POLYGON); {                                                                                                 <* 
+ *>    glTexCoord2f ( tx1,  ty2);                                                                                          <* 
+ *>    glVertex3f   ( wx1,  wy1,    z);                                                                                    <* 
+ *>    glTexCoord2f ( tx2,  ty2);                                                                                          <* 
+ *>    glVertex3f   ( wx2,  wy1,    z);                                                                                    <* 
+ *>    glTexCoord2f ( tx2,  ty1);                                                                                          <* 
+ *>    glVertex3f   ( wx2,  wy2,    z);                                                                                    <* 
+ *>    glTexCoord2f ( tx1,  ty1);                                                                                          <* 
+ *>    glVertex3f   ( wx1,  wy2,    z);                                                                                    <* 
+ *> } glEnd();                                                                                                             <*/
 
 char       /* PURPOSE : place the texture in the window ----------------------*/
 draw_texture       (void)
@@ -425,33 +423,75 @@ draw_texture       (void)
    /*---(prepare drawing)----------------*/
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glLoadIdentity();
+   DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
+   DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
+   DEBUG_GRAF   yLOG_value    ("win_h"     , win_h);
+   DEBUG_GRAF   yLOG_value    ("win_w"     , win_w);
+   DEBUG_GRAF   yLOG_value    ("tex_h"     , tex_h);
+   DEBUG_GRAF   yLOG_value    ("tex_w"     , tex_w);
+   DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
+   DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
+   DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
+   DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
+   DEBUG_GRAF   yLOG_value    ("my.ncols"  , my.ncols);
+   DEBUG_GRAF   yLOG_value    ("my.nrows"  , my.nrows);
+   DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
+   DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
    /*---(horizontal views)---------------*/
    if (strchr("tbwpx"  , my.format) != 0) {
-      offset    = (my.ccol * 320.0) / tex_w;
-      if (my.format == 't') offset    = (my.ccol * 300.0) / tex_w;
-      if (my.format == 'b') offset    = (my.ccol * 325.0) / tex_w;
-      offset += my.move;
-      ratio   = (float) win_w / tex_w;
-      ty1     = 0.0;
-      ty2     = 1.0;
-      tx1     = 0.0 + offset;
-      tx2     = 0.0 + offset + ratio;
+      DEBUG_GRAF   yLOG_note     ("horizontal formats----------");
+      /*---(consistent)------------------*/
+      x_wtop  = 0.0;
+      x_wbot  = -win_h;
+      x_ttop  = 1.0;
+      x_tbot  = 0.0;
+      /*---(panel one/lef)---------------*/
+      DEBUG_GRAF   yLOG_note     ("panel one/lef---------------");
+      x_wlef  = 0.0;
+      x_tlef  = (my.ccol  * 300.0) / tex_w;
+      if (my.ncols - my.ccol > my.wcols) {
+         x_max  = my.ccol + my.wcols;
+         x_cnt  = my.wcols;
+         x_wrig = win_w;
+      } else {
+         x_max  = my.ncols;
+         x_cnt  = my.ncols - my.ccol;
+         x_wrig = (x_cnt / my.wcols) * win_w;
+      }
+      x_trig   = (x_max    * 300.0) / tex_w;
+      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
+      DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
+      DEBUG_GRAF   yLOG_double   ("x_tlef"    , x_tlef);
+      DEBUG_GRAF   yLOG_double   ("x_trig"    , x_trig);
+      DEBUG_GRAF   yLOG_double   ("x_wlef"    , x_wlef);
+      DEBUG_GRAF   yLOG_double   ("x_wrig"    , x_wrig);
+      draw__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+      /*---(panel two/rig)---------------*/
+      if (my.ccol > 0) {
+         DEBUG_GRAF   yLOG_note     ("panel two/rig---------------");
+         x_cnt   = my.wcols - x_cnt;
+         x_tlef  = 0.0;
+         x_trig  = (x_cnt  * 300.0) / tex_w;
+         x_wlef  = x_wrig;
+         x_wrig  = (x_cnt / my.wcols) * win_w + x_wlef;
+         DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
+         DEBUG_GRAF   yLOG_double   ("x_tlef"    , x_tlef);
+         DEBUG_GRAF   yLOG_double   ("x_trig"    , x_trig);
+         DEBUG_GRAF   yLOG_double   ("x_wlef"    , x_wlef);
+         DEBUG_GRAF   yLOG_double   ("x_wrig"    , x_wrig);
+         draw__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+      }
    }
    /*---(vertical views)-----------------*/
    else {
-      /*---(before)----------------------*/
-      DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
-      DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
-      DEBUG_GRAF   yLOG_value    ("tex_h"     , tex_h);
-      DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
-      DEBUG_GRAF   yLOG_value    ("my.nrows"  , my.nrows);
-      DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
-      /*---(panel one)-------------------*/
-      DEBUG_GRAF   yLOG_note     ("panel one-------------------");
+      DEBUG_GRAF   yLOG_note     ("vertical formats------------");
+      /*---(consistent)------------------*/
       x_wlef  = 0.0;
       x_wrig  = win_w;
       x_tlef  = 0.0;
       x_trig  = 1.0;
+      /*---(panel one)-------------------*/
+      DEBUG_GRAF   yLOG_note     ("panel one/top---------------");
       x_wtop  = 0.0;
       x_ttop  = 1.0 - ((my.crow  *  60.0) / tex_h);
       if (my.nrows - my.crow > my.wrows) {
@@ -466,14 +506,16 @@ draw_texture       (void)
       x_tbot   = 1.0 - ((x_max    *  60.0) / tex_h);
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
+      DEBUG_GRAF   yLOG_double   ("x_ttop"    , x_ttop);
       DEBUG_GRAF   yLOG_double   ("x_tbot"    , x_tbot);
+      DEBUG_GRAF   yLOG_double   ("x_wtop"    , x_wtop);
       DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
       draw__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       /*---(panel two)-------------------*/
       if (my.crow > 0) {
-         DEBUG_GRAF   yLOG_note     ("panel two-------------------");
+         DEBUG_GRAF   yLOG_note     ("panel two/bot---------------");
          x_ttop  = 1.0;
-         x_tbot  = 1.0 - (((my.crow)  *  60.0) / tex_h);
+         x_tbot  = 1.0 - ((my.crow  *  60.0) / tex_h);
          x_cnt   = my.nrows - x_cnt;
          x_wtop  = x_wbot;
          x_wbot  = x_wtop - (x_cnt / my.wrows) * win_h;
@@ -485,10 +527,6 @@ draw_texture       (void)
          draw__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       }
    }
-   DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
-   DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
-   DEBUG_GRAF   yLOG_double   ("offset"    , offset);
-   DEBUG_GRAF   yLOG_double   ("ratio"     , ratio);
    /*---(force the redraw)---------------*/
    glXSwapBuffers(DISP, BASE);
    glFlush();
@@ -605,18 +643,18 @@ draw_main          (void)
    /*> printf("   starting draw\n");                                                  <*/
    glPushMatrix(); {
       BASELINE {
-         x_max = 10;
+         x_max = my.tcols;
          if (x_max >= g_ntask)  x_max = g_ntask - 1;
-         for (i = 0; i < 10; ++i) {
+         for (i = 0; i < x_max; ++i) {
             draw_card(i);
             glTranslatef(  325.0,   0.0,   0.0);
             pos += 325;
             g_tasks [i].pos = pos;
          }
       } else TICKER {
-         x_max = 10;
+         x_max = my.tcols;
          if (x_max >= g_ntask)  x_max = g_ntask - 1;
-         for (i = 0; i < 10; ++i) {
+         for (i = 0; i < x_max; ++i) {
             draw_card(i);
             glTranslatef(  300.0,   0.0,   0.0);
             pos += 300;
@@ -854,16 +892,15 @@ colors             (char *a_valid, char a_color)
    if (p == NULL)   i = 100;
    else             i = p - a_valid;
    switch (i) {
-   case  0  : glColor3f(  0.000,  0.000,  0.000); break;
-   case  1  : glColor3f(  1.000,  0.000,  0.000); break;
-   case  2  : glColor3f(  1.000,  0.455,  0.000); break;
-   case  3  : glColor3f(  0.800,  0.733,  0.000); break;
-   case  4  : glColor3f(  0.200,  0.667,  0.200); break;
-   case  5  : glColor3f(  0.000,  0.600,  0.600); break;
-   case  6  : glColor3f(  0.400,  0.000,  0.600); break;
-   case  7  : glColor3f(  0.800,  0.000,  0.800); break;
-   case  8  : glColor3f(  0.400,  0.400,  0.400); break;
-   default  : glColor3f(  0.000,  0.000,  0.000); break;
+   case  0  : glColor3f (  1.000,  0.000,  0.000); break;
+   case  1  : glColor3f (  1.000,  0.455,  0.000); break;
+   case  2  : glColor3f (  0.800,  0.733,  0.000); break;
+   case  3  : glColor3f (  0.200,  0.667,  0.200); break;
+   case  4  : glColor3f (  0.000,  0.600,  0.600); break;
+   case  5  : glColor3f (  0.400,  0.000,  0.600); break;
+   case  6  : glColor3f (  0.800,  0.000,  0.800); break;
+   case  7  : glColor3f (  0.400,  0.400,  0.400); break;
+   default  : glColor3f (  0.250,  0.250,  0.250); break;
    }
    return 0;
 }
@@ -1042,46 +1079,39 @@ mask       (void)
    int       k         = 0;
    Pixmap    bounds    = XCreatePixmap(DISP, BASE, win_w, win_h, 1);
    int       x_col      = 0;
-   int       x_max         =    0;
+   int         x_max       =    0;
+   float       x_inc       =    0;
    /*---(prepare)------------------------*/
    GC        gc        = XCreateGC(DISP, bounds, 0, NULL);
    XSetForeground(DISP, gc, 0);
    XFillRectangle(DISP, bounds, gc, 0, 0, win_w, win_h);
    XSetForeground(DISP, gc, 1);
    /*---(establish mask)-----------------*/
-   TICKER {
-      for (i = 0; i < 10; ++i) {
-         XFillRectangle(DISP, bounds, gc, i * 300, 0, 300, 45);
-      }
-   } else BASELINE {
-      for (i = 0; i < 10; ++i) {
-         XFillRectangle(DISP, bounds, gc, i * 325, 0, 300, 45);
-      }
-   } else STREAMER {
-      /*> for (i = 0; i < my.wrows; ++i) {                                            <* 
-       *>    if (i >= g_ntask) continue;                                            <* 
-       *>    XFillRectangle(DISP, bounds, gc,   0, i * 44, 300, 44);                  <* 
-       *> }                                                                           <*/
-      XFillRectangle(DISP, bounds, gc,   0, 0, 300, 44 * g_ntask + 45);
-   } else COLUMN {
+   switch (my.format) {
+   case FORMAT_TICKER   :
+      x_inc = 300.0;
+   case FORMAT_BASELINE :
+      if (x_inc <= 0.0)  x_inc = 325.0;
+      x_max = my.wcols;
+      if (x_max >= my.nact)  x_max = my.nact;
+      for (i = 0; i < x_max; ++i)  XFillRectangle(DISP, bounds, gc, i * x_inc, 0, 300, 45);
+      break;
+   case FORMAT_COLUMN   :
+   case FORMAT_LONG     :
       x_max = my.wrows;
       if (x_max >= my.nact)  x_max = my.nact;
       for (i = 0; i < x_max; ++i) {
          XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
       }
-   } else LONG   {
-      x_max = my.wrows;
-      if (x_max >= g_ntask)  x_max = g_ntask;
-      for (i = 0; i < x_max; ++i) {
-         XFillRectangle(DISP, bounds, gc,   0, i * 60, 300, 45);
-      }
-   } else WIDEVIEW {
+      break;
+   case FORMAT_WIDE     :
       for (j = 0; j < 4; ++j) {
          for (i = 0; i < 12; ++i) {
             if (g_tasks [j* my.wrows + i].imp != '?') XFillRectangle(DISP, bounds, gc,  j * 320, i * 60, 300, 45);
          }
       }
-   } else PROJECT  {
+      break;
+   case FORMAT_PROJECT  :
       for (j = 0; j < my.wcols; ++j) {
          x_col = my.ccol + j;
          if (x_col >= my.ncols) x_col -= my.ncols;
@@ -1093,18 +1123,20 @@ mask       (void)
             }
          }
       }
-   } else EXTRA {
+      break;
+   case FORMAT_EXTRA    :
       for (j = 0; j < 4; ++j) {
          for (i = 0; i < 16; ++i) {
             if (g_tasks [j * 16 + i].imp != '?') XFillRectangle(DISP, bounds, gc,  j * 320, i * 60, 300, 45);
          }
       }
+      break;
    }
    /*---(set mask)-----------------------*/
-   XShapeCombineMask(DISP, BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
+   XShapeCombineMask (DISP, BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/
-   XFreePixmap(DISP, bounds);
-   XFreeGC(DISP, gc);
+   XFreePixmap (DISP, bounds);
+   XFreeGC     (DISP, gc);
    /*---(complete)-----------------------*/
    return 0;
 }

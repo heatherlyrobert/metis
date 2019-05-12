@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1g"
-#define     P_VERTXT    "sort logic added and one key order (stats) unit tested"
+#define     P_VERNUM    "1.1h"
+#define     P_VERTXT    "filter, sort, unsort, search all built into interface now"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -259,6 +259,7 @@ struct cMY {
    char        cone        [LEN_LABEL];     /* current cat one filter         */
    char        ctwo        [LEN_LABEL];     /* current cat two filter         */
    char        ctxt        [LEN_HUND];      /* current text filter            */
+   char        sort;                        /* sorting request                */
    /*---(window)-------------------------*/
    char        format;                   /* display style                       */
    char        sighup;                   /* force a refresh/redraw              */
@@ -290,13 +291,18 @@ extern tMY   my;
 /*---(debugging)-------------------------*/
 
 
-extern char arg_heads;
-extern char arg_filter;
 extern char g_major;
 extern char g_minor;
 
 extern int   max_disp;
 
+#define   FORMAT_TICKER       't'
+#define   FORMAT_BASELINE     'b'
+#define   FORMAT_COLUMN       'c'
+#define   FORMAT_LONG         'l'
+#define   FORMAT_WIDE         'w'
+#define   FORMAT_PROJECT      'p'
+#define   FORMAT_EXTRA        'x'
 
 #define   STREAMER    if (my.format == 's')
 #define   TICKER      if (my.format == 't')
@@ -377,6 +383,7 @@ char        FILTER_refresh          (void);
 char*       FILTER__unit            (char *a_question, int a_num);
 char        SORT_stats              (void);
 char        SORT_unsort             (void);
+char        SORT_refresh            (void);
 
 
 /*============================----end-of-source---============================*/

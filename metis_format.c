@@ -29,38 +29,38 @@ format_streamer    (void)
 }
 
 char
-format_ticker      (void)
+format_ticker      (char a_type)
 {
-   strcpy(win_title, "metis_ticker");
-   win_h  = tex_h  =   45;        /* scancard height                          */
-   win_w  =          1600;        /* our standard screen size                 */
-   tex_w  =          3000;        /* room for ten tasks                       */
-   my.format = 't';
-   my.nrows  =   1;
-   my.ncols  =  10;
-   my.wcols  =   4;
+   /*---(header)-------------------------*/
+   DEBUG_USER   yLOG_enter    (__FUNCTION__);
+   /*---(format)-------------------------*/
+   if (strchr ("t", a_type) != NULL) {
+      strcpy (win_title, "metis_ticker");
+      my.format = 't';
+   } else {
+      strcpy (win_title, "metis_baseline");
+      my.format = 't';
+   }
+   /*---(rows)---------------------------*/
    my.wrows  =   1;
-   my.action =   1;
-   my.incr   = STOP;
-   my.move   =   0;
-   return 0;
-}
-
-char
-format_baseline    (void)
-{
-   strcpy(win_title, "metis_baseline");
-   win_h  = tex_h  =   45;        /* scancard height                          */
-   win_w  =          1600;        /* our standard screen size                 */
-   tex_w  =          3250;        /* room for ten tasks                       */
-   my.format = 'b';
+   my.trows  =   1;
    my.nrows  =   1;
-   my.ncols  =  10;
-   my.wcols  =   4;
-   my.wrows  =   1;
+   /*---(rows)---------------------------*/
+   my.wcols  =   6;
+   my.tcols  =  12;
+   if (my.nact <= my.tcols)  my.ncols = my.nact;
+   else                      my.ncols = my.tcols;
+   /*---(win/tex)------------------------*/
+   win_h     = my.wrows *  45.0;
+   tex_h     = my.trows *  45.0;
+   win_w     = my.wcols * 300.0;
+   tex_w     = my.tcols * 300.0;
+   /*---(playing)------------------------*/
    my.action =   0;
    my.incr   = STOP;
    my.move   =   0;
+   /*---(complete)-----------------------*/
+   DEBUG_USER   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -86,7 +86,7 @@ format_column      (char a_side)
    else                                my.wrows  =  25;
    my.trows  =  60;
    if (my.nact <= my.trows)  my.nrows = my.nact;
-   else                     my.nrows = my.trows;
+   else                      my.nrows = my.trows;
    /*---(win/tex)------------------------*/
    win_h     = my.wrows *  60.0;
    tex_h     = my.trows *  60.0;
@@ -98,26 +98,6 @@ format_column      (char a_side)
    my.move   =   0;
    /*---(complete)-----------------------*/
    DEBUG_USER   yLOG_exit     (__FUNCTION__);
-   return 0;
-}
-
-char
-format_long        (char a_side)
-{
-   if (a_side == 'r') strcpy(win_title, "metis_column");
-   else               strcpy(win_title, "metis_sidebar");
-   /*> win_h  = tex_h  =  960 - 15;   /+ room for twelve scantasks with gaps      +/   <*/
-   win_h  = tex_h  = 1500 - 15;   /* room for twelve scantasks with gaps      */
-   win_w  = tex_w  =  300;        /* scancard width                           */
-   my.format = 'l';
-   my.ncols  =   1;
-   my.nrows  =   0;
-   my.wcols  =   1;
-   /*> my.wrows  =  16;                                                               <*/
-   my.wrows  =  25;
-   my.action =   0;
-   my.incr   = STOP;
-   my.move   =   0;
    return 0;
 }
 
@@ -152,7 +132,6 @@ format_projects    (void)
    my.action =   0;
    my.incr   = STOP;
    my.move   =   0;
-   arg_heads = 1;
    return 0;
 }
 
@@ -183,13 +162,13 @@ format_change      (char a_which)
    font_delete  ();
    /*---(update the data)-----------------------*/
    DATA_refresh   ();
+   SORT_refresh   ();
    FILTER_refresh ();
    /*---(change format)-------------------------*/
    DEBUG_USER   yLOG_char     ("format"    , a_which);
    switch (a_which) {
-   case 's' : format_streamer ();     break;
-   case 't' : format_ticker   ();     break;
-   case 'b' : format_baseline ();     break;
+   case 't' : format_ticker   ('t');  break;
+   case 'b' : format_ticker   ('b');  break;
    case 'c' : format_column   ('r');  break;
    case 'l' : format_column   ('R');  break;
    case '1' : format_column   ('l');  break;
@@ -243,7 +222,6 @@ format_change      (char a_which)
    my.ccol = 0;
    my.crow = 0;
    draw_resize(win_w, win_h);
-   /*> gpu_mem_aft = ati_meminfo();                                                   <*/
    /*> if (strchr("ts", my.format) != 0) my.action = 1;                               <*/
    /*---(complete)------------------------------*/
    DEBUG_USER   yLOG_exit     (__FUNCTION__);

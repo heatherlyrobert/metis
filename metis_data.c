@@ -8,12 +8,12 @@
  * metis  wl2··  add descriptions to g_decode table
  * metis  dw4··  switch g_tasks to linked-list rather that array
  * metis  dw4··  switch g_tasks string elements to malloc rather than array
- * metis  dw8··  add g_tasks sorting field, sort chosing, and sorting function
+ * metis  dw8#·  add g_tasks sorting field, sort chosing, and sorting function
  * metis  sn2#·  quick reporting on accepted tasks for debugging, validation
  * metis  tw1#·  remove repeating of tasks in lists for clarity
  * metis  tn1#·  fix refresh tasks to increase/decrease count also
  * metis  dw1#·  add source file line to task record to help updates
- * metis  tnm<·  "intentionally left blank" card for null sets
+ * metis  tnm#·  "intentionally left blank" card for null sets
  *
  */
 
