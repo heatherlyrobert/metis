@@ -256,6 +256,23 @@ PROG_final         (void)
    yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, 300, -60 * 12, 60 * 12, 0, 0, 0, OPENGL_show);
    yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -40     , 20     , 0, 0, 0, NULL);
    yVIKEYS_cmds_direct   (":layout min");
+   yVIKEYS_cmds_direct   (":title disable");
+   yVIKEYS_cmds_direct   (":version disable");
+   yVIKEYS_cmds_direct   (":buffer disable");
+   yVIKEYS_cmds_direct   (":formula disable");
+   yVIKEYS_cmds_direct   (":nav disable");
+   yVIKEYS_cmds_direct   (":alt disable");
+   yVIKEYS_cmds_direct   (":progress disable");
+   yVIKEYS_cmds_direct   (":status disable");
+   yVIKEYS_cmds_direct   (":keys disable");
+   yVIKEYS_cmds_direct   (":command disable");
+   yVIKEYS_cmds_direct   (":details disable");
+   yVIKEYS_cmds_direct   (":ribbon disable");
+   yVIKEYS_cmds_direct   (":grid disable");
+   yVIKEYS_cmds_direct   (":cursor disable");
+   yVIKEYS_cmds_direct   (":layers disable");
+   yVIKEYS_cmds_direct   (":xaxis disable");
+   yVIKEYS_cmds_direct   (":yaxis disable");
    yVIKEYS_view_font     (my.fixed);
    /*---(create texture)------------------------*/
    font_load ();
