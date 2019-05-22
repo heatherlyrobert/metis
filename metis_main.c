@@ -24,13 +24,14 @@ main               (int argc, char *argv[])
       PROG_end    ();
       return rce;
    }
-   format_change  ('c');
+   format_change  (my.format);
    /*---(main loop)----------------------*/
-   while (rc >= 0 && rc != 1) {
-      rc = prog_event ();
-      printf ("format change requested\n");
-      if (rc >  1) format_change (rc);
-   }
+   rc = yVIKEYS_main ("500us", "10ms", NULL);
+   /*> while (my.quit != 'y') {                                                       <* 
+    *>    rc = PROG_event ();                                                         <* 
+    *>    printf ("format change requested\n");                                       <* 
+    *>    if (rc >  1) format_change (rc);                                            <* 
+    *> }                                                                              <*/
    /*---(wrap-up)------------------------*/
    PROG_wrap   ();
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);

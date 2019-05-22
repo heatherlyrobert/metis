@@ -2,7 +2,7 @@
 #include   "metis.h"
 
 /*===[[ METIS BACKLOG ]]======================================================*
- *  metis  -----  tbd
+ * metis  tn1#-  add menu mode to main loop and global flag
  *
  */
 
@@ -17,8 +17,9 @@ int         max_disp   = 16;
 
 char        one [20] = "all";
 
-char        g_major   = ' ';
-char        g_minor   = ' ';
+uchar        g_mode    = ' ';
+uchar        g_major   = ' ';
+uchar        g_minor   = ' ';
 
 
 
@@ -42,23 +43,6 @@ ati_meminfo (void)
    GLint param[4];
    glGetIntegerv (TEXTURE_FREE_MEMORY_ATI, param);
    return param[0];
-}
-
-long
-time_stamp()                      /* PURPOSE : timestamp in microseconds      */
-{
-   /* second
-    * millisecond  ms  0.001 sec
-    * microsecond  us  0.000001 sec
-    * nanosecond   ns  0.000000001 sec
-    * picosecond   ps  0.000000000001 sec
-    */
-   long             tint = 0;
-   struct timeval   tv;
-   gettimeofday(&tv, NULL);
-   tint += (int) (tv.tv_sec * 1000);
-   tint += (int) tv.tv_usec / 1000;
-   return tint;
 }
 
 char          /*----: keep row and column values in correct ranges -----------*/
@@ -105,13 +89,13 @@ static void      o___TASKS___________________o (void) {;}
 char
 task_mini          (void)
 {
-   texture_free();
-   draw_init();
-   draw_main();
-   mask();
+   yGLTEX_free (&g_tex, &g_fbo, &g_dep);
+   OPENGL_init ();
+   OPENGL_draw ();
+   OPENGL_mask ();
    my.ccol = 0;
    my.crow = 0;
-   draw_resize(win_w, win_h);
+   OPENGL_resize (win_w, win_h);
    return 0;
 }
 
@@ -119,7 +103,7 @@ char
 task_refresh       (void)
 {
    /*---(tear down)----------------------*/
-   texture_free();
+   yGLTEX_free (&g_tex, &g_fbo, &g_dep);
    font_delete();
    yXINIT__gdestroy();
    yXINIT__gsetup();
@@ -127,13 +111,13 @@ task_refresh       (void)
    DATA_refresh   ();
    SORT_refresh   ();
    FILTER_refresh ();
-   font_load();
-   draw_init();
-   draw_main();
-   mask();
+   font_load ();
+   OPENGL_init  ();
+   OPENGL_draw  ();
+   OPENGL_mask  ();
    my.ccol = 0;
    my.crow = 0;
-   draw_resize(win_w, win_h);
+   OPENGL_resize (win_w, win_h);
    return 0;
 }
 
@@ -165,6 +149,8 @@ PROG_version       (void)
 char             /* [------] immediate program initialization ----------------*/
 PROG_init          (void)
 {
+   /*---(locals)-----------+-----+-----+-*/
+   char        rc          =    0;
    /*---(log header)---------------------*/
    DEBUG_PROG   yLOG_info     ("purpose" , P_PURPOSE);
    DEBUG_PROG   yLOG_info     ("namesake", P_NAMESAKE);
@@ -174,16 +160,21 @@ PROG_init          (void)
    DEBUG_PROG   yLOG_info     ("yURG"    , yURG_version    ());
    DEBUG_PROG   yLOG_info     ("ySTR"    , ySTR_version    ());
    DEBUG_PROG   yLOG_info     ("yLOG"    , yLOGS_version   ());
+   DEBUG_PROG   yLOG_info     ("yVIKEYS" , yVIKEYS_version ());
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(set globals)--------------------*/
    FILTER_clear ();
-   my.sort   = '-';
-   my.ncols  = 0;
-   my.nrows  = 0;
+   my.sort    = '-';
+   my.ncols   = 0;
+   my.nrows   = 0;
    DATA_init ();
-   my.source = DATA_PIPE;
-   my.format = FORMAT_COLUMN;
+   my.source  = DATA_PIPE;
+   my.format  = FORMAT_COLUMN;
+   my.quit    = '-';
+   my.trouble = '-';
+   /*---(yvikeys config)-----------------*/
+   yVIKEYS_init  ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -237,6 +228,7 @@ PROG_begin         (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   /*---(overall)------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -258,17 +250,298 @@ PROG_final         (void)
    rc = daemon (1, 0);
    if (rc != 0) return rc;
    /*---(open window)---------------------------*/
-   yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);
+   /*> yVIKEYS_view_config   ("metis task mgmt", P_VERNUM, YVIKEYS_OPENGL, win_w, win_h, 0);   <*/
+   /*> yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);       <*/
+   yVIKEYS_view_config   ("metis_column", P_VERNUM, YVIKEYS_OPENGL, 300, 60 * 12, 0);
+   yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, 300, -60 * 12, 60 * 12, 0, 0, 0, OPENGL_show);
+   yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -40     , 20     , 0, 0, 0, NULL);
+   yVIKEYS_cmds_direct   (":layout min");
+   yVIKEYS_view_font     (my.fixed);
    /*---(create texture)------------------------*/
    font_load ();
-   draw_init ();
-   draw_main();
-   mask();
+   OPENGL_init  ();
+   OPENGL_draw  ();
+   OPENGL_mask  ();
    /*---(ready display)-------------------------*/
-   draw_resize(win_w, win_h);
+   OPENGL_resize (win_w, win_h);
    prog_signals();
    /*---(complete)------------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+uchar
+PROG_main_layout        (uchar a_major, uchar a_minor)
+{
+   /*---(format changes)-----*/
+   switch (a_minor) {
+   case 'C' : format_change ('c');                break;
+   case 'L' : format_change ('l');                break;
+   case 'T' : format_change ('t');                break;
+   case 'B' : format_change ('b');                break;
+   case '1' : format_change ('1');                break;
+   case '2' : format_change ('2');                break;
+   case 'W' : format_change ('w');                break;
+   case 'X' : format_change ('x');                break;
+   case 'P' : format_change ('p');                break;
+   }
+   return 0;
+}
+
+uchar
+PROG_main_moves         (uchar a_major, uchar a_minor)
+{
+   switch (g_minor) {
+   case '_' : my.crow = 0;       break;
+   case 'k' : --my.crow;         break;
+   case 'j' : ++my.crow;         break;
+   case '%' : break;
+   case '0' : my.ccol = 0;       break;
+   case 'h' : --my.ccol;         break;
+   case 'l' : ++my.ccol;         break;
+   case '$' : break;
+   }
+   return 0;
+}
+
+uchar
+PROG_main_modes         (uchar a_major, uchar a_minor)
+{
+   char        rc          =    0;
+   switch (a_minor) {
+   case '\\': rc = 'µ';     OPENGL_menu_start ();  break;
+   case '/' : rc = 's'; my.search[0] = '\0';        break;
+   case 'u' : rc = a_minor;                        break;
+   case 'i' : rc = a_minor;                        break;
+   case 'e' : rc = a_minor;                        break;
+   case 'f' : rc = a_minor;                        break;
+   case 'a' : FILTER_clear(); return my.format;  break;
+   }
+   return rc;
+}
+
+uchar
+PROG_main_handle        (uchar a_key)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   uchar       rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_LOOP   yLOG_enter   (__FUNCTION__);
+   DEBUG_LOOP   yLOG_value   ("a_key"     , a_key);
+   /*---(defense)------------------------*/
+   if (a_key == 0) {
+      DEBUG_LOOP   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   /*---(prepare)------------------------*/
+   my.trouble   = '-';
+   g_minor = chrworking (a_key);
+   DEBUG_LOOP   yLOG_value   ("g_major"   , g_major);
+   DEBUG_LOOP   yLOG_value   ("g_minor"   , g_minor);
+   /*---(handle keystroke)---------------*/
+   switch (g_major) {
+   case ' ' :
+      if      (a_key == 'Q') { my.quit = 'y';  return 1; }
+      else if (strchr ("CL12TBWXP", g_minor) != NULL) rc = PROG_main_layout (g_major, g_minor);
+      else if (strchr ("_jk%0hl$" , g_minor) != NULL) rc = PROG_main_moves  (g_major, g_minor);
+      else if (strchr ("\\/uiefa" , g_minor) != NULL) rc = PROG_main_modes  (g_major, g_minor);
+   }
+   /*---(setup for next keystroke)-------*/
+   if      (rc == 0)    g_major = G_KEY_SPACE;
+   else if (rc >  0)    g_major = rc;
+   else               { g_major = G_KEY_SPACE;  my.trouble = 'y'; }
+   /*---(complete)-----------------------*/
+   DEBUG_LOOP   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+uchar        /*-> process input string in main loop --[ ------ [ge.C74.153.42]*/ /*-[02.0000.00#.D]-*/ /*-[--.---.---.--]-*/
+PROG_main_string        (uchar *a_keys)
+{
+   /*---(locals)-----------+-----------+-*/
+   char        rce         =  -10;     /* return code for errors              */
+   uchar       rc          =    0;
+   int         i           =    0;
+   int         x_len       =    0;
+   uchar       x_ch        =  ' ';     /* current keystroke                   */
+   char        x_keys      [LEN_RECD];
+   /*---(header)-------------------------*/
+   DEBUG_LOOP   yLOG_enter   (__FUNCTION__);
+   DEBUG_LOOP   yLOG_point   ("a_keys"    , a_keys);
+   --rce;  if (a_keys == NULL) {
+      DEBUG_LOOP   yLOG_note    ("a_keys is null");
+      DEBUG_LOOP   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   strlcpy    (x_keys, a_keys  , LEN_RECD);
+   strlencode (x_keys, ySTR_MAX, LEN_RECD);
+   DEBUG_LOOP   yLOG_info    ("x_keys"    , x_keys);
+   x_len = strlen (a_keys);
+   DEBUG_LOOP   yLOG_value   ("x_len"     , x_len);
+   --rce;
+   for (i = 0; i < x_len; ++i) {
+      DEBUG_LOOP   yLOG_value   ("LOOP"      , i);
+      /*---(get next char)---------------*/
+      DEBUG_LOOP   yLOG_value   ("a_keys[i]" , a_keys[i]);
+      DEBUG_LOOP   yLOG_char    ("a_keys[i]" , chrvisible (a_keys[i]));
+      x_ch = chrworking (a_keys [i]);
+      DEBUG_LOOP   yLOG_value   ("x_ch"      , x_ch);
+      /*---(handle keystroke)------------*/
+      rc = PROG_main_handle (x_ch);
+      DEBUG_LOOP   yLOG_value   ("rc"        , rc);
+      /*---(done)------------------------*/
+   }
+   DEBUG_LOOP   yLOG_note    ("main loop done");
+   /*---(complete)-----------------------*/
+   DEBUG_LOOP   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char        /* PURPOSE : process the xwindows event stream                    */
+PROG_event    (void)
+{
+   /*---(locals)--------------------------------*/
+   XKeyEvent  *key_event;
+   char        x_keys      [LEN_TERSE];
+   int         x_bytes     =    0;
+   my.update = 0;
+   int        loop = 0;
+   /*---(header)-------------------------*/
+   DEBUG_LOOP   yLOG_enter    (__FUNCTION__);
+   while (1) {
+      XNextEvent(DISP, &EVNT);
+      my.update = 1;
+      my.pcol = my.ccol;
+      my.prow = my.crow;
+      /*---(start)----------------------------*/
+      switch(EVNT.type) {
+      case KeyPress:
+         key_event  = (XKeyEvent *) &EVNT;
+         x_bytes = XLookupString((XKeyEvent *) &EVNT, x_keys, 5, NULL, NULL);
+         if (x_bytes < 1) break;
+         g_minor = x_keys [0];
+         DEBUG_LOOP   yLOG_char     ("g_major"   , g_major);
+         DEBUG_LOOP   yLOG_char     ("g_minor"   , g_minor);
+         PROG_main_handle (x_keys [0]);
+         if (g_major == ' ') {
+            if (g_minor == 'Q') {
+               my.quit = 'y';
+               return 1;
+            }
+            if (strchr ("CL12TBWXXP", g_minor) != NULL) {
+               PROG_main_layout (g_major, g_minor);
+               continue;
+            }
+            switch (g_minor) {
+            case '\\' : g_major = g_minor; OPENGL_menu_start ();  break;
+            }
+            /*---(format changes)-----*/
+            switch (g_minor) {
+            case 'Q'  : my.quit = 'y';  return 1;           break;
+            case 'C'  : format_change ('c');                break;
+            case 'L'  : format_change ('l');                break;
+            case 'T'  : format_change ('t');                break;
+            case 'B'  : format_change ('b');                break;
+            case '1'  : format_change ('1');                break;
+            case '2'  : format_change ('2');                break;
+            case 'W'  : format_change ('w');                break;
+            case 'X'  : format_change ('x');                break;
+            case 'P'  : format_change ('p');                break;
+            }
+            /*---(mode changes)-------*/
+            switch (g_minor) {
+            case 'u' : g_alpha = 0.8; g_major = 'u';           break;
+            case 'i' : g_alpha = 0.8; g_major = 'i';           break;
+            case 'e' : g_alpha = 0.8; g_major = 'e';           break;
+            case 'f' : g_alpha = 0.8; g_major = 'f';           break;
+            case 'a' : FILTER_clear(); return my.format;     break;
+            case '/' : g_alpha = 0.8; g_major = 's'; my.search[0] = '\0'; break;
+            }
+            /*---(filters and tasks)--*/
+            switch (g_minor) {
+            case '[':
+            case '?': my.incr  = STOP;   my.move   = 0.0;   break;
+            case '_': my.incr  = STOP;   my.move   = 0.0;  my.ccol = my.crow = 0; my.move = 0.0;  break;
+            case 'l': my.incr  = STOP;   ++my.ccol;      break;
+            case 'j': my.incr  = STOP;   ++my.crow;      break;
+            case ',': my.incr  = my.play;                break;
+            case '+': my.incr += my.change;              break;
+            case '-': my.incr -= my.change;              break;
+            case '.': my.incr  = STOP;                   break;
+            case 'h': my.incr  = STOP;   --my.ccol;      break;
+            case 'k': my.incr  = STOP;   --my.crow;      break;
+                      /*> case ']':                                                             <*/
+                      /*> case '~': my.incr  = STOP;   my.move   = 0.0; my.crow = my.nrows - 1; break;   <*/
+            }
+            /*---(task related)-------*/
+            switch (g_minor) {
+            case 'p': task_list();                       break;
+            case 'r': task_refresh();                    break;
+                      /*> case 'J': font_change(); task_refresh();                    break;    <*/
+            }
+            /*---(format changes)-----*/
+            switch (g_minor) {
+            case '0' : my.curg = my.cimp = my.cest = ' '; strcpy(one, "all"); my.cflg = '<'; return 't'; break;
+            case 'S' : my.sort = 's'; return my.format;  break;
+            case 'U' : my.sort = 'u'; return my.format;  break;
+            }
+            /*---(verify currents)----*/
+            DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
+            DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
+            range_check();
+
+         } else {
+            if (g_major == '\\') {
+               if (g_minor == G_KEY_ESCAPE) {
+                  g_major = ' ';
+                  OPENGL_mask ();
+               } else {
+                  OPENGL_menu_cont  ();
+               }
+            } else if (g_major == 's' && g_minor != 13) {
+               if (g_minor == G_KEY_ESCAPE) {
+                  g_major = ' ';
+
+               } else {
+                  char   ch  = g_minor;
+                  /*> printf("ch = %3d\n", ch);                                       <*/
+                  if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || ch == '_' || ch == 8) {
+                     char   temp[10];
+                     sprintf (temp, "%c", g_minor);
+                     strcat  (my.ctxt, temp);
+                     /*> printf("search = <<%s>>\n", my.search);                       <*/
+                  }
+               }
+            } else {
+               switch (g_major) {
+               case 'u': if (strchr (my.urgs, g_minor) != 0) my.curg  = g_minor;  else my.curg  = ' '; break;
+               case 'i': if (strchr (my.imps, g_minor) != 0) my.cimp  = g_minor;  else my.cimp  = ' '; break;
+               case 'e': if (strchr (my.ests, g_minor) != 0) my.cest  = g_minor;  else my.cest  = ' '; break;
+               case 'f': if (strchr (my.flgs, g_minor) != 0) my.cflg  = g_minor;  else my.cflg  = ' '; break;
+               case 's': if (my.search[0] == '\0') strlcpy (one, "all",    LEN_LABEL);
+                            else                  strlcpy (one, my.search, LEN_LABEL);
+                            break;
+               }
+               g_major = ' ';
+               g_alpha    = 0.0;
+               /*> task_refresh();                                                 <*/
+               return my.format;
+            }
+         }
+         DEBUG_LOOP   yLOG_char     ("g_major"   , g_major);
+         DEBUG_LOOP   yLOG_char     ("g_minor"   , g_minor);
+         break;
+
+      default:
+         break;
+      }
+      DEBUG_LOOP   yLOG_value    ("my.ccol"   , my.ccol);
+      my.update = 0;
+      if (g_major == '\\')  OPENGL_mask ();
+      OPENGL_show  ();
+   }
+   /*---(complete)------------------------------*/
+   DEBUG_LOOP   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -278,7 +551,8 @@ PROG_wrap          (void)
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    font_delete();
-   yX11_end();                  /* close window and xwin context            */
+   /*> yX11_end();                  /+ close window and xwin context            +/    <*/
+   yVIKEYS_wrap ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }

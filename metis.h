@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1i"
-#define     P_VERTXT    "caught refresh issue and further cleaned display logic (not done)"
+#define     P_VERNUM    "1.1j"
+#define     P_VERTXT    "using yvikeys to draw/process, floating command/search bar now appears"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -39,6 +39,7 @@
 
 
 /*
+ * few people regularly (except under duress) keep task lists
  *
  * people naturally keep focused lists of tasks near usage...
  *    -- meeting action items in a spreadsheet
@@ -202,11 +203,11 @@
 /*===[[ CUSTOM LIBRARIES ]]===================================================*/
 #include    <yURG.h>         /* CUSTOM : heatherly urgent processing          */
 #include    <yLOG.h>         /* CUSTOM : heatherly program logging            */
-#include    <yRPN.h>         /* CUSTOM : heatherly infix to RPN conversion    */
 #include    <yVIKEYS.h>      /* CUSTOM : heatherly vi_keys standard           */
 #include    <ySTR.h>         /* CUSTOM : heatherly string handling            */
 #include    <yX11.h>         /* heatherly xlib/glx setup            */
 #include    <yFONT.h>        /* heatherly text display for opengl   */
+#include    <yGLTEX.h>       /* heatherly opengl texture support              */
 
 #include   <stdio.h>
 #include   <stdlib.h>                  /* getenv()                            */
@@ -232,9 +233,15 @@ int       tex_w;                            /* texture width                  */
 int       tex_h;                            /* texture height                 */
 
 /*---(opengl objects)--------------------*/
-extern uint      g_tex;
-extern uint      g_fbo;
-extern uint      g_dep;
+extern uint      g_tex;                     /* task texture                   */
+extern uint      g_fbo;                     /* task fbo                       */
+extern uint      g_dep;                     /* task depth                     */
+
+extern int       g_mtall;                   /* menu texture height            */
+extern int       g_mwide;                   /* menu texture width             */
+extern uint      g_mtex;                    /* menu texture                   */
+extern uint      g_mfbo;                    /* menu fbo                       */
+extern uint      g_mdep;                    /* menu depth                     */
 
 extern      char          unit_answer [LEN_FULL];
 
@@ -255,15 +262,18 @@ struct      cCARD
    char        flg;                    /* status flag                         */
    char        txt         [LEN_HUND]; /* text of task                        */
    /*---(source data)--------------------*/
-   int         seq;                    /* original order (to unsort)          */
-   int         line;                   /* source line in file                 */
+   short       seq;                    /* original order (to unsort)          */
+   short       line;                   /* source line in file                 */
    /*---(filtering)----------------------*/
    char        act;                    /* active (y/n)                        */
    char        key         [LEN_HUND];
    /*---(visualization)------------------*/
-   int         pos;
-   int         col;
-   int         row;
+   short       pos;
+   short       col;
+   short       row;
+   /*---(for unit testing)---------------*/
+   short       x;
+   short       y;
    /*---(done)---------------------------*/
 };
 extern tCARD g_tasks [MAX_CARDS];
@@ -285,6 +295,13 @@ extern char      one [20];
 
 typedef     struct cMY     tMY;
 struct cMY {
+   /*---(program wide)-------------------*/
+   char        quit;                        /* stop the program               */
+   char        trouble;                     /* flag bad keys                  */
+   char        keys        [LEN_LABEL];     /* batch/menu keys to execute     */
+   char        search      [LEN_RECD];      /* global search string           */
+   int         fixed;                       /* fixed font                     */
+   int         pretty;                      /* pretty font                    */
    /*---(data source)--------------------*/
    char        source;                      /* data sourcing location         */
    char        file        [LEN_RECD];      /* file for reading tasks         */
@@ -334,8 +351,11 @@ extern tMY   my;
 /*---(debugging)-------------------------*/
 
 
-extern char g_major;
-extern char g_minor;
+extern uchar g_mode;
+extern uchar g_major;
+extern uchar g_minor;
+
+extern float  g_alpha;
 
 extern int   max_disp;
 
@@ -364,7 +384,8 @@ extern float     step;
 /*---(prototypes)------------------------*/
 int        main              (int argc, char *argv[]);
 
-char       prog_event        (void);
+char       PROG_event        (void);
+
 char       font_load         (void);
 char       font_change       (void);
 char       font_delete       (void);
@@ -376,24 +397,16 @@ char             /* [G-----] output a formatted structure of tasks -----------*/
 task_structure     (void);
 
 
-char       texture_create    (void);
-char       texture_free      (void);
-long       time_stamp        (void);
-char       draw_texture      (void);
-char       draw_main         (void);
-char       draw_init         (void);
-char       draw_resize       (uint, uint);
-char       draw_card         (int);
-char       draw_title        (void);
-char       mask              (void);
-char       urgency           (char  a_value);
-char       importance        (char  a_value);
-char       estimate          (char  a_value);
-char       bullets           (void);
-char       borders           (void);
-char       text              (int   a_index);
-char       card_base         (char  a_value);
-char       complete          (void);
+/*---(program-level)------------------*/
+char       OPENGL_init              (void);
+char       OPENGL_wrap              (void);
+/*---(task texture)-------------------*/
+char       OPENGL_show              (void);
+char       OPENGL_draw              (void);
+char       OPENGL_resize            (uint, uint);
+char       OPENGL_menu_start        (void);
+char       OPENGL_menu_cont         (void);
+char       OPENGL_mask              (void);
 
 void       prog_catch        (int);
 char       prog_signals      (void);
@@ -428,5 +441,9 @@ char        SORT_stats              (void);
 char        SORT_unsort             (void);
 char        SORT_refresh            (void);
 
+
+char*       FORMAT__unit            (char *a_question, int a_num);
+
+char        OPENGL__clearall        (void);
 
 /*============================----end-of-source---============================*/

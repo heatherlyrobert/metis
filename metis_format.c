@@ -163,7 +163,7 @@ format_change      (char a_which)
    /*---(header)-------------------------*/
    DEBUG_USER   yLOG_enter    (__FUNCTION__);
    /*---(clear out)-----------------------------*/
-   texture_free ();
+   yGLTEX_free (&g_tex, &g_fbo, &g_dep);
    font_delete  ();
    /*---(update the data)-----------------------*/
    DATA_refresh   ();
@@ -218,17 +218,44 @@ format_change      (char a_which)
    DEBUG_USER   yLOG_note     ("font load");
    font_load();
    DEBUG_USER   yLOG_note     ("draw init");
-   draw_init();
+   OPENGL_init ();
    DEBUG_USER   yLOG_note     ("draw main");
-   draw_main();
+   OPENGL_draw ();
    DEBUG_USER   yLOG_note     ("draw mask");
-   mask();
+   OPENGL_mask();
    DEBUG_USER   yLOG_note     ("defaults");
    my.ccol = 0;
    my.crow = 0;
-   draw_resize(win_w, win_h);
+   OPENGL_resize (win_w, win_h);
    /*> if (strchr("ts", my.format) != 0) my.action = 1;                               <*/
    /*---(complete)------------------------------*/
    DEBUG_USER   yLOG_exit     (__FUNCTION__);
    return 0;
 }
+
+
+
+
+
+/*====================------------------------------------====================*/
+/*===----                      unit testing                            ----===*/
+/*====================------------------------------------====================*/
+static void  o___UNITTEST________o () { return; }
+
+char*        /*-> unit test accessor -----------------[ light  [us.B60.2A3.F2]*/ /*-[01.0000.00#.#]-*/ /*-[--.---.---.--]-*/
+FORMAT__unit       (char *a_question, int a_num)
+{
+   /*---(locals)-------------------------*/
+   char        rc          =    0;
+   char        t           [LEN_HUND]   = "[]";
+   char        s           [LEN_HUND]   = "[]";
+   /*---(overall)------------------------*/
+   strcpy (unit_answer, "FORMAT           : question not understood");
+   if      (strcmp (a_question, "count"         ) == 0) {
+      snprintf (unit_answer, LEN_FULL, "DATA count       : %d", g_ntask);
+   }
+   /*---(complete)-----------------------*/
+   return unit_answer;
+}
+
+
