@@ -284,15 +284,18 @@ OPENGL_show        (void)
    int      x_left, x_bott, x_wide, x_tall;
    int      x_xmin, x_xmax;
    int      x_ymin, x_ymax;
+   char        x_mode      =  '-';
+   static char x_modesave  =  '-';
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   x_mode = yVIKEYS_mode ();
+   DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
+   DEBUG_GRAF   yLOG_char     ("x_modesave", x_modesave);
    yVIKEYS_view_size     (YVIKEYS_MAIN, &x_left, &x_wide, &x_bott, &x_tall, NULL);
    DEBUG_GRAF   yLOG_complex  ("size"      , "%3dl, %3dw, %3db, %3dt", x_left, x_wide, x_bott, x_tall);
    yVIKEYS_view_bounds   (YVIKEYS_MAIN, &x_xmin, &x_xmax, &x_ymin, &x_ymax);
    DEBUG_GRAF   yLOG_complex  ("bounds"    , "%3dx to %3dx, %3dy to %3dy", x_xmin, x_xmax, x_ymin, x_ymax);
    /*---(prepare drawing)----------------*/
-   /*> glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                            <* 
-    *> glLoadIdentity();                                                              <*/
    DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
    DEBUG_GRAF   yLOG_value    ("win_h"     , win_h);
@@ -399,18 +402,17 @@ OPENGL_show        (void)
       }
    }
    /*---(force the redraw)---------------*/
-   if (g_major == '\\') {
-      rc = yVIKEYS_menu ("metis", P_VERNUM, my.pretty, s_menus, my.keys);
-      DEBUG_GRAF   yLOG_value    ("menu"      , rc);
-      DEBUG_GRAF   yLOG_info     ("my.keys"   , my.keys);
-      if (strcmp (my.keys, "") != 0) {
-         g_major = ' ';
-         OPENGL_mask ();
+   if (x_mode != x_modesave) {
+      switch (x_mode) {
+      case SMOD_MENUS   : OPENGL_mask ();  break;
+      case UMOD_HISTORY : OPENGL_mask ();  break;
+      }
+      switch (x_modesave) {
+      case SMOD_MENUS   : OPENGL_mask ();  break;
+      case UMOD_HISTORY : OPENGL_mask ();  break;
       }
    }
-   /*---(force the redraw)---------------*/
-   /*> glXSwapBuffers(DISP, BASE);                                                    <* 
-    *> glFlush();                                                                     <*/
+   x_modesave = x_mode;
    /*---(complete)-------------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -809,10 +811,13 @@ OPENGL_mask             (void)
    int       x_col      = 0;
    int         x_max       =    0;
    float       x_inc       =    0;
+   char        x_mode      =  '-';
    /*---(prepare)------------------------*/
    GC        gc        = XCreateGC(DISP, bounds, 0, NULL);
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   x_mode = yVIKEYS_mode ();
+   DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("g_major"   , g_major);
    DEBUG_GRAF   yLOG_char     ("g_minor"   , g_minor);
    DEBUG_GRAF   yLOG_char     ("my.format" , my.format);
@@ -872,7 +877,7 @@ OPENGL_mask             (void)
       break;
    }
    /*---(check for menu)-----------------*/
-   if (g_major == '\\') {
+   if (x_mode == SMOD_MENUS) {
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
       XFillRectangle (DISP, bounds, gc, 10, 70, 280, 200);
    }

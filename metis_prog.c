@@ -174,7 +174,8 @@ PROG_init          (void)
    my.quit    = '-';
    my.trouble = '-';
    /*---(yvikeys config)-----------------*/
-   yVIKEYS_init  ();
+   rc = yVIKEYS_init  ();
+   rc = yVIKEYS_file_config  ("metis", "metis", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -254,7 +255,8 @@ PROG_final         (void)
    /*> yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);       <*/
    yVIKEYS_view_config   ("metis_column", P_VERNUM, YVIKEYS_OPENGL, 300, 60 * 12, 0);
    yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, 300, -60 * 12, 60 * 12, 0, 0, 0, OPENGL_show);
-   yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -40     , 20     , 0, 0, 0, NULL);
+   yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -35     , 20     , 0, 0, 0, NULL);
+   yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -270    , 200    , 0, 0, 0, NULL);
    yVIKEYS_cmds_direct   (":layout min");
    yVIKEYS_cmds_direct   (":title disable");
    yVIKEYS_cmds_direct   (":version disable");

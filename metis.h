@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1k"
-#define     P_VERTXT    "disabled yvikeys window elements that i never want to see"
+#define     P_VERNUM    "1.1l"
+#define     P_VERTXT    "menus now mask, display, and handle using yvikeys"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
