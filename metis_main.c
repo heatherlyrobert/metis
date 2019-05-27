@@ -27,11 +27,6 @@ main               (int argc, char *argv[])
    format_change  (my.format);
    /*---(main loop)----------------------*/
    rc = yVIKEYS_main ("500us", "10ms", NULL);
-   /*> while (my.quit != 'y') {                                                       <* 
-    *>    rc = PROG_event ();                                                         <* 
-    *>    printf ("format change requested\n");                                       <* 
-    *>    if (rc >  1) format_change (rc);                                            <* 
-    *> }                                                                              <*/
    /*---(wrap-up)------------------------*/
    PROG_wrap   ();
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);

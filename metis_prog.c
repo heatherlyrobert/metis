@@ -174,8 +174,8 @@ PROG_init          (void)
    my.quit    = '-';
    my.trouble = '-';
    /*---(yvikeys config)-----------------*/
-   rc = yVIKEYS_init  ();
-   rc = yVIKEYS_file_config  ("metis", "metis", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");
+   rc = yVIKEYS_init   ();
+   rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -251,8 +251,6 @@ PROG_final         (void)
    rc = daemon (1, 0);
    if (rc != 0) return rc;
    /*---(open window)---------------------------*/
-   /*> yVIKEYS_view_config   ("metis task mgmt", P_VERNUM, YVIKEYS_OPENGL, win_w, win_h, 0);   <*/
-   /*> yX11_start (win_title, win_w, win_h, YX_FOCUSABLE, YX_FIXED, YX_SILENT);       <*/
    yVIKEYS_view_config   ("metis_column", P_VERNUM, YVIKEYS_OPENGL, 300, 60 * 12, 0);
    yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, 300, -60 * 12, 60 * 12, 0, 0, 0, OPENGL_show);
    yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -35     , 20     , 0, 0, 0, NULL);
@@ -276,6 +274,7 @@ PROG_final         (void)
    yVIKEYS_cmds_direct   (":xaxis disable");
    yVIKEYS_cmds_direct   (":yaxis disable");
    yVIKEYS_view_font     (my.fixed);
+   yVIKEYS_map_config    (YVIKEYS_OFFICE, api_yvikeys_mapper, api_yvikeys_locator, api_yvikeys_addressor);
    /*---(create texture)------------------------*/
    font_load ();
    OPENGL_init  ();
@@ -284,6 +283,7 @@ PROG_final         (void)
    /*---(ready display)-------------------------*/
    OPENGL_resize (win_w, win_h);
    prog_signals();
+   yVIKEYS_map_refresh ();
    /*---(complete)------------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;

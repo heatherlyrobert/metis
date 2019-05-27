@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1l"
-#define     P_VERTXT    "menus now mask, display, and handle using yvikeys"
+#define     P_VERNUM    "1.1m"
+#define     P_VERTXT    "yvikeys y mapper working and so vertical movements operational"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -321,26 +321,30 @@ struct cMY {
    char        ctxt        [LEN_HUND];      /* current text filter            */
    char        sort;                        /* sorting request                */
    /*---(window)-------------------------*/
-   char        format;                   /* display style                       */
-   char        sighup;                   /* force a refresh/redraw              */
-   char        sigusr2;                  /* cause a font jumble                 */
-   /*---(rows)---------------------------*/
-   int         nrows;                    /* number of rows of data              */
-   int         wrows;                    /* number of rows in window            */
-   int         trows;                    /* number of rows on texture           */
-   int         crow;                     /* current topmost visible row         */
-   int         prow;                     /* previous topmost visible row        */
-   /*---(columns)------------------------*/
-   int         wcols;                    /* number of cols in window            */
-   int         tcols;                    /* number of cols on texture           */
-   int         ncols;                    /* number of cols                      */
-   int         ccol;                     /* current leftmost visible column     */
-   int         pcol;                     /* previous leftmost visible column    */
+   char        format;                   /* display style                     */
+   char        sighup;                   /* force a refresh/redraw            */
+   char        sigusr2;                  /* cause a font jumble               */
+   /*---(xpos/cols)----------------------*/
+   int         wcols;                    /* number of cols in window          */
+   int         tcols;                    /* number of cols on texture         */
+   int         ncols;                    /* number of cols                    */
+   int         bcol;                     /* beginning of screen               */
+   int         ccol;                     /* current col                       */
+   int         pcol;                     /* previous current col              */
+   int         ecol;                     /* ending of screen                  */
+   /*---(ypos/rows)----------------------*/
+   int         nrows;                    /* number of rows of data            */
+   int         wrows;                    /* number of rows in window          */
+   int         trows;                    /* number of rows on texture         */
+   int         brow;                     /* beginning of screen               */
+   int         crow;                     /* current row                       */
+   int         prow;                     /* previous current row              */
+   int         erow;                     /* ending of screen                  */
    /*---(movement)-----------------------*/
-   char        action;                   /* moving (0 = no, 1 = yes)            */
-   char        update;                   /* xevent (0 = no, 1 = yes)            */
-   double      incr;                     /* incemental offset each cycle        */
-   double      move;                     /* position offset due to moving       */
+   char        action;                   /* moving (0 = no, 1 = yes)          */
+   char        update;                   /* xevent (0 = no, 1 = yes)          */
+   double      incr;                     /* incemental offset each cycle      */
+   double      move;                     /* position offset due to moving     */
    double      play;
    double      mspeed;
    double      change;
@@ -422,6 +426,7 @@ char        DATA__custom            (void);
 char        DATA__sources           (void);
 char        DATA__blankcard         (void);
 char        DATA_refresh            (void);
+int         DATA_cursor             (char a_type);
 char*       DATA__unit              (char *a_question, int a_num);
 
 char        PROG_init               (void);
@@ -445,5 +450,10 @@ char        SORT_refresh            (void);
 char*       FORMAT__unit            (char *a_question, int a_num);
 
 char        OPENGL__clearall        (void);
+
+char        api_yvikeys_mapper      (char a_req);
+char        api_yvikeys_locator     (char *a_label, int *a_buf, int *a_x, int *a_y, int *a_z);
+char        api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z);
+
 
 /*============================----end-of-source---============================*/

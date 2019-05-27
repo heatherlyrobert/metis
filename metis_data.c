@@ -599,6 +599,47 @@ DATA_refresh       (void)
 
 
 /*====================------------------------------------====================*/
+/*===----                        task cursor                           ----===*/
+/*====================------------------------------------====================*/
+static void      o___CURSOR__________________o (void) {;}
+
+static int s_cursor  = -1;
+
+int          /*--> find the nth active task ---------[------ [---------------]*/
+DATA_cursor             (char a_type)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   int         i           =    0;
+   int         x_beg       =    0;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
+   /*---(adjust max)---------------------*/
+   switch (a_type) {
+   case '[' :  x_beg = 0;              break;
+   case '>' :  x_beg = s_cursor + 1;   break;
+   }
+   /*---(findst max)---------------------*/
+   for (i = x_beg; i <= g_ntask; ++i) {
+      /*---(filter)-------------------*/
+      DEBUG_DATA   yLOG_complex  ("card"      , "%2d, %c %s", i, g_tasks [i].act, g_tasks [i].txt);
+      if (g_tasks [i].act != 'y')  continue;
+      /*---(found)--------------------*/
+      s_cursor = i;
+      DEBUG_DATA   yLOG_value    ("FOUND"     , s_cursor);
+      DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+      return s_cursor;
+      /*---(done)---------------------*/
+   }
+   s_cursor = -1;
+   /*---(complete)------------------------------*/
+   DEBUG_DATA   yLOG_exitr   (__FUNCTION__, -1);
+   return -1;
+}
+
+
+
+/*====================------------------------------------====================*/
 /*===----                          reporting                           ----===*/
 /*====================------------------------------------====================*/
 static void      o___REPORTING_______________o (void) {;}

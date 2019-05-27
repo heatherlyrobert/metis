@@ -308,8 +308,12 @@ OPENGL_show        (void)
    DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
    DEBUG_GRAF   yLOG_value    ("my.ncols"  , my.ncols);
    DEBUG_GRAF   yLOG_value    ("my.nrows"  , my.nrows);
+   DEBUG_GRAF   yLOG_value    ("my.brow"   , my.brow);
    DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
+   DEBUG_GRAF   yLOG_value    ("my.erow"   , my.erow);
+   DEBUG_GRAF   yLOG_value    ("my.bcol"   , my.bcol);
    DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
+   DEBUG_GRAF   yLOG_value    ("my.ecol"   , my.ecol);
    /*---(horizontal views)---------------*/
    if (strchr("tbwpx"  , my.format) != 0) {
       DEBUG_GRAF   yLOG_note     ("horizontal formats----------");
@@ -367,14 +371,14 @@ OPENGL_show        (void)
       /*---(panel one)-------------------*/
       DEBUG_GRAF   yLOG_note     ("panel one/top---------------");
       x_wtop  = 0.0;
-      x_ttop  = 1.0 - ((my.crow  *  x_wtall) / tex_h);
-      if (my.nrows - my.crow > my.wrows) {
-         x_max  = my.crow + my.wrows;
+      x_ttop  = 1.0 - ((my.brow  *  x_wtall) / tex_h);
+      if (my.nrows - my.brow > my.wrows) {
+         x_max  = my.brow + my.wrows;
          x_cnt  = my.wrows;
          x_wbot = -win_h;
       } else {
          x_max  = my.nrows;
-         x_cnt  = my.nrows - my.crow;
+         x_cnt  = my.nrows - my.brow;
          x_wbot = -(x_cnt / my.wrows) * win_h;
       }
       x_tbot   = 1.0 - ((x_max    *  x_wtall) / tex_h);
@@ -386,10 +390,10 @@ OPENGL_show        (void)
       DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       /*---(panel two)-------------------*/
-      if (my.crow > 0) {
+      if (my.brow > 0) {
          DEBUG_GRAF   yLOG_note     ("panel two/bot---------------");
          x_ttop  = 1.0;
-         x_tbot  = 1.0 - ((my.crow  *  x_wtall) / tex_h);
+         x_tbot  = 1.0 - ((my.brow  *  x_wtall) / tex_h);
          x_cnt   = my.nrows - x_cnt;
          x_wtop  = x_wbot;
          x_wbot  = x_wtop - (x_cnt / my.wrows) * win_h;
@@ -400,6 +404,15 @@ OPENGL_show        (void)
          DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
          OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       }
+      /*---(current)---------------------*/
+      glColor4f (  1.000,  1.000,  1.000, 1.000);
+      glBegin(GL_POLYGON); {
+         glVertex3f (    2.0, -(my.crow - my.brow) * 60.0 -  6.0,  100.0);
+         glVertex3f (   38.0, -(my.crow - my.brow) * 60.0 - 43.0,  100.0);
+         glVertex3f (   25.0, -(my.crow - my.brow) * 60.0 - 43.0,  100.0);
+         glVertex3f (    2.0, -(my.crow - my.brow) * 60.0 - 20.0,  100.0);
+      } glEnd();
+      /*---(done)------------------------*/
    }
    /*---(force the redraw)---------------*/
    if (x_mode != x_modesave) {
