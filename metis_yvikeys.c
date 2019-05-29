@@ -183,4 +183,33 @@ api_yvikeys_sort        (char *a_how)
    return 0;
 }
 
+char
+api_yvikeys_window      (char *a_format)
+{
+   char        x_cmd       [LEN_RECD];
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   if (a_format == NULL) return -1;
+   /*---(update the data)-----------------------*/
+   SORT_refresh   ();
+   FILTER_refresh ();
+   /*---(change format)-------------------------*/
+   if      (strcmp (a_format, "col_rig" ) == 0)  format_column ('r');
+   else if (strcmp (a_format, "long_rig") == 0)  format_column ('R');
+   else if (strcmp (a_format, "col_lef" ) == 0)  format_column ('l');
+   else if (strcmp (a_format, "long_lef") == 0)  format_column ('L');
+   else if (strcmp (a_format, "ticker"  ) == 0)  format_ticker ('t');
+   else if (strcmp (a_format, "baseline") == 0)  format_ticker ('b');
+   else if (strcmp (a_format, "project" ) == 0)  format_projects ();
+   else if (strcmp (a_format, "wide"    ) == 0)  format_wideview ();
+   else if (strcmp (a_format, "extra"   ) == 0)  format_extra    ();
+   else                                       return -2;
+   sprintf (x_cmd, "wmctrl -r 'metis_tasklist' -e 0,%d,%d,%d,%d", win_x, win_y, win_w, win_h);
+   system (x_cmd);
+   OPENGL_draw ();
+   OPENGL_mask();
+   /*---(complete)------------------------------*/
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
 

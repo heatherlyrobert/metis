@@ -7,7 +7,7 @@
  */
 
 
-char      win_title[100]    = "metis_column";
+char      win_title[100]    = "metis_tasklist";
 
 
 tMY         my;
@@ -178,6 +178,7 @@ PROG_init          (void)
    rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");
    DATA_init ();
    FILTER_init ();
+   FORMAT_init ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -253,7 +254,7 @@ PROG_final         (void)
    rc = daemon (1, 0);
    if (rc != 0) return rc;
    /*---(open window)---------------------------*/
-   yVIKEYS_view_config   ("metis_column", P_VERNUM, YVIKEYS_OPENGL, 300, 60 * 12, 0);
+   yVIKEYS_view_config   ("metis_tasklist", P_VERNUM, YVIKEYS_OPENGL, 300, 60 * 12, 0);
    yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, 300, -60 * 12, 60 * 12, 0, 0, 0, OPENGL_show);
    yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -35     , 20     , 0, 0, 0, NULL);
    yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -270    , 200    , 0, 0, 0, NULL);

@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.2-, move to full yVIKEYS usage and support"
-#define     P_VERNUM    "1.1n"
-#define     P_VERTXT    "yvikeys menu interface takes data sorting additions and works"
+#define     P_VERNUM    "1.1o"
+#define     P_VERTXT    "added window command to drive metis placement and sizing"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -227,6 +227,8 @@ typedef     struct      dirent      tDIRENT;
 extern char      win_title[100];
 
 /*---(sizes)-----------------------------*/
+int       win_x;                            /* window left                    */
+int       win_y;                            /* window top                     */
 int       win_w;                            /* window width                   */
 int       win_h;                            /* window height                  */
 int       tex_w;                            /* texture width                  */
@@ -430,6 +432,13 @@ char        DATA_refresh            (void);
 int         DATA_cursor             (char a_type);
 char*       DATA__unit              (char *a_question, int a_num);
 
+char        FORMAT_init             (void);
+char        format_column           (char a_type);
+char        format_ticker           (char a_type);
+char        format_projects         (void);
+char        format_wideview         (void);
+char        format_extra            (void);
+
 char        PROG_init               (void);
 char        PROG_args               (int argc, char *argv[]);
 char        PROG_begin              (void);
@@ -459,6 +468,7 @@ char        api_yvikeys_mapper      (char a_req);
 char        api_yvikeys_locator     (char *a_label, int *a_buf, int *a_x, int *a_y, int *a_z);
 char        api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z);
 char        api_yvikeys_sort        (char *a_how);
+char        api_yvikeys_window      (char *a_format);
 
 
 /*============================----end-of-source---============================*/

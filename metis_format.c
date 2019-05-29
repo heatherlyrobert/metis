@@ -13,9 +13,24 @@
 static void      o___POLYMORPH_______________o (void) {;}
 
 char
+FORMAT_init        (void)
+{
+   yVIKEYS_cmds_add (YVIKEYS_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );
+   yVIKEYS_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");
+   yVIKEYS_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");
+   yVIKEYS_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");
+   yVIKEYS_menu_add ("µvwL", "long/lef"  , ":window long_lef¦");
+   yVIKEYS_menu_add ("µvwt", "ticker"    , ":window ticker¦");
+   yVIKEYS_menu_add ("µvwb", "baseline"  , ":window baseline¦");
+   yVIKEYS_menu_add ("µvwp", "project"   , ":window project¦");
+   yVIKEYS_menu_add ("µvww", "wideview"  , ":window wide¦");
+   yVIKEYS_menu_add ("µvwx", "extra"     , ":window extra¦");
+}
+
+char
 format_streamer    (void)
 {
-   strcpy(win_title, "metis_streamer");
+   /*> strcpy(win_title, "metis_streamer");                                           <*/
    win_h  = tex_h  =  (24 * 44) + 45;   /* window height                      */
    win_w  =           300;        /* scancard width                           */
    tex_w  =           300;
@@ -38,11 +53,9 @@ format_ticker      (char a_type)
    DEBUG_USER   yLOG_enter    (__FUNCTION__);
    /*---(format)-------------------------*/
    if (strchr ("t", a_type) != NULL) {
-      strcpy (win_title, "metis_ticker");
       my.format = 't';
       x_wide = 300;
    } else {
-      strcpy (win_title, "metis_baseline");
       my.format = 'b';
       x_wide = 325;
    }
@@ -56,6 +69,8 @@ format_ticker      (char a_type)
    if (my.nact <= my.tcols)  my.ncols = my.nact;
    else                      my.ncols = my.tcols;
    /*---(win/tex)------------------------*/
+   win_x     =    0;
+   win_y     =  723;
    win_h     = my.wrows *  45.0;
    tex_h     = my.trows *  45.0;
    win_w     = my.wcols * x_wide;
@@ -76,10 +91,10 @@ format_column      (char a_side)
    DEBUG_USER   yLOG_enter    (__FUNCTION__);
    /*---(format)-------------------------*/
    if (strchr ("Rr", a_side) != NULL) {
-      strcpy (win_title, "metis_column");
+      /*> strcpy (win_title, "metis_column");                                         <*/
       my.format = 'c';
    } else {
-      strcpy (win_title, "metis_sidebar");
+      /*> strcpy (win_title, "metis_sidebar");                                        <*/
       my.format = 'l';
    }
    /*---(cols)---------------------------*/
@@ -93,6 +108,11 @@ format_column      (char a_side)
    if (my.nact <= my.trows)  my.nrows = my.nact;
    else                      my.nrows = my.trows;
    /*---(win/tex)------------------------*/
+   switch (a_side) {
+   case 'r' : case 'R' :   win_x     = 1055;  break;
+   case 'l' : case 'L' :   win_x     =   15;  break;
+   }
+   win_y     = 25;
    win_h     = my.wrows *  60.0;
    tex_h     = my.trows *  60.0;
    win_w     = my.wcols * 300.0;
@@ -109,7 +129,7 @@ format_column      (char a_side)
 char
 format_wideview    (void)
 {
-   strcpy(win_title, "metis_wideview");
+   /*> strcpy(win_title, "metis_wideview");                                           <*/
    win_h  = tex_h  =  720 - 15;   /* room for twelve scantasks with gaps      */
    win_w  = tex_w  = 1260;        /* scancard width times four                */
    my.format = 'w';
@@ -126,7 +146,7 @@ format_wideview    (void)
 char
 format_projects    (void)
 {
-   strcpy(win_title, "metis_projects");
+   /*> strcpy(win_title, "metis_projects");                                           <*/
    win_h  = tex_h  =  720 - 15;   /* room for twelve scantasks with gaps      */
    win_w  = tex_w  = 1260;        /* scancard width times four                */
    my.format = 'p';
@@ -143,7 +163,7 @@ format_projects    (void)
 char
 format_extra       (void)
 {
-   strcpy(win_title, "metis_extra");
+   /*> strcpy(win_title, "metis_extra");                                              <*/
    win_h  = tex_h  =  960 - 15;   /* room for twelve scantasks with gaps      */
    win_w  = tex_w  = 1260;        /* scancard width times four                */
    my.format = 'x';
