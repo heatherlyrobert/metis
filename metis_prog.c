@@ -166,9 +166,9 @@ PROG_init          (void)
    /*---(set globals)--------------------*/
    FILTER_clear ();
    my.sort    = '-';
+   my.order   = 'a';
    my.ncols   = 0;
    my.nrows   = 0;
-   DATA_init ();
    my.source  = DATA_PIPE;
    my.format  = FORMAT_COLUMN;
    my.quit    = '-';
@@ -176,6 +176,8 @@ PROG_init          (void)
    /*---(yvikeys config)-----------------*/
    rc = yVIKEYS_init   ();
    rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");
+   DATA_init ();
+   FILTER_init ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;

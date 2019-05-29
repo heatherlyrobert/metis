@@ -4,9 +4,9 @@
 /*===[[ METIS BACKLOG ]]======================================================*
  * metis  tn2#·  add yvikeys setup logic, but not drawing control (yet)
  * metis  tn2#·  cause yvikeys to call back metis to draw main (gonna be ugly)
- * metis  tn1··  force the floating command window to display at specific location
- * metis  dn2··  setup the mapper so movement keys work realistically
- * metis  dn1··  use colored hatching on black diagonal to show current task
+ * metis  tn1#·  force the floating command window to display at specific location
+ * metis  dn2#·  setup the mapper so movement keys work realistically
+ * metis  dn1#·  use colored hatching on black diagonal to show current task
  *
  *
  */
@@ -153,3 +153,34 @@ api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z)
 {
    return -1;  /* -1 means not recognized as an address */
 }
+
+
+
+/*====================------------------------------------====================*/
+/*===----                     mapping for map mode                     ----===*/
+/*====================------------------------------------====================*/
+static void  o___COMMANDS________o () { return; }
+
+char
+api_yvikeys_sort        (char *a_how)
+{
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   if (a_how == NULL) return -1;
+   if      (strcmp (a_how, "clear"   ) == 0) { my.sort  = 'o'; my.order = 'a'; }
+   else if (strcmp (a_how, "urg"     ) == 0)   my.sort  = 'u';
+   else if (strcmp (a_how, "imp"     ) == 0)   my.sort  = 'i';
+   else if (strcmp (a_how, "est"     ) == 0)   my.sort  = 'e';
+   else if (strcmp (a_how, "flg"     ) == 0)   my.sort  = 'f';
+   else if (strcmp (a_how, "names"   ) == 0)   my.sort  = 'n';
+   else if (strcmp (a_how, "ascend"  ) == 0)   my.order = 'a';
+   else if (strcmp (a_how, "descend" ) == 0)   my.order = 'd';
+   else                                        return -2;
+   SORT_refresh   ();
+   FILTER_refresh ();
+   OPENGL_draw ();
+   OPENGL_mask();
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+

@@ -20,6 +20,29 @@
 #include   "metis.h"
 
 char
+FILTER_init             (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        i           =    0;
+   char        t           [LEN_LABEL];
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   /*---(commands)-----------------------*/
+   yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "sort"        , ""    , "s"    , api_yvikeys_sort    , "sort metis data"    );
+   yVIKEYS_menu_add ("µdsc", "clear"     , ":sort clear¦");
+   yVIKEYS_menu_add ("µdsu", "by urg"    , ":sort urg¦");
+   yVIKEYS_menu_add ("µdsi", "by imp"    , ":sort imp¦");
+   yVIKEYS_menu_add ("µdse", "by est"    , ":sort est¦");
+   yVIKEYS_menu_add ("µdsf", "by flg"    , ":sort flg¦");
+   yVIKEYS_menu_add ("µdsn", "by names"  , ":sort names¦");
+   yVIKEYS_menu_add ("µdsa", "ascend"    , ":sort ascend¦");
+   yVIKEYS_menu_add ("µdsd", "descend"   , ":sort descend¦");
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
 FILTER_clear            (void)
 {
    my.curg   = my.cimp = my.cest = my.cflg = ' ';
@@ -106,6 +129,11 @@ static  s_comps      = 0;
 static  s_teles      = 0;
 
 char
+SORT__show              (tCARD *a_cur)
+{
+}
+
+char
 SORT__swap              (tCARD *a_one, tCARD *a_two)
 {
    /*---(locals)-----------+-----+-----+-*/
@@ -174,6 +202,7 @@ SORT__gnome             (void)
       /*---(compare)---------------------*/
       ++s_comps;
       rc = strcmp (g_tasks [i - 1].key, g_tasks [i].key);
+      if (my.order == 'd')   rc *= -1;
       if (rc <= 0) {
          DEBUG_SORT   yLOG_complex ("correct"   , "%3d %-20.20s v %3d %-20.20s   %c %4d   %5d %5d %5d", i - 1, g_tasks [i - 1].key, i, g_tasks [i].key, (rc <= 0) ? 'y' : '-', rc, s_comps, s_swaps, s_teles);
          ++s_teles;
@@ -199,7 +228,47 @@ SORT__gnome             (void)
 }
 
 char
-SORT_stats              (void)
+SORT_stats              (char a_type)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   int         i           =    0;
+   char        x_urg       =    0;
+   char        x_imp       =    0;
+   char        x_est       =    0;
+   char        x_flg       =    0;
+   char        t           [LEN_LABEL];
+   /*---(header)-------------------------*/
+   DEBUG_SORT   yLOG_enter   (__FUNCTION__);
+   /*---(prepare keys)-------------------*/
+   for (i = 0; i < g_ntask; ++i) {
+      /*---(convert to scale)------------*/
+      x_urg = strchr (my.urgs, g_tasks [i].urg) - my.urgs + 'a';
+      x_imp = strchr (my.imps, g_tasks [i].imp) - my.imps + 'a';
+      x_est = strchr (my.ests, g_tasks [i].est) - my.ests + 'a';
+      x_flg = strchr (my.flgs, g_tasks [i].flg) - my.flgs + 'a';
+      /*---(combine)---------------------*/
+      switch (a_type) {
+      case 'i' :  sprintf (t, "%c%c%c%c", x_imp, x_urg, x_est, x_flg);  break;
+      case 'e' :  sprintf (t, "%c%c%c%c", x_est, x_urg, x_imp, x_flg);  break;
+      case 'f' :  sprintf (t, "%c%c%c%c", x_flg, x_urg, x_imp, x_est);  break;
+      default  :
+      case 'u' :  sprintf (t, "%c%c%c%c", x_urg, x_imp, x_est, x_flg);  break;
+      }
+      /*---(put in key)------------------*/
+      sprintf (g_tasks [i].key, "%-4.4s %-20.20s %-20.20s %s", t,
+            g_tasks [i].one, g_tasks [i].two, g_tasks [i].txt);
+      DEBUG_SORT   yLOG_bullet  (i            , g_tasks [i].key);
+   }
+   /*---(sort)---------------------------*/
+   SORT__gnome ();
+   /*---(save sort type)-----------------*/
+   my.sort = a_type;
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+char
+SORT_names              (void)
 {
    char        rc          =    0;
    int         i           =    0;
@@ -215,13 +284,16 @@ SORT_stats              (void)
       x_imp = strchr (my.imps, g_tasks [i].imp) - my.imps + 'a';
       x_est = strchr (my.ests, g_tasks [i].est) - my.ests + 'a';
       x_flg = strchr (my.flgs, g_tasks [i].flg) - my.flgs + 'a';
-      sprintf (g_tasks [i].key, "%c%c%c%c %-20.20s %-20.20s %s",
-            x_urg, x_imp, x_est, x_flg, 
-            g_tasks [i].one, g_tasks [i].two, g_tasks [i].txt);
+      sprintf (g_tasks [i].key, "%-20.20s %-20.20s %c%c%c%c %s",
+            g_tasks [i].one, g_tasks [i].two,
+            x_urg, x_imp, x_est, x_flg,
+            g_tasks [i].txt);
       DEBUG_SORT   yLOG_bullet  (i            , g_tasks [i].key);
    }
    /*---(sort)---------------------------*/
    rc = SORT__gnome ();
+   /*---(save sort type)-----------------*/
+   my.sort = 'n';
    /*---(complete)-----------------------*/
    DEBUG_SORT   yLOG_exit    (__FUNCTION__);
    return rc;
@@ -245,6 +317,8 @@ SORT_unsort             (void)
    }
    /*---(sort)---------------------------*/
    rc = SORT__gnome ();
+   /*---(save sort type)-----------------*/
+   my.sort = 'o';
    /*---(complete)-----------------------*/
    DEBUG_SORT   yLOG_exit    (__FUNCTION__);
    return rc;
@@ -254,7 +328,12 @@ char
 SORT_refresh            (void)
 {
    switch (my.sort) {
-   case 's'  : SORT_stats  ();  break;
+   case 'u'  : SORT_stats  ('u');  break;
+   case 'i'  : SORT_stats  ('i');  break;
+   case 'e'  : SORT_stats  ('e');  break;
+   case 'f'  : SORT_stats  ('f');  break;
+   case 'n'  : SORT_names  ();     break;
+   case 'o'  : SORT_unsort ();     break;
    }
    return 0;
 }

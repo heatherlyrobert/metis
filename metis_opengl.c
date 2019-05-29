@@ -291,6 +291,7 @@ OPENGL_show        (void)
    x_mode = yVIKEYS_mode ();
    DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("x_modesave", x_modesave);
+   /*---(coordinates)--------------------*/
    yVIKEYS_view_size     (YVIKEYS_MAIN, &x_left, &x_wide, &x_bott, &x_tall, NULL);
    DEBUG_GRAF   yLOG_complex  ("size"      , "%3dl, %3dw, %3db, %3dt", x_left, x_wide, x_bott, x_tall);
    yVIKEYS_view_bounds   (YVIKEYS_MAIN, &x_xmin, &x_xmax, &x_ymin, &x_ymax);
@@ -414,7 +415,7 @@ OPENGL_show        (void)
       } glEnd();
       /*---(done)------------------------*/
    }
-   /*---(force the redraw)---------------*/
+   /*---(force mask redraw)--------------*/
    if (x_mode != x_modesave) {
       switch (x_mode) {
       case SMOD_MENUS   : OPENGL_mask ();  break;
@@ -572,6 +573,9 @@ OPENGL__text            (int a_index)
       yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
       glTranslatef( -15.0,   0.0,   0.0);
       snprintf(temp, 4, "%d", g_ntask);
+      yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
+      glTranslatef( -15.0,   0.0,   0.0);
+      snprintf(temp, 4, "%d", g_tasks [a_index].seq);
       yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
       glTranslatef( -15.0,   0.0,   0.0);
       snprintf(temp, 4, "%d", g_tasks [a_index].line);
@@ -825,6 +829,7 @@ OPENGL_mask             (void)
    int         x_max       =    0;
    float       x_inc       =    0;
    char        x_mode      =  '-';
+   char        x_status    =  '-';
    /*---(prepare)------------------------*/
    GC        gc        = XCreateGC(DISP, bounds, 0, NULL);
    /*---(header)-------------------------*/
@@ -837,6 +842,8 @@ OPENGL_mask             (void)
    DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
    DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
+   x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);
+   DEBUG_GRAF   yLOG_char     ("x_status"  , x_status);
    XSetForeground(DISP, gc, 0);
    XFillRectangle(DISP, bounds, gc, 0, 0, win_w, win_h);
    XSetForeground(DISP, gc, 1);
@@ -894,6 +901,11 @@ OPENGL_mask             (void)
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
       XFillRectangle (DISP, bounds, gc, 10, 70, 280, 200);
    }
+   /*> if (x_status == 'y') {                                                         <* 
+    *>    x_max = my.nact;                                                            <* 
+    *>    if (x_max > 12)  x_max = 12;                                                <* 
+    *>    XFillRectangle (DISP, bounds, gc,   0, my.nact * x_inc, 300, 45);           <* 
+    *> }                                                                              <*/
    /*---(set mask)-----------------------*/
    XShapeCombineMask (DISP, BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/

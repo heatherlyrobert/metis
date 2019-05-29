@@ -26,7 +26,8 @@ main               (int argc, char *argv[])
    }
    format_change  (my.format);
    /*---(main loop)----------------------*/
-   rc = yVIKEYS_main ("500us", "10ms", NULL);
+   /*> rc = yVIKEYS_main ("500us", "10ms", NULL);                                     <*/
+   rc = yVIKEYS_main ("keys", "every", NULL);
    /*---(wrap-up)------------------------*/
    PROG_wrap   ();
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);

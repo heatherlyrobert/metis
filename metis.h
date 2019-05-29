@@ -22,9 +22,9 @@
 #define     P_DEPENDS   "none"
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
-#define     P_VERMINOR  "1.1-, stabilize and add full yURG debugging"
-#define     P_VERNUM    "1.1m"
-#define     P_VERTXT    "yvikeys y mapper working and so vertical movements operational"
+#define     P_VERMINOR  "1.2-, move to full yVIKEYS usage and support"
+#define     P_VERNUM    "1.1n"
+#define     P_VERTXT    "yvikeys menu interface takes data sorting additions and works"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -266,7 +266,7 @@ struct      cCARD
    short       line;                   /* source line in file                 */
    /*---(filtering)----------------------*/
    char        act;                    /* active (y/n)                        */
-   char        key         [LEN_HUND];
+   char        key         [LEN_RECD];
    /*---(visualization)------------------*/
    short       pos;
    short       col;
@@ -320,6 +320,7 @@ struct cMY {
    char        ctwo        [LEN_LABEL];     /* current cat two filter         */
    char        ctxt        [LEN_HUND];      /* current text filter            */
    char        sort;                        /* sorting request                */
+   char        order;                       /* sorting order request          */
    /*---(window)-------------------------*/
    char        format;                   /* display style                     */
    char        sighup;                   /* force a refresh/redraw            */
@@ -439,10 +440,12 @@ char        PROG__unit_quiet        (void);
 char        PROG__unit_loud         (void);
 char        PROG__unit_end          (void);
 
+char        FILTER_init             (void);
 char        FILTER_clear            (void);
 char        FILTER_refresh          (void);
 char*       FILTER__unit            (char *a_question, int a_num);
-char        SORT_stats              (void);
+char        SORT_stats              (char a_type);
+char        SORT_names              (void);
 char        SORT_unsort             (void);
 char        SORT_refresh            (void);
 
@@ -451,9 +454,11 @@ char*       FORMAT__unit            (char *a_question, int a_num);
 
 char        OPENGL__clearall        (void);
 
+char        api_ykikeys_init        (void);
 char        api_yvikeys_mapper      (char a_req);
 char        api_yvikeys_locator     (char *a_label, int *a_buf, int *a_x, int *a_y, int *a_z);
 char        api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z);
+char        api_yvikeys_sort        (char *a_how);
 
 
 /*============================----end-of-source---============================*/
