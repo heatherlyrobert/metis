@@ -25,6 +25,8 @@ FORMAT_init        (void)
    yVIKEYS_menu_add ("µvwp", "project"   , ":window project¦");
    yVIKEYS_menu_add ("µvww", "wideview"  , ":window wide¦");
    yVIKEYS_menu_add ("µvwx", "extra"     , ":window extra¦");
+   yVIKEYS_menu_add ("µvws", "sticky"    , ":window sticky¦");
+   yVIKEYS_menu_add ("µvwn", "nonstick"  , ":window nonstick¦");
 }
 
 char

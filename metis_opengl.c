@@ -325,7 +325,6 @@ OPENGL_show        (void)
       x_tbot  = 0.0;
       if (my.format != 't')  x_wwide = 325;
       /*---(panel one/lef)---------------*/
-      DEBUG_GRAF   yLOG_note     ("panel one/lef---------------");
       x_wlef  = 0.0;
       x_tlef  = (my.ccol  * x_wwide) / tex_w;
       if (my.ncols - my.ccol > my.wcols) {
@@ -345,21 +344,6 @@ OPENGL_show        (void)
       DEBUG_GRAF   yLOG_double   ("x_wlef"    , x_wlef);
       DEBUG_GRAF   yLOG_double   ("x_wrig"    , x_wrig);
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
-      /*---(panel two/rig)---------------*/
-      if (my.ccol > 0) {
-         DEBUG_GRAF   yLOG_note     ("panel two/rig---------------");
-         x_cnt   = my.wcols - x_cnt;
-         x_tlef  = 0.0;
-         x_trig  = (x_cnt  * x_wwide) / tex_w;
-         x_wlef  = x_wrig;
-         x_wrig  = (x_cnt / my.wcols) * win_w + x_wlef;
-         DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
-         DEBUG_GRAF   yLOG_double   ("x_tlef"    , x_tlef);
-         DEBUG_GRAF   yLOG_double   ("x_trig"    , x_trig);
-         DEBUG_GRAF   yLOG_double   ("x_wlef"    , x_wlef);
-         DEBUG_GRAF   yLOG_double   ("x_wrig"    , x_wrig);
-         OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
-      }
    }
    /*---(vertical views)-----------------*/
    else {
@@ -369,8 +353,7 @@ OPENGL_show        (void)
       x_wrig  = win_w;
       x_tlef  = 0.0;
       x_trig  = 1.0;
-      /*---(panel one)-------------------*/
-      DEBUG_GRAF   yLOG_note     ("panel one/top---------------");
+      /*---(updates)---------------------*/
       x_wtop  = 0.0;
       x_ttop  = 1.0 - ((my.brow  *  x_wtall) / tex_h);
       if (my.nrows - my.brow > my.wrows) {
@@ -390,21 +373,6 @@ OPENGL_show        (void)
       DEBUG_GRAF   yLOG_double   ("x_wtop"    , x_wtop);
       DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
-      /*---(panel two)-------------------*/
-      if (my.brow > 0) {
-         DEBUG_GRAF   yLOG_note     ("panel two/bot---------------");
-         x_ttop  = 1.0;
-         x_tbot  = 1.0 - ((my.brow  *  x_wtall) / tex_h);
-         x_cnt   = my.nrows - x_cnt;
-         x_wtop  = x_wbot;
-         x_wbot  = x_wtop - (x_cnt / my.wrows) * win_h;
-         DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
-         DEBUG_GRAF   yLOG_double   ("x_ttop"    , x_ttop);
-         DEBUG_GRAF   yLOG_double   ("x_tbot"    , x_tbot);
-         DEBUG_GRAF   yLOG_double   ("x_wtop"    , x_wtop);
-         DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
-         OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
-      }
       /*---(current)---------------------*/
       glColor4f (  1.000,  1.000,  1.000, 1.000);
       glBegin(GL_POLYGON); {

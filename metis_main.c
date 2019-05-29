@@ -24,9 +24,8 @@ main               (int argc, char *argv[])
       PROG_end    ();
       return rce;
    }
-   format_change  (my.format);
+   yVIKEYS_cmds_direct (":window col_rig");
    /*---(main loop)----------------------*/
-   /*> rc = yVIKEYS_main ("500us", "10ms", NULL);                                     <*/
    rc = yVIKEYS_main ("keys", "every", NULL);
    /*---(wrap-up)------------------------*/
    PROG_wrap   ();

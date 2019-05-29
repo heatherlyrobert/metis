@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.2-, move to full yVIKEYS usage and support"
-#define     P_VERNUM    "1.1o"
-#define     P_VERTXT    "added window command to drive metis placement and sizing"
+#define     P_VERNUM    "1.1p"
+#define     P_VERTXT    "added data filtering command and to metis menus"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -41,7 +41,7 @@
 /*
  * few people regularly (except under duress) keep task lists
  *
- * people naturally keep focused lists of tasks near usage...
+ * people naturally keep a few notes or a short list near usage...
  *    -- meeting action items in a spreadsheet
  *    -- errand list in car
  *    -- grocery list on refrigerator
@@ -468,6 +468,7 @@ char        api_yvikeys_mapper      (char a_req);
 char        api_yvikeys_locator     (char *a_label, int *a_buf, int *a_x, int *a_y, int *a_z);
 char        api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z);
 char        api_yvikeys_sort        (char *a_how);
+char        api_yvikeys_filter      (char *a_which, char *a_string);
 char        api_yvikeys_window      (char *a_format);
 
 

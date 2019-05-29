@@ -37,6 +37,15 @@ FILTER_init             (void)
    yVIKEYS_menu_add ("µdsn", "by names"  , ":sort names¦");
    yVIKEYS_menu_add ("µdsa", "ascend"    , ":sort ascend¦");
    yVIKEYS_menu_add ("µdsd", "descend"   , ":sort descend¦");
+   yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "filter"      , ""    , "ss"   , api_yvikeys_filter  , "filter metis data"    );
+   yVIKEYS_menu_add ("µdfc", "clear"     , ":filter clear¦");
+   yVIKEYS_menu_add ("µdfu", "by urg"    , ":filter urg ");
+   yVIKEYS_menu_add ("µdfi", "by imp"    , ":filter imp ");
+   yVIKEYS_menu_add ("µdfe", "by est"    , ":filter est ");
+   yVIKEYS_menu_add ("µdff", "by flg"    , ":filter flg ");
+   yVIKEYS_menu_add ("µdf1", "by one"    , ":filter one ");
+   yVIKEYS_menu_add ("µdf2", "by two"    , ":filter two ");
+   yVIKEYS_menu_add ("µdft", "by txt"    , ":filter txt ");
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
