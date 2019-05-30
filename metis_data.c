@@ -4,9 +4,7 @@
 
 
 /*===[[ METIS BACKLOG ]]======================================================*
- * metis  wl2··  add descriptions to g_decode table
- * metis  dw4··  switch g_tasks to linked-list rather that array
- * metis  dw4··  switch g_tasks string elements to malloc rather than array
+ * metis  dw2··  add data refresh command and menu item
  *
  */
 
@@ -137,6 +135,7 @@ DATA_init               (void)
    }
    g_ntask  = 0;
    my.nact  = 0;
+   yVIKEYS_cmds_add (YVIKEYS_M_FILE   , "refresh"     , ""    , ""     , api_yvikeys_refresh , ""                   );
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }

@@ -18,11 +18,8 @@
 
 
 /*===[[ METIS BACKLOG ]]======================================================*
- * metis  tn2#·  update mask to show menu space/box in menu mode
- * metis  dn1··  data refresh adds to mask, but not drawing texture
- * metis  tn2#·  draw main menu in circular format
- * metis  dn2x·  draw menu texture to make usage fast
  *
+ * metis  dw2·  when filtered to zero cards, display blank card
  */
 
 float     g_alpha     = 0.0;
@@ -40,9 +37,9 @@ float  txf_space = 1.15;
 
 
 /*---(opengl objects)--------------------*/
-uint      g_tex     =     0;                /* texture for image              */
-uint      g_fbo     =     0;                /* framebuffer                    */
-uint      g_dep     =     0;                /* depth buffer                   */
+uint      g_tex     =    -1;                /* texture for image              */
+uint      g_fbo     =    -1;                /* framebuffer                    */
+uint      g_dep     =    -1;                /* depth buffer                   */
 
 
 
@@ -191,33 +188,6 @@ OPENGL_resize           (uint a_w, uint a_h)
    glLoadIdentity();
    glOrtho(        0,   win_w, -win_h,  0, -500.0,  500.0);
    glMatrixMode(GL_MODELVIEW);
-   return 0;
-}
-
-
-
-/*============================--------------------============================*/
-/*===----                          menu display                        ----===*/
-/*============================--------------------============================*/
-static void      o___MENU____________________o (void) {;}
-
-static char   s_menus   [LEN_LABEL];
-
-char
-OPENGL_menu_start       (void)
-{
-   strlcpy (s_menus, "\\", LEN_LABEL);
-   strlcpy (my.keys, ""  , LEN_LABEL);
-   OPENGL_mask ();
-   return 0;
-}
-
-char
-OPENGL_menu_cont        (void)
-{
-   char        t           [LEN_LABEL];
-   sprintf (t, "%c", g_minor);
-   strlcat (s_menus, t, LEN_LABEL);
    return 0;
 }
 
@@ -694,6 +664,8 @@ OPENGL_draw        (void)
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(create objects)-----------------*/
    /*> printf("   entered\n");                                                        <*/
+   DEBUG_GRAF   yLOG_note     ("delete old texture");
+   if (g_tex != -1)  yGLTEX_free (&g_tex, &g_fbo, &g_dep);
    DEBUG_GRAF   yLOG_note     ("create texture");
    yGLTEX_new (&g_tex, &g_fbo, &g_dep, tex_w, tex_h);
    /*---(setup)--------------------------*/

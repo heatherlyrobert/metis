@@ -2,12 +2,7 @@
 
 
 /*===[[ METIS BACKLOG ]]======================================================*
- * metis  tn2#·  add yvikeys setup logic, but not drawing control (yet)
- * metis  tn2#·  cause yvikeys to call back metis to draw main (gonna be ugly)
- * metis  tn1#·  force the floating command window to display at specific location
- * metis  dn2#·  setup the mapper so movement keys work realistically
- * metis  dn1#·  use colored hatching on black diagonal to show current task
- *
+ * metis  dw4·  create a x_mapper for columnar formats and movement
  *
  */
 
@@ -185,9 +180,9 @@ api_yvikeys_sort        (char *a_how)
    else if (strcmp (a_how, "ascend"  ) == 0)   my.order = 'a';
    else if (strcmp (a_how, "descend" ) == 0)   my.order = 'd';
    else                                        return -2;
-   DATA_refresh   ();
+   /*> DATA_refresh   ();                                                             <*/
    SORT_refresh   ();
-   FILTER_refresh ();
+   /*> FILTER_refresh ();                                                             <*/
    api_yvikeys_mapper (YVIKEYS_INIT);
    OPENGL_draw ();
    OPENGL_mask();
@@ -210,8 +205,8 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    else if (strcmp (a_which, "txt"     ) == 0)   strlcpy (my.ctxt, a_string, LEN_HUND);
    else if (strcmp (a_which, "clear"   ) == 0)   FILTER_clear ();
    else                                        return -3;
-   DATA_refresh   ();
-   SORT_refresh   ();
+   /*> DATA_refresh   ();                                                             <*/
+   /*> SORT_refresh   ();                                                             <*/
    FILTER_refresh ();
    api_yvikeys_mapper (YVIKEYS_INIT);
    OPENGL_draw ();
@@ -251,6 +246,19 @@ api_yvikeys_window      (char *a_format)
    OPENGL_mask();
    /*---(complete)------------------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+api_yvikeys_refresh     (void)
+{
+   DATA_refresh   ();
+   SORT_refresh   ();
+   FILTER_refresh ();
+   FORMAT_refresh ();
+   api_yvikeys_mapper (YVIKEYS_INIT);
+   OPENGL_draw    ();
+   OPENGL_mask    ();
    return 0;
 }
 

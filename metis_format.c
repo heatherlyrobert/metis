@@ -180,6 +180,24 @@ format_extra       (void)
 }
 
 char
+FORMAT_refresh          (void)
+{
+   switch (my.format) {
+   case 't' : format_ticker   ('t');  break;
+   case 'b' : format_ticker   ('b');  break;
+   case 'c' : format_column   ('r');  break;
+   case 'l' : format_column   ('R');  break;
+   case '1' : format_column   ('l');  break;
+   case '2' : format_column   ('L');  break;
+   case 'w' : format_wideview ();     break;
+   case 'p' : format_projects ();     break;
+   case 'x' : format_extra    ();     break;
+   default  :                         break;
+   }
+   return 0;
+}
+
+char
 format_change      (char a_which)
 {
    /*---(header)-------------------------*/

@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.2-, move to full yVIKEYS usage and support"
-#define     P_VERNUM    "1.1p"
-#define     P_VERTXT    "added data filtering command and to metis menus"
+#define     P_VERNUM    "1.1q"
+#define     P_VERTXT    "added data import/export options to metis menus"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -391,7 +391,6 @@ extern float     step;
 /*---(prototypes)------------------------*/
 int        main              (int argc, char *argv[]);
 
-char       PROG_event        (void);
 
 char       font_load         (void);
 char       font_change       (void);
@@ -411,8 +410,6 @@ char       OPENGL_wrap              (void);
 char       OPENGL_show              (void);
 char       OPENGL_draw              (void);
 char       OPENGL_resize            (uint, uint);
-char       OPENGL_menu_start        (void);
-char       OPENGL_menu_cont         (void);
 char       OPENGL_mask              (void);
 
 void       prog_catch        (int);
@@ -438,6 +435,7 @@ char        format_ticker           (char a_type);
 char        format_projects         (void);
 char        format_wideview         (void);
 char        format_extra            (void);
+char        FORMAT_refresh          (void);
 
 char        PROG_init               (void);
 char        PROG_args               (int argc, char *argv[]);
@@ -470,6 +468,7 @@ char        api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y,
 char        api_yvikeys_sort        (char *a_how);
 char        api_yvikeys_filter      (char *a_which, char *a_string);
 char        api_yvikeys_window      (char *a_format);
+char        api_yvikeys_refresh     (void);
 
 
 /*============================----end-of-source---============================*/
