@@ -27,6 +27,7 @@ struct cDECODE {
 };
 tDECODE   g_decode   [MAX_DECODE] = {
    /*---(urgency)------------------------*/
+   { 'u', '!', "now-now"     , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 't', "today"       , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 's', "soonest"     , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', 'd', "days"        , ""                                               , 0.000, 0.000, 0.000 },
@@ -37,15 +38,16 @@ tDECODE   g_decode   [MAX_DECODE] = {
    { 'u', 'b', "backlog"     , ""                                               , 0.000, 0.000, 0.000 },
    { 'u', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    /*---(importance)---------------------*/
+   { 'i', '!', "now-now"     , ""                                               , 0.000, 0.000, 0.000 },
    { 'i', 'a', "absolute"    , "true life or death for project, app, or me"     , 0.000, 0.000, 0.000 },
    { 'i', 'n', "need"        , "must be completed to finish objective"          , 0.000, 0.000, 0.000 },
-   { 'i', 'w', "want"        , ""                                               , 0.000, 0.000, 0.000 },
-   { 'i', 'l', "like"        , ""                                               , 0.000, 0.000, 0.000 },
-   { 'i', 'm', "might"       , ""                                               , 0.000, 0.000, 0.000 },
-   { 'i', 'i', "idea"        , ""                                               , 0.000, 0.000, 0.000 },
+   { 'i', 'w', "want"        , "want to complete, useful"                       , 0.000, 0.000, 0.000 },
+   { 'i', 'l', "like"        , "could be nice"                                  , 0.000, 0.000, 0.000 },
+   { 'i', 'm', "might"       , "plausable, could be done"                       , 0.000, 0.000, 0.000 },
+   { 'i', 'i', "idea"        , "possible, no thought applied yes"               , 0.000, 0.000, 0.000 },
    { 'i', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
    /*---(estimate)-----------------------*/
-   { 'e', '!', "5m-ish"      , ""                                               , 0.000, 0.000, 0.000 },
+   { 'e', '!', "5m"          , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', 's', "15m"         , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', 'm', "30m"         , ""                                               , 0.000, 0.000, 0.000 },
    { 'e', '1', "60m"         , ""                                               , 0.000, 0.000, 0.000 },
@@ -97,7 +99,7 @@ DATA__clear        (int a_num)
    g_tasks [a_num].urg      = '-';
    g_tasks [a_num].imp      = '-';
    g_tasks [a_num].est      = '-';
-   g_tasks [a_num].flg      = '-';
+   g_tasks [a_num].prg      = '-';
    g_tasks [a_num].txt [0]  = '\0';
    /*---(source data)-----------------*/
    g_tasks [a_num].line     =  -1;
@@ -121,15 +123,23 @@ DATA_init               (void)
    char        t           [LEN_LABEL];
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   strlcpy (my.urgs, "", LEN_LABEL);
+   strlcpy (my.imps, "", LEN_LABEL);
+   strlcpy (my.ests, "", LEN_LABEL);
+   strlcpy (my.prgs, "", LEN_LABEL);
    for (i = 0; i < MAX_DECODE; ++i) {
       sprintf (t, "%c", g_decode [i].abbr);
       switch (g_decode [i].type) {
       case 'u' : strlcat (my.urgs, t, LEN_LABEL);   break;
       case 'i' : strlcat (my.imps, t, LEN_LABEL);   break;
       case 'e' : strlcat (my.ests, t, LEN_LABEL);   break;
-      case 'p' : strlcat (my.flgs, t, LEN_LABEL);   break;
+      case 'p' : strlcat (my.prgs, t, LEN_LABEL);   break;
       }
    }
+   DEBUG_DATA   yLOG_info     ("my.urgs"   , my.urgs);
+   DEBUG_DATA   yLOG_info     ("my.imps"   , my.imps);
+   DEBUG_DATA   yLOG_info     ("my.ests"   , my.ests);
+   DEBUG_DATA   yLOG_info     ("my.prgs"   , my.prgs);
    for (i = 0; i < 100; ++i) {
       DATA__clear (i);
    }
@@ -206,9 +216,9 @@ DATA__stats        (char *a_stats)
    }
    /*---(tick/flag)-----------------------*/
    --rce;
-   if (strchr (my.flgs, a_stats [3]) != NULL)  g_tasks [g_ntask].flg = a_stats [3];
+   if (strchr (my.prgs, a_stats [3]) != NULL)  g_tasks [g_ntask].prg = a_stats [3];
    else  {
-      g_tasks [g_ntask].flg = '?';
+      g_tasks [g_ntask].prg = '?';
       rc = -rce;
    }
    /*---(complete)-----------------------*/
@@ -653,10 +663,10 @@ task_list          (void)
    for (i = 0; i < g_ntask; ++i) {
       if ((i % 3) == 0)  printf ("\n");
       printf (" %3d  "              , i);
-      if (g_tasks [i].flg == 'h') {
-         printf ("   %c-%c-%c-%c  ", g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].flg);
+      if (g_tasks [i].prg == 'h') {
+         printf ("   %c-%c-%c-%c  ", g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
       } else {
-         printf ("   %c %c %c %c  ", g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].flg);
+         printf ("   %c %c %c %c  ", g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
       }
       printf ("   %-15s     %-15s  ", g_tasks [i].one, g_tasks [i].two);
       printf ("   %-70.70s  "       , g_tasks [i].txt);
@@ -722,7 +732,7 @@ DATA__unit         (char *a_question, int a_num)
    }
    else if (strcmp (a_question, "stats"         ) == 0) {
       if (a_num < g_ntask) {
-         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg %c, imp %c, est %c, prog %c   %3d", a_num, g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].flg, g_tasks [a_num].line);
+         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg %c, imp %c, est %c, prog %c   %3d", a_num, g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].prg, g_tasks [a_num].line);
       } else {
          snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg -, imp -, est -, prog -     -", a_num);
       }

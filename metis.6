@@ -1,0 +1,158 @@
+.TH metis 6 2010-10 "linux" "heatherly custom tools manual"
+
+.SH NAME
+.B metis
+\- light, aesthetic, and useful personal task visualizer
+
+.SH PATRON
+.B metis-okeanides
+(ocean-born) goddess of deep thought and wise counsel
+
+.SH IMAGERY (see HERITAGE in man section 7 for more)
+singularly graceful, stately, and regal with supreme gravitas
+
+.SH SUMMARY
+.B metis
+is a aesthetic, keyboard-centric personal task visualizer with simple ascii
+capture, consistent categorization, clean hierarchy for grouping, and meaningful
+fields for sorting, searching and filtering.
+
+.SH DOCUMENTATION FILES (see also)
+.nf
+metis (1)          end-user command line, arguments, and options
+.nf
+metis (5)          data standards, streams, files, and configuration
+.nf
+metis (6)    ***   interactive system usage and navigation
+.nf
+metis (7)          decision rationale, objectives, and overview
+
+.SH TABLE OF CONTENTS
+.nf
+navigation         keyboard movement keys
+.nf
+file               options to update the dataset
+.nf
+formats            options to change the application display format
+.nf
+filters            options to limit tasks based on categories
+.nf
+sorting            options to sort the data
+.nf
+searching          options to sort the data
+
+.SH NAVIGATION
+metis follows the yVIKEYS (vim-like) standards for all navigation.  since metis
+can read a large number of tasks, the current format provides a window through
+which the tasks are seen.  the current task is show with a white diagonal
+on left.  below are the most useful keys.
+
+ _         beginning of tasks
+ K         up five tasks
+ k         up one task
+ j         down one task
+ J         down five tasks
+ ~         ending of tasks
+
+ gt        go to task at top of screen
+ gk        go to task at top quarter of screen
+ gm        go to task at middle of screen
+ gj        go to task at bottom quarter of screen
+ gb        go to task at bottom of screen
+
+ zt        scroll current task to top of screen
+ zk        scroll current task to top quarter of screen
+ zm        scroll current task to middle of screen
+ zj        scroll current task to bottom quarter of screen
+ zb        scroll current task to bottom of screen
+
+ ,         start scrolling (ticker mode only)
+ .         stop scrolling (ticker mode only)
+ 
+.SH FILE
+metis is called with a target dataset, can not edit it, and can not change
+to another.  as such, there are only a few high level options.
+
+.B /ff (file-refresh)
+to re-read a dataset if source changes
+
+.B /fq (file-quit)
+to leave metis
+
+.SH FORMATS
+these changes are low freqency and so handled through the standard yVIKEYS menu
+.B /vw (view-window)
+for window sizing and positions.
+
+.B /vw
+ ···#      clear/reset   clear stick and on-top, make right-short
+ ···r      right short   12 slot, vertical on right edge of screen
+ ···R      right long    25 slot, vertical on right edge of screen
+ ···l      left short    12 slot, vertical on left edge of screen
+ ···L      left long     25 slot, vertical on left edge of screen
+ ···t      ticker        10 slot, horizontal at bottom of screen
+ ···b      baseline      10 slot, horizontal at bottom of screen
+ ···p      project       6x12 slot, full screen
+ ···w      wideview      6x25 slot, full screen
+ ···x      extra         6x25 slot, full screen
+ ···s      stick (t)     shows metis on all/current desktops
+ ···o      on-top (t)    shows metis on top of all other windows
+
+.SH FILTERS
+data filtering not standard so handled through the standard yVIKEYS menu
+.B /df (dataset-filter)
+for all data filtering by categories.
+
+.B /df
+(Ë means enter single char, " means enter string plus ¦)
+ ···#      clear/reset   clear all current filtering
+ ···u´     urgency       see standard categories in metis (5)
+ ···i´     importance    see standard categories in metis (5)
+ ···e´     estimate      see standard categories in metis (5)
+ ···p´     progress      see standard categories in metis (5)
+ ···1´´´¦  cat one       filter by sub-string in category one
+ ···2´´´¦  cat two       filter by sub-string in category two
+ ···t´´´¦  text          filter by sub-string in category text
+
+.SH SORTING
+data sorting not standard so handled through the standard yVIKEYS menu
+.B /ds (dataset-sort)
+for all data sorting and ordering.
+
+.B /ds
+ ···#      clear/reset   clear all current sorting
+ ···u      urgency       orders by urgency category
+ ···i      importance    orders by importance category
+ ···e      estimate      orders by estimate category
+ ···p      progress      orders by progress category
+ ···a      ascending     changes ordering to ascending (a-z)
+ ···d      descending    changes ordering to descending (z-a)
+
+.SH SEARCHING
+data content searching is a standard yVIKEYS search mode.  additional search
+configuration is enabled in
+.B /cs (config-search).
+
+.B µ´´´¦
+searches for text and only displays matching (standard yVIKEYS)
+
+.B µ¦
+clear the current search and display all (standard yVIKEYS)
+
+.B /cs
+ ···#      clear/reset   clear all search changes
+ ...c      case sense    set case sensitive
+ ...C      case insense  set case insensitive
+ ...f      filter        filter out non-matching results
+ ...F      no-filter     show all, but mark matching results
+ ...l      literal       no searching meta-characters
+ ...p      posix         posix-standard searching meta-characters
+ ...x      extended      full yVIKEYS search meta-characters
+
+.SH AUTHOR
+jelloshrike at gmail dot com
+
+.SH COLOPHON
+this page is part of a documentation package meant to make use of the
+heatherly tools easier and faster.
+

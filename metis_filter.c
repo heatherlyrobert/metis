@@ -75,7 +75,7 @@ FILTER_refresh          (void)
    g_tasks [g_ntask].act = '-';
    /*---(display)------------------------*/
    for (i = 0; i < g_ntask; ++i) {
-      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", i, g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].flg);
+      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", i, g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
       /*---(default)---------------------*/
       g_tasks [i].act  = '-';
       /*> if (my.nact > my.nrows)  continue;                                         <*/
@@ -95,7 +95,7 @@ FILTER_refresh          (void)
          continue;
       }
       /*---(status)----------------------*/
-      if ((my.cflg != ' ' && g_tasks [i].flg != my.cflg)) {
+      if ((my.cflg != ' ' && g_tasks [i].prg != my.cflg)) {
          DEBUG_DATA   yLOG_note     ("skip as flag/status does not match filter");
          continue;
       }
@@ -153,7 +153,7 @@ SORT__swap              (tCARD *a_one, tCARD *a_two)
    x_temp.urg        = a_one->urg;
    x_temp.imp        = a_one->imp;
    x_temp.est        = a_one->est;
-   x_temp.flg        = a_one->flg;
+   x_temp.prg        = a_one->prg;
    strlcpy (x_temp.txt, a_one->txt, LEN_HUND);
    x_temp.seq        = a_one->seq;
    x_temp.line       = a_one->line;
@@ -165,7 +165,7 @@ SORT__swap              (tCARD *a_one, tCARD *a_two)
    a_one->urg        = a_two->urg;
    a_one->imp        = a_two->imp;
    a_one->est        = a_two->est;
-   a_one->flg        = a_two->flg;
+   a_one->prg        = a_two->prg;
    strlcpy (a_one->txt, a_two->txt, LEN_HUND);
    a_one->seq        = a_two->seq;
    a_one->line       = a_two->line;
@@ -177,7 +177,7 @@ SORT__swap              (tCARD *a_one, tCARD *a_two)
    a_two->urg        = x_temp.urg;
    a_two->imp        = x_temp.imp;
    a_two->est        = x_temp.est;
-   a_two->flg        = x_temp.flg;
+   a_two->prg        = x_temp.prg;
    strlcpy (a_two->txt, x_temp.txt, LEN_HUND);
    a_two->seq        = x_temp.seq;
    a_two->line       = x_temp.line;
@@ -254,7 +254,7 @@ SORT_stats              (char a_type)
       x_urg = strchr (my.urgs, g_tasks [i].urg) - my.urgs + 'a';
       x_imp = strchr (my.imps, g_tasks [i].imp) - my.imps + 'a';
       x_est = strchr (my.ests, g_tasks [i].est) - my.ests + 'a';
-      x_flg = strchr (my.flgs, g_tasks [i].flg) - my.flgs + 'a';
+      x_flg = strchr (my.prgs, g_tasks [i].prg) - my.prgs + 'a';
       /*---(combine)---------------------*/
       switch (a_type) {
       case 'i' :  sprintf (t, "%c%c%c%c", x_imp, x_urg, x_est, x_flg);  break;
@@ -292,7 +292,7 @@ SORT_names              (void)
       x_urg = strchr (my.urgs, g_tasks [i].urg) - my.urgs + 'a';
       x_imp = strchr (my.imps, g_tasks [i].imp) - my.imps + 'a';
       x_est = strchr (my.ests, g_tasks [i].est) - my.ests + 'a';
-      x_flg = strchr (my.flgs, g_tasks [i].flg) - my.flgs + 'a';
+      x_flg = strchr (my.prgs, g_tasks [i].prg) - my.prgs + 'a';
       sprintf (g_tasks [i].key, "%-20.20s %-20.20s %c%c%c%c %s",
             g_tasks [i].one, g_tasks [i].two,
             x_urg, x_imp, x_est, x_flg,
@@ -375,7 +375,7 @@ FILTER__unit       (char *a_question, int a_num)
       sprintf (t, "[%.10s]", g_tasks [a_num].two);
       sprintf (u, "[%.10s]", g_tasks [a_num].txt);
       snprintf (unit_answer, LEN_FULL, "FILTER sort (%2d) : %c%c%c%c %c %-12.12s %-12.12s %-12.12s %3d", a_num,
-            g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].flg, 
+            g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].prg, 
             g_tasks [a_num].act, s, t, u, g_tasks [a_num].seq);
    }
    /*---(complete)-----------------------*/

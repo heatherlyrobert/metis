@@ -37,9 +37,6 @@ float  txf_space = 1.15;
 
 
 /*---(opengl objects)--------------------*/
-uint      g_tex     =    -1;                /* texture for image              */
-uint      g_fbo     =    -1;                /* framebuffer                    */
-uint      g_dep     =    -1;                /* depth buffer                   */
 
 
 
@@ -57,9 +54,12 @@ OPENGL__colors          (char *a_valid, char a_color)
 {
    char       *p           = NULL;
    char        i           =    0;
+   DEBUG_GRAF   yLOG_info     ("a_valid"    , a_valid);
+   DEBUG_GRAF   yLOG_char     ("a_color"    , a_color);
    p = strchr (a_valid, a_color);
    if (p == NULL)   i = 100;
    else             i = p - a_valid;
+   DEBUG_GRAF   yLOG_value    ("i"          , i);
    switch (i) {
    case  0  : glColor3f (  1.000,  0.000,  0.000); break;
    case  1  : glColor3f (  1.000,  0.455,  0.000); break;
@@ -79,7 +79,7 @@ OPENGL__polygon         (float *a_array)
 {
    glPushMatrix(); {
       /*> glDisable(GL_BLEND);                                                        <*/
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      /*> glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                          <*/
       /*> glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                <*/
       /*> glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);                                 <*/
       glBegin(GL_POLYGON); {
@@ -111,44 +111,34 @@ static void      o___FONTS___________________o (void) {;}
 char
 font_load(void)
 {
+   DEBUG_GRAF   yLOG_senter   (__FUNCTION__);
    my.fixed  = yFONT_load(face_fixed);
+   DEBUG_GRAF   yLOG_sint     (my.fixed);
    if (my.fixed <  0) {
       fprintf(stderr, "Problem loading %s\n", face_fixed);
       exit(1);
    }
    my.pretty  = yFONT_load(face_pretty);
+   DEBUG_GRAF   yLOG_sint     (my.pretty);
    if (my.pretty <  0) {
       fprintf(stderr, "Problem loading %s\n", face_pretty);
       exit(1);
    }
-   return 0;
-}
-
-char
-font_change        (void)
-{
-   static char xfont = 0;
-   if (xfont == 0) {
-      xfont = 1;
-      strcpy(face_fixed, "teacher_k");
-      strcpy(face_pretty, "teacher_k");
-      txf_off   = -1.00;
-      txf_space =  1.75;
-   } else {
-      xfont = 0;
-      strcpy(face_fixed, "comfortaa");
-      strcpy(face_pretty, "comfortaa");
-      txf_off   =  0.00;
-      txf_space =  1.15;
-   }
+   DEBUG_GRAF   yLOG_sexit    (__FUNCTION__);
    return 0;
 }
 
 char
 font_delete(void)
 {
+   DEBUG_GRAF   yLOG_senter   (__FUNCTION__);
    yFONT_free (my.fixed);
+   my.fixed  = -1;
+   DEBUG_GRAF   yLOG_sint     (my.fixed);
    yFONT_free (my.pretty);
+   my.pretty = -1;
+   DEBUG_GRAF   yLOG_sint     (my.pretty);
+   DEBUG_GRAF   yLOG_sexit    (__FUNCTION__);
    return 0;
 }
 
@@ -167,6 +157,9 @@ OPENGL_init (void)
    int         f           =  '-';
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   my.g_tex     =    -1;
+   my.g_fbo     =    -1;
+   my.g_dep     =    -1;
    yGLTEX_init ();
    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
@@ -183,10 +176,10 @@ char
 OPENGL_resize           (uint a_w, uint a_h)
 {
    if (a_h == 0) a_h = 1;
-   glViewport(0,  0, win_w, win_h);
+   glViewport(0,  0, my.win_w, my.win_h);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   glOrtho(        0,   win_w, -win_h,  0, -500.0,  500.0);
+   glOrtho(        0,   my.win_w, -my.win_h,  0, -500.0,  500.0);
    glMatrixMode(GL_MODELVIEW);
    return 0;
 }
@@ -213,7 +206,9 @@ OPENGL__panel        (float a_wtop, float a_wlef, float a_wbot, float a_wrig, fl
    DEBUG_GRAF   yLOG_double   ("a_tbot"     , a_tbot);
    DEBUG_GRAF   yLOG_double   ("a_trig"     , a_trig);
    /*---(draw it)------------------------*/
-   glBindTexture   (GL_TEXTURE_2D, g_tex);
+   /*> a_wtop += 300;                                                                 <*/
+   /*> a_wbot += 300;                                                                 <*/
+   glBindTexture   (GL_TEXTURE_2D, my.g_tex);
    glBegin(GL_POLYGON); {
       /*---(top/lef)--------*/
       glTexCoord2f ( a_tlef,  a_ttop);
@@ -256,6 +251,7 @@ OPENGL_show        (void)
    int      x_ymin, x_ymax;
    char        x_mode      =  '-';
    static char x_modesave  =  '-';
+   float       x_offset    =  0.0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    x_mode = yVIKEYS_mode ();
@@ -269,10 +265,10 @@ OPENGL_show        (void)
    /*---(prepare drawing)----------------*/
    DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
-   DEBUG_GRAF   yLOG_value    ("win_h"     , win_h);
-   DEBUG_GRAF   yLOG_value    ("win_w"     , win_w);
-   DEBUG_GRAF   yLOG_value    ("tex_h"     , tex_h);
-   DEBUG_GRAF   yLOG_value    ("tex_w"     , tex_w);
+   DEBUG_GRAF   yLOG_value    ("win_h"     , my.win_h);
+   DEBUG_GRAF   yLOG_value    ("win_w"     , my.win_w);
+   DEBUG_GRAF   yLOG_value    ("tex_h"     , my.tex_h);
+   DEBUG_GRAF   yLOG_value    ("tex_w"     , my.tex_w);
    DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
    DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
    DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
@@ -286,27 +282,28 @@ OPENGL_show        (void)
    DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
    DEBUG_GRAF   yLOG_value    ("my.ecol"   , my.ecol);
    /*---(horizontal views)---------------*/
-   if (strchr("tbwpx"  , my.format) != 0) {
+   if (strchr(FORMAT_HORZ, my.format) != 0) {
       DEBUG_GRAF   yLOG_note     ("horizontal formats----------");
       /*---(consistent)------------------*/
-      x_wtop  = 0.0;
-      x_wbot  = -win_h;
+      /*> x_wtop  = 0.0;                                                              <*/
+      x_wtop  = -195.0;
+      x_wbot  = x_wtop - 45.0;
       x_ttop  = 1.0;
       x_tbot  = 0.0;
-      if (my.format != 't')  x_wwide = 325;
+      if (my.format != FORMAT_TICKER)  x_wwide = 325;
       /*---(panel one/lef)---------------*/
       x_wlef  = 0.0;
-      x_tlef  = (my.ccol  * x_wwide) / tex_w;
+      x_tlef  = (my.ccol  * x_wwide) / my.tex_w;
       if (my.ncols - my.ccol > my.wcols) {
          x_max  = my.ccol + my.wcols;
          x_cnt  = my.wcols;
-         x_wrig = win_w;
+         x_wrig = my.win_w;
       } else {
          x_max  = my.ncols;
          x_cnt  = my.ncols - my.ccol;
-         x_wrig = (x_cnt / my.wcols) * win_w;
+         x_wrig = (x_cnt / my.wcols) * my.win_w;
       }
-      x_trig   = (x_max    * x_wwide) / tex_w;
+      x_trig   = (x_max    * x_wwide) / my.tex_w;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
       DEBUG_GRAF   yLOG_double   ("x_tlef"    , x_tlef);
@@ -314,28 +311,46 @@ OPENGL_show        (void)
       DEBUG_GRAF   yLOG_double   ("x_wlef"    , x_wlef);
       DEBUG_GRAF   yLOG_double   ("x_wrig"    , x_wrig);
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+      /*---(panel two/rig)---------------*/
+      if (x_wrig < my.win_w) {
+         x_wlef = x_wrig;
+         x_wrig = my.win_w;
+         x_tlef = 0.0;
+         x_max  = my.wcols - x_cnt;
+         x_trig = (x_max    * x_wwide) / my.tex_w;
+         OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+      }
+      /*---(current)---------------------*/
+      x_offset = 0.0;
+      glColor4f (  1.000,  1.000,  1.000, 1.000);
+      glBegin(GL_POLYGON); {
+         glVertex3f (x_offset +   2.0, -195.0 -  6.0,   80.0);
+         glVertex3f (x_offset +  38.0, -195.0 - 43.0,   80.0);
+         glVertex3f (x_offset +  25.0, -195.0 - 43.0,   80.0);
+         glVertex3f (x_offset +   2.0, -195.0 - 20.0,   80.0);
+      } glEnd();
    }
    /*---(vertical views)-----------------*/
    else {
       DEBUG_GRAF   yLOG_note     ("vertical formats------------");
       /*---(consistent)------------------*/
       x_wlef  = 0.0;
-      x_wrig  = win_w;
+      x_wrig  = my.win_w;
       x_tlef  = 0.0;
       x_trig  = 1.0;
       /*---(updates)---------------------*/
       x_wtop  = 0.0;
-      x_ttop  = 1.0 - ((my.brow  *  x_wtall) / tex_h);
+      x_ttop  = 1.0 - ((my.brow  *  x_wtall) / my.tex_h);
       if (my.nrows - my.brow > my.wrows) {
          x_max  = my.brow + my.wrows;
          x_cnt  = my.wrows;
-         x_wbot = -win_h;
+         x_wbot = -my.win_h;
       } else {
          x_max  = my.nrows;
          x_cnt  = my.nrows - my.brow;
-         x_wbot = -(x_cnt / my.wrows) * win_h;
+         x_wbot = -(x_cnt / my.wrows) * my.win_h;
       }
-      x_tbot   = 1.0 - ((x_max    *  x_wtall) / tex_h);
+      x_tbot   = 1.0 - ((x_max    *  x_wtall) / my.tex_h);
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
       DEBUG_GRAF   yLOG_double   ("x_ttop"    , x_ttop);
@@ -344,12 +359,13 @@ OPENGL_show        (void)
       DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       /*---(current)---------------------*/
+      x_offset = -(my.crow - my.brow) * 60.0;
       glColor4f (  1.000,  1.000,  1.000, 1.000);
       glBegin(GL_POLYGON); {
-         glVertex3f (    2.0, -(my.crow - my.brow) * 60.0 -  6.0,  100.0);
-         glVertex3f (   38.0, -(my.crow - my.brow) * 60.0 - 43.0,  100.0);
-         glVertex3f (   25.0, -(my.crow - my.brow) * 60.0 - 43.0,  100.0);
-         glVertex3f (    2.0, -(my.crow - my.brow) * 60.0 - 20.0,  100.0);
+         glVertex3f (    2.0, x_offset -  6.0,   80.0);
+         glVertex3f (   38.0, x_offset - 43.0,   80.0);
+         glVertex3f (   25.0, x_offset - 43.0,   80.0);
+         glVertex3f (    2.0, x_offset - 20.0,   80.0);
       } glEnd();
       /*---(done)------------------------*/
    }
@@ -507,17 +523,19 @@ OPENGL__text            (int a_index)
       snprintf(temp, 4, "%c", g_tasks [a_index].est);
       yFONT_print(my.pretty,  9, YF_BASCEN, temp);
       glTranslatef( 247.0,   2.0,   0.0);
-      snprintf(temp, 4, "%c", g_tasks [a_index].flg);
+      snprintf(temp, 4, "%c", g_tasks [a_index].prg);
       yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
-      glTranslatef( -15.0,   0.0,   0.0);
-      snprintf(temp, 4, "%d", g_ntask);
-      yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
-      glTranslatef( -15.0,   0.0,   0.0);
-      snprintf(temp, 4, "%d", g_tasks [a_index].seq);
-      yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
-      glTranslatef( -15.0,   0.0,   0.0);
-      snprintf(temp, 4, "%d", g_tasks [a_index].line);
-      yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
+      if (my.lines == 'y') {
+         glTranslatef( -15.0,   0.0,   0.0);
+         snprintf(temp, 4, "%d", g_ntask);
+         yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
+         glTranslatef( -15.0,   0.0,   0.0);
+         snprintf(temp, 4, "%d", g_tasks [a_index].seq);
+         yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
+         glTranslatef( -15.0,   0.0,   0.0);
+         snprintf(temp, 4, "%d", g_tasks [a_index].line);
+         yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
+      }
    } glPopMatrix();
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    return 0;
@@ -573,7 +591,7 @@ OPENGL__card     (int a_index)
       return rce;
    }
    /*> printf("draw = %2d\n", a_index);                                               <*/
-   OPENGL__base    (g_tasks [a_index].flg);
+   OPENGL__base    (g_tasks [a_index].prg);
    OPENGL__urg     (g_tasks [a_index].urg);
    OPENGL__est     (g_tasks [a_index].est);
    OPENGL__imp     (g_tasks [a_index].imp);
@@ -665,12 +683,12 @@ OPENGL_draw        (void)
    /*---(create objects)-----------------*/
    /*> printf("   entered\n");                                                        <*/
    DEBUG_GRAF   yLOG_note     ("delete old texture");
-   if (g_tex != -1)  yGLTEX_free (&g_tex, &g_fbo, &g_dep);
+   if (my.g_tex != -1)  yGLTEX_free (&my.g_tex, &my.g_fbo, &my.g_dep);
    DEBUG_GRAF   yLOG_note     ("create texture");
-   yGLTEX_new (&g_tex, &g_fbo, &g_dep, tex_w, tex_h);
+   yGLTEX_new (&my.g_tex, &my.g_fbo, &my.g_dep, my.tex_w, my.tex_h);
    /*---(setup)--------------------------*/
    DEBUG_GRAF   yLOG_note     ("setup opengl view");
-   yGLTEX_draw_start (g_fbo, YGLTEX_TOPLEF, tex_w, tex_h, 1.0);
+   yGLTEX_draw_start (my.g_fbo, YGLTEX_TOPLEF, my.tex_w, my.tex_h, 1.0);
    /*---(tasks)--------------------------*/
    DEBUG_GRAF   yLOG_note     ("draw tasks");
    glColor4f (0.0f, 0.0f, 0.0f, 1.0f);
@@ -686,10 +704,10 @@ OPENGL_draw        (void)
    case FORMAT_BASELINE :
       OPENGL__colrow (my.tcols, 325.0,   0.0);
       break;
-   case FORMAT_COLUMN   :
+   case FORMAT_RSHORT   : case FORMAT_LSHORT   :
       OPENGL__colrow (my.trows,   0.0, -60.0);
       break;
-   case FORMAT_LONG     :
+   case FORMAT_RLONG    : case FORMAT_LLONG    :
       OPENGL__colrow (my.trows,   0.0, -60.0);
       break;
    case FORMAT_WIDE     :
@@ -744,7 +762,7 @@ OPENGL_draw        (void)
    /*> printf("   ending draw\n");                                                    <*/
    /*> printf("width = %d\n", w);                                                     <*/
    /*---(mipmaps)------------------------*/
-   yGLTEX_draw_end (g_tex);
+   yGLTEX_draw_end (my.g_tex);
    /*---(complete)-------------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -764,7 +782,7 @@ OPENGL_mask             (void)
    int       i         = 0;
    int       j         = 0;
    int       k         = 0;
-   Pixmap    bounds    = XCreatePixmap(DISP, BASE, win_w, win_h, 1);
+   Pixmap    bounds    = XCreatePixmap(DISP, BASE, my.win_w, my.win_h, 1);
    int       x_col      = 0;
    int         x_max       =    0;
    float       x_inc       =    0;
@@ -785,7 +803,7 @@ OPENGL_mask             (void)
    x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);
    DEBUG_GRAF   yLOG_char     ("x_status"  , x_status);
    XSetForeground(DISP, gc, 0);
-   XFillRectangle(DISP, bounds, gc, 0, 0, win_w, win_h);
+   XFillRectangle(DISP, bounds, gc, 0, 0, my.win_w, my.win_h);
    XSetForeground(DISP, gc, 1);
    /*---(establish mask)-----------------*/
    switch (my.format) {
@@ -796,10 +814,11 @@ OPENGL_mask             (void)
       DEBUG_GRAF   yLOG_value    ("x_inc"     , x_inc);
       x_max = my.wcols;
       if (x_max >= my.nact)  x_max = my.nact;
-      for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc, 0, 300, 45);
+      /*> for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc, 0, 300, 45);   <*/
+      /*> for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc,   0, 300, 220);   <*/
+      for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc, 195, 300, 45);
       break;
-   case FORMAT_COLUMN   :
-   case FORMAT_LONG     :
+   case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
       x_inc = 60.0;
       x_max = my.wrows;
       if (x_max >= my.nact)  x_max = my.nact;
@@ -807,6 +826,7 @@ OPENGL_mask             (void)
       for (i = 0; i < x_max; ++i) {
          XFillRectangle (DISP, bounds, gc,   0, i * x_inc, 300, 45);
       }
+      XFillRectangle (DISP, bounds, gc,   0,  my.wrows * x_inc, 300, 15);
       break;
    case FORMAT_WIDE     :
       for (j = 0; j < 4; ++j) {
@@ -839,8 +859,13 @@ OPENGL_mask             (void)
    /*---(check for menu)-----------------*/
    if (x_mode == SMOD_MENUS) {
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
-      XFillRectangle (DISP, bounds, gc, 10, 70, 280, 200);
+      if (strchr (FORMAT_HORZ, my.format) != NULL) {
+         XFillRectangle (DISP, bounds, gc,  0, 40, 280, 220);
+      } else {
+         XFillRectangle (DISP, bounds, gc, 10, 10, 280, 260);
+      }
    }
+   /*---(status bar)---------------------*/
    /*> if (x_status == 'y') {                                                         <* 
     *>    x_max = my.nact;                                                            <* 
     *>    if (x_max > 12)  x_max = 12;                                                <* 
@@ -875,6 +900,9 @@ OPENGL__unit       (char *a_question, int a_num)
    strcpy (unit_answer, "OPENGL           : question not understood");
    if      (strcmp (a_question, "position"      ) == 0) {
       snprintf (unit_answer, LEN_FULL, "OPENGL pos  (%2d) : %c %4dp %4dx %4dy %4dc %4dr", a_num, g_tasks [a_num].act, g_tasks [a_num].pos, g_tasks [a_num].x, g_tasks [a_num].y, g_tasks [a_num].col, g_tasks [a_num].row);
+   }
+   else if (strcmp (a_question, "current"       ) == 0) {
+      snprintf (unit_answer, LEN_FULL, "OPENGL curr      : row %3db %3dc %3de, col %3db %3dc %3de", my.brow, my.crow, my.erow, my.bcol, my.ccol, my.ecol);
    }
    /*---(complete)-----------------------*/
    return unit_answer;

@@ -24,7 +24,6 @@ main               (int argc, char *argv[])
       PROG_end    ();
       return rce;
    }
-   yVIKEYS_cmds_direct (":window col_rig");
    /*---(main loop)----------------------*/
    rc = yVIKEYS_main ("keys", "every", NULL);
    /*---(wrap-up)------------------------*/

@@ -6,8 +6,6 @@
  */
 
 
-char      win_title[100]    = "metis_tasklist";
-
 
 tMY         my;
 
@@ -65,16 +63,19 @@ PROG_init          (void)
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(set globals)--------------------*/
    FILTER_clear ();
+   my.lines   = '-';
    my.sort    = '-';
    my.order   = 'a';
    my.ncols   = 0;
    my.nrows   = 0;
    my.source  = DATA_PIPE;
-   my.format  = FORMAT_COLUMN;
+   my.format  = FORMAT_RSHORT;
+   format_column ();
    my.quit    = '-';
    my.trouble = '-';
+   strlcpy (my.win_title, "metis_tasklist", LEN_DESC);
    /*---(yvikeys config)-----------------*/
-   rc = yVIKEYS_init   ();
+   rc = yVIKEYS_init   (MODE_MAP);
    rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");
    DATA_init ();
    FILTER_init ();
@@ -92,7 +93,6 @@ PROG_args          (int argc, char *argv[])
    int       len       = 0;            /* argument length                     */
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   format_column('r');
    for (i = 1; i < argc; ++i) {
       a = argv[i];
       if (a[0] == '@')  continue;
@@ -102,14 +102,15 @@ PROG_args          (int argc, char *argv[])
       else if (strncmp (a, "-i"          ,  2) == 0 && len == 3)  my.cimp  = a[2];
       else if (strncmp (a, "-e"          ,  2) == 0 && len == 3)  my.cest  = a[2];
       else if (strncmp (a, "-f"          ,  2) == 0 && len == 3)  my.cflg  = a[2];
+      else if (strcmp  (a, "--lines"         ) == 0)              my.lines = 'y';
       /*---(initial format)--------------*/
-      else if (strcmp  (a, "--ticker"        ) == 0)  format_ticker ('t');
-      else if (strcmp  (a, "--baseline"      ) == 0)  format_ticker ('b');
-      else if (strcmp  (a, "--column"        ) == 0)  format_column ('r');
-      else if (strcmp  (a, "-1"              ) == 0)  format_column ('l');
-      else if (strcmp  (a, "--long"          ) == 0)  format_column ('R');
-      else if (strcmp  (a, "-2"              ) == 0)  format_column ('L');
-      else if (strcmp  (a, "--wide"          ) == 0)  format_wideview();
+      else if (strcmp  (a, "--ticker"        ) == 0)  format_ticker (FORMAT_TICKER);
+      else if (strcmp  (a, "--baseline"      ) == 0)  format_ticker (FORMAT_BASELINE);
+      else if (strcmp  (a, "--short"         ) == 0)  my.format = FORMAT_RSHORT;
+      else if (strcmp  (a, "--lshort"        ) == 0)  my.format = FORMAT_LSHORT;
+      else if (strcmp  (a, "--long"          ) == 0)  my.format = FORMAT_RLONG;
+      else if (strcmp  (a, "--llong"         ) == 0)  my.format = FORMAT_LLONG;
+      else if (strcmp  (a, "--wide"          ) == 0)  format_wideview ();
       else if (strcmp  (a, "--extra"         ) == 0)  format_extra();
       /*---(task/data source)------------*/
       else if (strcmp  (a, "--master"        ) == 0)  my.source = DATA_MASTER;
@@ -154,39 +155,17 @@ PROG_final         (void)
    rc = daemon (1, 0);
    if (rc != 0) return rc;
    /*---(open window)---------------------------*/
-   yVIKEYS_view_config   ("metis_tasklist", P_VERNUM, YVIKEYS_OPENGL, 300, 60 * 12, 0);
-   yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, 300, -60 * 12, 60 * 12, 0, 0, 0, OPENGL_show);
-   yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -35     , 20     , 0, 0, 0, NULL);
-   yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_BOTLEF,  10, 280, -270    , 200    , 0, 0, 0, NULL);
-   yVIKEYS_cmds_direct   (":layout min");
-   yVIKEYS_cmds_direct   (":title disable");
-   yVIKEYS_cmds_direct   (":version disable");
-   yVIKEYS_cmds_direct   (":buffer disable");
-   yVIKEYS_cmds_direct   (":formula disable");
-   yVIKEYS_cmds_direct   (":nav disable");
-   yVIKEYS_cmds_direct   (":alt disable");
-   yVIKEYS_cmds_direct   (":progress disable");
-   yVIKEYS_cmds_direct   (":status disable");
-   yVIKEYS_cmds_direct   (":keys disable");
-   yVIKEYS_cmds_direct   (":command disable");
-   yVIKEYS_cmds_direct   (":details disable");
-   yVIKEYS_cmds_direct   (":ribbon disable");
-   yVIKEYS_cmds_direct   (":grid disable");
-   yVIKEYS_cmds_direct   (":cursor disable");
-   yVIKEYS_cmds_direct   (":layers disable");
-   yVIKEYS_cmds_direct   (":xaxis disable");
-   yVIKEYS_cmds_direct   (":yaxis disable");
-   yVIKEYS_view_font     (my.fixed);
-   yVIKEYS_map_config    (YVIKEYS_OFFICE, api_yvikeys_mapper, api_yvikeys_locator, api_yvikeys_addressor);
+   api_yvikeys_init      ();
    /*---(create texture)------------------------*/
    font_load ();
    OPENGL_init  ();
-   OPENGL_draw  ();
-   OPENGL_mask  ();
-   /*---(ready display)-------------------------*/
-   OPENGL_resize (win_w, win_h);
-   prog_signals();
+   /*> OPENGL_draw  ();                                                               <* 
+    *> OPENGL_mask  ();                                                               <*/
+   yVIKEYS_cmds_direct   (":window col_rig");
    yVIKEYS_map_refresh ();
+   /*---(ready display)-------------------------*/
+   /*> OPENGL_resize (my.win_w, my.win_h);                                            <*/
+   prog_signals();
    /*---(complete)------------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;

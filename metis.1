@@ -1,94 +1,41 @@
-." heatherly hand crafted (like a dope)
-."
-." sections, break up the document into pieces
-."   .SH <str>   begin a new section
-."   .SS <str>   begin a new sub-section
-."
-." paragraphs, if not special formatting is used, these are unnecessary
-."   .PP         before a set of contiguous lines will run them together into
-."               a single paragraph -- helps if macros separate by accident
-."   .RS <n>     start a paragraph indented by <n> characters (i use 3 mostly)
-."   .RE         end that relative paragraph
-."   .IP <str>   uses <str> as an outdent and the next line is indented
-."   .TP         tag paragraph which has a more controllable outdent than .IP
-."   .HP         start hanging paragraph where all following lines are indented
-."
-."
-."
-."
-."
-.TH metis 1 2010-Dec "linux" "heatherly custom tools manual"
+.TH metis 1 2010-10 "linux" "heatherly custom tools manual"
 
 .SH NAME
-metis \- light, fast, clean, and powerful task management visualizer
+.B metis
+\- light, aesthetic, and useful personal task visualizer
+
+.SH PATRON
+.B metis-okeanides
+(ocean-born) goddess of deep thought and wise counsel
+
+.SH IMAGERY (see HERITAGE in man section 7 for more)
+singularly graceful, stately, and regal with supreme gravitas
+
+.SH SUMMARY
+.B metis
+is a aesthetic, keyboard-centric personal task visualizer with simple ascii
+capture, consistent categorization, clean hierarchy for grouping, and meaningful
+fields for sorting, searching and filtering.
+
+.SH DOCUMENTATION FILES (see also)
+ metis (1)    ***   end-user command line, arguments, and options
+ metis (5)          data standards, streams, files, and configuration
+ metis (6)          interactive system usage and navigation
+ metis (7)          decision rationale, objectives, and overview
+
+.SH TABLE OF CONTENTS
+ synopsis           initiate the program from the command line
+ formats            arguments to change the application display format
+ filters            arguments to limit tasks based on categories
+ search             arguments to limit tasks based on content
+ urgents            arguments to control debugging focus and volume
 
 .SH SYNOPSIS
-.nf
-.B metis [FILTERS] [FORMAT] [SEARCH]
-.nf
+.B metis [FORMATS] [FILTERS] [SEARCH]
+   which is the primary production version
 
-.SH DESCRIPTION
-metis is a task/todo visualizer that establishes a categorization framework
-which allows us to quickly capture tasks, group them into a two layer
-hierarchy, and identify several meaningful and standard sorting fields.
-
-we are not indending a traditional, all-in-one application, so....
-   - no specialized database, we will use ascii text files
-   - no captive editor, we'll just use vi
-   - no complicated fields that require extensive error checking
-   - no calendaring/scheduling, specific application and separate
-   - no repeat, also a scheduling thing or a daily cycle
-   - no mice and menus (what idiot thinks these are productive) :<
-   - no full screen interference and fancy logo crap
-   - no tool tips and help screens
-
-we are focused specifically on our own use and don't need all the hand
-coddling -- focusing on technically strong power users that just need
-structure and sweet visualization without all the contraints.  we also
-need a system that we can tune/adjust without jumping through hoops.
-
-our expectation is that this will be a read-only, sexy, opengl visualizer
-weighing in at less than 1,000 source lines of code.  it will display tasks
-in the same format everytime and use color coding to make filtering and
-review as quick and efficient as possible.  it will also specialize in
-formats that can share the screen with programming windows.
-
-metis will integrate the following rational limits/standards...
-   - read its tasks from ~/g_hlosdo/master.tasks
-   - provide defaults for incorrect/misunderstood task information
-   - show up to 99 tasks depending on the view (not infinite)
-
-.SH FILTERS
-
-.B metis
-will always take the list of tasks from the ~/g_hlosdo/master.tasks file and
-filter it according to one of the following options.  each of these options
-is followed by a single filtering character and must not be separated by
-an inteviening space.
-
-.B -u<c>
-.RS 8
-filters only tasks with an urgency value of <c>.  <c> is one of the first
-letters of today, days, weeks, months, quarters, years, or backlog.
-.RE
-
-.B -i<c>
-.RS 8
-filters only tasks with an importance value of <c>.  <c> is one of the first
-letters of absolutely, need, want, like, idea, or stuff
-.RE
-
-.B -e<n>
-.RS 8
-filters only tasks with an estimate category of <n>.  <n> is sequentially 1=10m,
-2=30m, 3=60m, 4=120m, 5=240m, 6=480m, 0=unknown.
-.RE
-
-.B -f<c>
-.RS 8
-filters only tasks with an flag value of <c>.  <c> is one of -=active,
-X=cancelled, #=complete, O=wip
-.RE
+.B metis_debug [URGENTS] [FORMATS] [FILTERS] [SEARCH]
+   which is full production, but with debugging and tracing added
 
 .SH FORMATS
 
@@ -137,6 +84,38 @@ it perfectly suited for a 1280x1024 wide screen.  this view can not contain
 any more than the 64 shown.
 .RE
 
+.SH FILTERS
+
+.B metis
+will always take the list of tasks from the ~/g_hlosdo/master.tasks file and
+filter it according to one of the following options.  each of these options
+is followed by a single filtering character and must not be separated by
+an inteviening space.
+
+.B -u<c>
+.RS 8
+filters only tasks with an urgency value of <c>.  <c> is one of the first
+letters of today, days, weeks, months, quarters, years, or backlog.
+.RE
+
+.B -i<c>
+.RS 8
+filters only tasks with an importance value of <c>.  <c> is one of the first
+letters of absolutely, need, want, like, idea, or stuff
+.RE
+
+.B -e<n>
+.RS 8
+filters only tasks with an estimate category of <n>.  <n> is sequentially 1=10m,
+2=30m, 3=60m, 4=120m, 5=240m, 6=480m, 0=unknown.
+.RE
+
+.B -f<c>
+.RS 8
+filters only tasks with an flag value of <c>.  <c> is one of -=active,
+X=cancelled, #=complete, O=wip
+.RE
+
 .SH SEARCH
 
 if text is provided, 
@@ -144,63 +123,9 @@ if text is provided,
 will search the two heirarchy layers for matching values and only show those.
 
 
-.SH RUN-TIME OPTIONS
-.sp
-while running, 
-.B metis
-responds to a number of keys
-.IP _
-go to the first task
-.IP G
-go to the last task
-.IP j,l,>
-scroll down/right/forward one task depending on view
-.IP k,h,<
-scroll up/left/backward one task depending on view
-.IP Q 
-exit the application
-.IP R 
-refresh by rereading input file
-.IP T 
-switch to ticker format
-.IP B 
-switch to baseline format
-.IP C 
-switch to columnar format
-.IP L 
-switch to long columnar format
-.IP 1 
-switch to columnar format on left
-.IP 2 
-switch to long columnar format on left
-.IP W 
-switch to wideview format
-.IP X 
-switch to extra format
-.IP H 
-toggle card grouping headers on and off
-.IP F 
-toggle filtering (given on command line) on and off
-.IP p 
-print the tasks to stdout
-.IP , 
-start automatic scrolling if in ticker mode
-.IP . 
-stop automatic scrolling if in ticker mode
-.IP u 
-change the urgency filter, or space for clear
-.IP i 
-change the importance filter, or space for clear
-.IP e 
-change the estimate filter, or space for clear
-.IP f 
-change the flag filter, or space for clear
-.IP s,/
-change the search text terminated with <cr>, null to clear
-.IP a 
-reset to no filtering
-.IP ? 
-scroll to show the criteria card
+
+
+
 
 .SH FILES
 
@@ -210,23 +135,8 @@ this file contains the standard, consolidated tasks list of which metis will
 read the first 64 that meet the filtering criteria
 .RE
 
-.SH BUGS
-
-the directories are hard coded for the users dotsuu and greatbigc right now
-
-.SH RESOURCES
-will only work on an xwindows and opengl system and is probably not worth
-using without hardware acceleration
-
 .SH AUTHOR
 the_heatherlys
-
-.SH HERITAGE
-metis is the greek goddess of cunning and wise counsel.  she was the
-first love of zeus and guided him through the titan/olympian war.  metis
-was killed by zeus because he feared a prophecy that their children would
-displace him (as he had done to his father).  their only child was the
-goddess athena.
 
 .SH COLOPHON
 this page is part of a documentation package meant to make our use of the

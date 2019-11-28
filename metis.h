@@ -22,9 +22,9 @@
 #define     P_DEPENDS   "none"
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
-#define     P_VERMINOR  "1.2-, move to full yVIKEYS usage and support"
-#define     P_VERNUM    "1.1q"
-#define     P_VERTXT    "added data import/export options to metis menus"
+#define     P_VERMINOR  "1.4-, bring back functionality after big updates"
+#define     P_VERNUM    "1.4a"
+#define     P_VERTXT    "all horz and vert modes are working"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -54,64 +54,6 @@
  * simply forgetting many things can actually help.  90% of the effort is
  * tracking and closing useless things -- totally lose the big picture.
  * all these become an avalanch of minutia.
- *
- *
- *
- * first, distributing the lists to their sources keeps the scary volume
- * of tasks hidden.  switch focuses, switch lists.  easy and big picture.
- *
- * second, i think covey had it right with the urgent/important matrix from
- * eisenhower or truman.  it allows the mind to cut the list down.
- *
- * third, put a category of effort on tasks so that you can pick off smaller
- * ones when you have little time, or big ones when your are able to focus.
- *
- * fourth, skip on tracking dates and actual effort.  this is a obviously cool
- * thing that is a total time trap.
- *
- * fifth, do not "imagine" possible tasks for some future scenario.  it adds
- * a lot of frightening, speculative bs to the lists.  focus on real tasks.
- *
- * sixth, do not calendar/schedule.  this requires a lot of time control which
- * most people do not have.  review the list, do what you can, move on.
- *
- * seventh, do frequent sweeps to delete completed tasks.  do not save history
- * that you will never use.  its hard to delete accomplishments, but do it.
- *
- *
- */
-
-/*
- * major cat      project name
- *
- * minor cat      source file or other grouping
- *
- * urgency        (t)oday     (s)oonest   (d)ays      (w)eeks
- *                (m)onths    (q)uarters  (y)ears     (�) tbd
- *
- * importance     (a)bsolute  (n)eed      (w)ant
- *                (l)like     (m)ight     (i)dea      (�) tbd
- *
- * description    actual task
- *
- * estimate       (!) 5m      (s) 15m     (m) 30m     (1) 1h
- *                (2) 2hs     (4) 4hrs    (8) hours   (�) tbd     (+) bigger
- *
- * status         (<) focus   (o) wip     (>) closing
- *                (#) done    (x) cancel  (�) backlog 
- *
- *
- * source file example (today, need, 1hr, and focus) categories are auto
- *  metis  tn1<  create a github project and get changes uploaded
- *
- *
- * task file example (same) categories must be explicit
- *  metis  metis_prog.c
- *     tn1<  create a github project and get changes uploaded
- *
- *
- *
- *
  *
  *
  */
@@ -223,21 +165,8 @@
 typedef   unsigned int  uint;
 typedef     struct      dirent      tDIRENT;
 
-/*---(title)-----------------------------*/
-extern char      win_title[100];
 
-/*---(sizes)-----------------------------*/
-int       win_x;                            /* window left                    */
-int       win_y;                            /* window top                     */
-int       win_w;                            /* window width                   */
-int       win_h;                            /* window height                  */
-int       tex_w;                            /* texture width                  */
-int       tex_h;                            /* texture height                 */
 
-/*---(opengl objects)--------------------*/
-extern uint      g_tex;                     /* task texture                   */
-extern uint      g_fbo;                     /* task fbo                       */
-extern uint      g_dep;                     /* task depth                     */
 
 extern int       g_mtall;                   /* menu texture height            */
 extern int       g_mwide;                   /* menu texture width             */
@@ -261,7 +190,7 @@ struct      cCARD
    char        urg;                    /* urgency code                        */
    char        imp;                    /* importance code                     */
    char        est;                    /* estimated work                      */
-   char        flg;                    /* status flag                         */
+   char        prg;                    /* progress flag                       */
    char        txt         [LEN_HUND]; /* text of task                        */
    /*---(source data)--------------------*/
    short       seq;                    /* original order (to unsort)          */
@@ -304,6 +233,7 @@ struct cMY {
    char        search      [LEN_RECD];      /* global search string           */
    int         fixed;                       /* fixed font                     */
    int         pretty;                      /* pretty font                    */
+   char        lines;                       /* show some helpful debug stats  */
    /*---(data source)--------------------*/
    char        source;                      /* data sourcing location         */
    char        file        [LEN_RECD];      /* file for reading tasks         */
@@ -311,7 +241,7 @@ struct cMY {
    char        urgs        [LEN_LABEL];     /* all valid urgent codes         */
    char        imps        [LEN_LABEL];     /* all valid importance codes     */
    char        ests        [LEN_LABEL];     /* all valid estimate codes       */
-   char        flgs        [LEN_LABEL];     /* all valid status flags         */
+   char        prgs        [LEN_LABEL];     /* all valid status flags         */
    /*---(filtering)----------------------*/
    int         nact;                        /* number of active tasks         */
    char        curg;                        /* current urgency filter         */
@@ -351,6 +281,19 @@ struct cMY {
    double      play;
    double      mspeed;
    double      change;
+   /*---(win/tex)------------------------*/
+   char        win_title   [LEN_DESC];   /* window title                   */
+   int         win_x;                    /* window left                    */
+   int         win_y;                    /* window top                     */
+   int         win_w;                    /* window width                   */
+   int         win_h;                    /* window height                  */
+   int         tex_w;                    /* texture width                  */
+   int         tex_h;                    /* texture height                 */
+   /*---(opengl objects)-----------------*/
+   uint        g_tex;                    /* task texture                   */
+   uint        g_fbo;                    /* task fbo                       */
+   uint        g_dep;                    /* task depth                     */
+   /*---(done)---------------------------*/
 };
 extern tMY   my;
 
@@ -368,20 +311,23 @@ extern int   max_disp;
 
 #define   FORMAT_TICKER       't'
 #define   FORMAT_BASELINE     'b'
-#define   FORMAT_COLUMN       'c'
-#define   FORMAT_LONG         'l'
+#define   FORMAT_RSHORT       'r'
+#define   FORMAT_RLONG        'R'
+#define   FORMAT_LSHORT       'l'
+#define   FORMAT_LLONG        'L'
+#define   FORMAT_STREAMER     's'
 #define   FORMAT_WIDE         'w'
 #define   FORMAT_PROJECT      'p'
 #define   FORMAT_EXTRA        'x'
 
-#define   STREAMER    if (my.format == 's')
-#define   TICKER      if (my.format == 't')
-#define   BASELINE    if (my.format == 'b')
-#define   COLUMN      if (my.format == 'c')
-#define   LONG        if (my.format == 'l')
-#define   WIDEVIEW    if (my.format == 'w')
-#define   PROJECT     if (my.format == 'p')
-#define   EXTRA       if (my.format == 'x')
+#define   FORMAT_COLUMNS      "rlRL"
+#define   FORMAT_RIGHTS       "rR"
+#define   FORMAT_LONGS        "RL"
+#define   FORMAT_TICKERS      "tb"
+
+#define   FORMAT_ALL          "tbrlRLswpx"
+#define   FORMAT_HORZ         "tbwpx"
+
 
 #define   MAX_COLS     20
 #define   STOP        0.0000
@@ -393,7 +339,6 @@ int        main              (int argc, char *argv[]);
 
 
 char       font_load         (void);
-char       font_change       (void);
 char       font_delete       (void);
 
 char             /* [G-----] output a formatted report of tasks --------------*/
@@ -411,6 +356,9 @@ char       OPENGL_show              (void);
 char       OPENGL_draw              (void);
 char       OPENGL_resize            (uint, uint);
 char       OPENGL_mask              (void);
+
+char        OPENGL__clearall        (void);
+char*       OPENGL__unit            (char *a_question, int a_num);
 
 void       prog_catch        (int);
 char       prog_signals      (void);
@@ -430,7 +378,7 @@ int         DATA_cursor             (char a_type);
 char*       DATA__unit              (char *a_question, int a_num);
 
 char        FORMAT_init             (void);
-char        format_column           (char a_type);
+char        format_column           (void);
 char        format_ticker           (char a_type);
 char        format_projects         (void);
 char        format_wideview         (void);
@@ -459,9 +407,7 @@ char        SORT_refresh            (void);
 
 char*       FORMAT__unit            (char *a_question, int a_num);
 
-char        OPENGL__clearall        (void);
-
-char        api_ykikeys_init        (void);
+char        api_yvikeys_init        (void);
 char        api_yvikeys_mapper      (char a_req);
 char        api_yvikeys_locator     (char *a_label, int *a_buf, int *a_x, int *a_y, int *a_z);
 char        api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z);

@@ -1,24 +1,75 @@
 #include   "metis.h"
 
 
-/*===[[ METIS BACKLOG ]]======================================================*
+/*===[[ METIS BACKLOG ]]======================================================*/
+
+/*
+ * metis  dw4·  create a x_mapper for columnar formats and movement
  * metis  dw4·  create a x_mapper for columnar formats and movement
  *
  */
 
 
+
 char
-api_ykikeys_init        (void)
+api_yvikeys__resize     (char a_startup)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        x_cmd       [LEN_RECD];
+   /*---(size main)----------------------*/
+   if (a_startup == 'y') {
+      yVIKEYS_view_config   ("metis_tasklist", P_VERNUM, YVIKEYS_OPENGL, my.win_w, my.win_h, 0);
+      sleep (1);
+   } else {
+      yVIKEYS_view_resize   (my.win_w, my.win_h, 0);
+   }
+   /*---(size parts)---------------------*/
+   yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, my.win_w, -my.win_h, my.win_h, 0, 0, 0, OPENGL_show);
+   if (strchr(FORMAT_HORZ, my.format) != 0) {
+      yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_TOPCEN,  10, 280     , -230.0   , 20      , 0, 0, 0, NULL);
+      yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0,   0     , 0        , 0       , 0, 0, 0, NULL);
+   } else {
+      yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_TOPCEN,  10, 280     , -35.0    , 20      , 0, 0, 0, NULL);
+      yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_TOPCEN,   0,   0     , 0        , 0       , 0, 0, 0, NULL);
+   }
+   /*---(call placement)-----------------*/
+   sprintf (x_cmd, "wmctrl -r 'metis_tasklist' -e 0,%d,%d,%d,%d", my.win_x, my.win_y, my.win_w, my.win_h);
+   system  (x_cmd);
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+char
+api_yvikeys_init        (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rc          =    0;
    int         x_wide, x_tall;
+   char        x_cmd       [LEN_RECD];
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(window)-------------------------*/
-   /*> yVIKEYS_view_config   ("metis_column", VER_NUM, YVIKEYS_OPENGL, 300, 60 * 12, 0);                                                 <* 
-    *> yVIKEYS_view_setup    (YVIKEYS_MAIN     , YVIKEYS_FLAT, YVIKEYS_TOPLEF, 0, 0, 300, 60 * 12, 0, 0, YCOLOR_BAS    , OPENGL_show);   <* 
-    *> yVIKEYS_cmds_direct   (":layout minimal");                                                                                        <*/
+   api_yvikeys__resize   ('y');
+   yVIKEYS_cmds_direct   (":layout min");
+   yVIKEYS_cmds_direct   (":title disable");
+   yVIKEYS_cmds_direct   (":version disable");
+   yVIKEYS_cmds_direct   (":buffer disable");
+   yVIKEYS_cmds_direct   (":formula disable");
+   yVIKEYS_cmds_direct   (":nav disable");
+   yVIKEYS_cmds_direct   (":alt disable");
+   yVIKEYS_cmds_direct   (":progress disable");
+   yVIKEYS_cmds_direct   (":status disable");
+   yVIKEYS_cmds_direct   (":keys disable");
+   yVIKEYS_cmds_direct   (":command disable");
+   yVIKEYS_cmds_direct   (":details disable");
+   yVIKEYS_cmds_direct   (":ribbon disable");
+   yVIKEYS_cmds_direct   (":grid disable");
+   yVIKEYS_cmds_direct   (":cursor disable");
+   yVIKEYS_cmds_direct   (":layers disable");
+   yVIKEYS_cmds_direct   (":xaxis disable");
+   yVIKEYS_cmds_direct   (":yaxis disable");
+   yVIKEYS_view_font     (my.fixed);
+   yVIKEYS_map_config    (YVIKEYS_OFFICE, api_yvikeys_mapper, api_yvikeys_locator, api_yvikeys_addressor);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -52,7 +103,7 @@ api_yvikeys__unmap      (tMAPPED *a_map)
 }
 
 char
-api_yvikeys__mapy          (char a_req)
+api_yvikeys__linear        (char a_req, tMAPPED *a_map, int a_tot, int a_win)
 {
    /*---(locals)-----------+-----------+-*/
    int         x_slots     =    0;
@@ -64,12 +115,12 @@ api_yvikeys__mapy          (char a_req)
    /*---(adjust max)---------------------*/
    DEBUG_MAP    yLOG_value    ("g_ntask"   , g_ntask);
    DEBUG_MAP    yLOG_value    ("my.nact"   , my.nact);
-   DEBUG_MAP    yLOG_value    ("my.trows"  , my.trows);
-   x_slots = my.trows;
+   DEBUG_MAP    yLOG_value    ("a_tot"     , a_tot);
+   x_slots = a_tot;
    if (x_slots >= my.nact)  x_slots = my.nact;
    DEBUG_MAP    yLOG_value    ("x_slots"   , x_slots);
    /*---(clear map)----------------------*/
-   for (i = 0; i < LEN_HUGE; ++i) g_ymap.map [i] = 0;
+   for (i = 0; i < LEN_HUGE; ++i) a_map->map [i] = 0;
    /*---(load map)-----------------------*/
    for (i = 0; i < g_ntask; ++i) {
       /*---(filter)-------------------*/
@@ -77,50 +128,50 @@ api_yvikeys__mapy          (char a_req)
       DEBUG_MAP    yLOG_complex  ("card"      , "%2d, %c %s", i, g_tasks [i].act, g_tasks [i].txt);
       if (g_tasks [i].act != 'y')  continue;
       /*---(map it)-------------------*/
-      DEBUG_DATA   yLOG_complex  ("map"       , "put %2d into slot %2d", i, c);
-      x_max = g_ymap.map [c] = i;
+      DEBUG_MAP    yLOG_complex  ("map"       , "put %2d into slot %2d", i, c);
+      x_max = a_map->map [c] = i;
       c++;
       /*---(done)---------------------*/
    }
    /*---(unit min/max)-------------------*/
-   g_ymap.umin  = 0;
-   DEBUG_MAP    yLOG_value    ("umin"      , g_ymap.umin);
-   g_ymap.umax  = x_slots - 1;
-   DEBUG_MAP    yLOG_value    ("umax"      , g_ymap.umax);
+   a_map->umin  = 0;
+   DEBUG_MAP    yLOG_value    ("umin"      , a_map->umin);
+   a_map->umax  = x_slots - 1;
+   DEBUG_MAP    yLOG_value    ("umax"      , a_map->umax);
    /*---(grid mins)----------------------*/
-   g_ymap.gmin   = g_ymap.map [g_ymap.umin];
-   g_ymap.gamin  = g_ymap.map [g_ymap.umin];
-   g_ymap.glmin  = g_ymap.map [g_ymap.umin];
-   g_ymap.gprev  = g_ymap.map [g_ymap.umin];
-   DEBUG_MAP    yLOG_value    ("gmin"      , g_ymap.gmin);
+   a_map->gmin   = a_map->map [a_map->umin];
+   a_map->gamin  = a_map->map [a_map->umin];
+   a_map->glmin  = a_map->map [a_map->umin];
+   a_map->gprev  = a_map->map [a_map->umin];
+   DEBUG_MAP    yLOG_value    ("gmin"      , a_map->gmin);
    /*---(grid maxs)----------------------*/
-   g_ymap.gnext  = g_ymap.map [g_ymap.umax];
-   g_ymap.glmax  = g_ymap.map [g_ymap.umax];
-   g_ymap.gamax  = g_ymap.map [g_ymap.umax];
-   g_ymap.gmax   = g_ymap.map [g_ymap.umax];
-   DEBUG_MAP    yLOG_value    ("gmax"      , g_ymap.gmax);
+   a_map->gnext  = a_map->map [a_map->umax];
+   a_map->glmax  = a_map->map [a_map->umax];
+   a_map->gamax  = a_map->map [a_map->umax];
+   a_map->gmax   = a_map->map [a_map->umax];
+   DEBUG_MAP    yLOG_value    ("gmax"      , a_map->gmax);
    /*---(indexes)------------------------*/
    DEBUG_MAP   yLOG_snote   ("screen");
    if (a_req == YVIKEYS_INIT) {
-      g_ymap.ubeg   =  0;
-      g_ymap.ucur   =  0;
-      g_ymap.uend   = my.nact - 1;
-      if (g_ymap.uend > 11)  g_ymap.uend = 11;
-      g_ymap.ulen   = 12;
-      g_ymap.uavail = 12;
-      g_ymap.utend  = 11;
-      g_ymap.utend  = g_ymap.uend;
+      a_map->ubeg   =  0;
+      a_map->ucur   =  0;
+      a_map->uend   = my.nact - 1;
+      if (a_map->uend > a_win - 1)  a_map->uend = a_win - 1;
+      a_map->ulen   = a_win;
+      a_map->uavail = a_win;
+      a_map->utend  = a_win - 1;
+      a_map->utend  = a_map->uend;
    }
    /*---(grids)--------------------------*/
    DEBUG_MAP   yLOG_snote   ("grid");
    if (a_req == YVIKEYS_INIT) {
-      g_ymap.gbeg   = g_ymap.map [g_ymap.ubeg];
-      g_ymap.gcur   = g_ymap.gbeg;
-      g_ymap.gend   = g_ymap.map [g_ymap.uend];
+      a_map->gbeg   = a_map->map [a_map->ubeg];
+      a_map->gcur   = a_map->gbeg;
+      a_map->gend   = a_map->map [a_map->uend];
    }
-   DEBUG_MAP    yLOG_value    ("gbeg"      , g_ymap.gbeg);
-   DEBUG_MAP    yLOG_value    ("gcur"      , g_ymap.gcur);
-   DEBUG_MAP    yLOG_value    ("gend"      , g_ymap.gend);
+   DEBUG_MAP    yLOG_value    ("gbeg"      , a_map->gbeg);
+   DEBUG_MAP    yLOG_value    ("gcur"      , a_map->gcur);
+   DEBUG_MAP    yLOG_value    ("gend"      , a_map->gend);
    /*---(complete)-----------------------*/
    DEBUG_MAP    yLOG_exit     (__FUNCTION__);
    return  0;
@@ -139,8 +190,13 @@ api_yvikeys_mapper      (char a_req)
    my.crow = g_ymap.ucur;
    my.erow = g_ymap.uend;
    api_yvikeys__unmap (&g_bmap);
-   api_yvikeys__unmap (&g_xmap);
-   api_yvikeys__mapy  (a_req);
+   if (strchr (FORMAT_HORZ, my.format) != NULL) {
+      api_yvikeys__linear (a_req, &g_xmap, my.tcols, my.wcols);
+      api_yvikeys__unmap  (&g_ymap);
+   } else {
+      api_yvikeys__unmap  (&g_xmap);
+      api_yvikeys__linear (a_req, &g_ymap, my.trows, my.wrows);
+   }
    api_yvikeys__unmap (&g_zmap);
    /*---(complete)-----------------------*/
    DEBUG_MAP    yLOG_exit    (__FUNCTION__);
@@ -218,16 +274,15 @@ api_yvikeys_filter      (char *a_which, char *a_string)
 char
 api_yvikeys_window      (char *a_format)
 {
-   char        x_cmd       [LEN_RECD];
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    if (a_format == NULL) return -1;
    /*---(change format)-------------------------*/
-   if      (strcmp (a_format, "col_rig" ) == 0)  format_column ('r');
-   else if (strcmp (a_format, "long_rig") == 0)  format_column ('R');
-   else if (strcmp (a_format, "col_lef" ) == 0)  format_column ('l');
-   else if (strcmp (a_format, "long_lef") == 0)  format_column ('L');
-   else if (strcmp (a_format, "ticker"  ) == 0)  format_ticker ('t');
-   else if (strcmp (a_format, "baseline") == 0)  format_ticker ('b');
+   if      (strcmp (a_format, "col_rig" ) == 0)  { my.format = FORMAT_RSHORT; format_column (); }
+   else if (strcmp (a_format, "col_lef" ) == 0)  { my.format = FORMAT_LSHORT; format_column (); }
+   else if (strcmp (a_format, "long_rig") == 0)  { my.format = FORMAT_RLONG ; format_column (); }
+   else if (strcmp (a_format, "long_lef") == 0)  { my.format = FORMAT_LLONG ; format_column (); }
+   else if (strcmp (a_format, "ticker"  ) == 0)  format_ticker (FORMAT_TICKER);
+   else if (strcmp (a_format, "baseline") == 0)  format_ticker (FORMAT_BASELINE);
    else if (strcmp (a_format, "project" ) == 0)  format_projects ();
    else if (strcmp (a_format, "wide"    ) == 0)  format_wideview ();
    else if (strcmp (a_format, "extra"   ) == 0)  format_extra    ();
@@ -240,8 +295,11 @@ api_yvikeys_window      (char *a_format)
       return 0;
    }
    else                                       return -2;
-   sprintf (x_cmd, "wmctrl -r 'metis_tasklist' -e 0,%d,%d,%d,%d", win_x, win_y, win_w, win_h);
-   system (x_cmd);
+   api_yvikeys__resize   ('-');
+   SORT_refresh   ();
+   FILTER_refresh ();
+   yVIKEYS_map_refresh ();
+   api_yvikeys_mapper  (YVIKEYS_INIT);
    OPENGL_draw ();
    OPENGL_mask();
    /*---(complete)------------------------------*/

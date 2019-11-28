@@ -1,0 +1,190 @@
+.TH metis 5 2010-10 "linux" "heatherly custom tools manual"
+
+.SH NAME
+.B metis
+\- light, aesthetic, and useful personal task visualizer
+
+.SH PATRON
+.B metis-okeanides
+(ocean-born) goddess of deep thought and wise counsel
+
+.SH IMAGERY (see HERITAGE in man section 7 for more)
+singularly graceful, stately, and regal with supreme gravitas
+
+.SH SUMMARY
+.B metis
+is a aesthetic, keyboard-centric personal task visualizer with simple ascii
+capture, consistent categorization, clean hierarchy for grouping, and meaningful
+fields for sorting, searching and filtering.
+
+.SH DOCUMENTATION FILES (see also)
+.nf
+metis (1)          end-user command line, arguments, and options
+.nf
+metis (5)    ***   data standards, streams, files, and configuration
+.nf
+metis (6)          interactive system usage and navigation
+.nf
+metis (7)          decision rationale, objectives, and overview
+
+.SH TABLE OF CONTENTS
+.nf
+ascii file         formatting within a normal ascii file
+.nf
+source file        formatting within a source code file
+.nf
+master dump        formatting for consolidated output
+.nf
+urgency            valid one-char values for category
+.nf
+importance         valid one-char values for category
+.nf
+estimate           valid one-char values for category
+.nf
+progress           valid one-char values for category
+.nf
+configuration      file or environmentally provided settings
+
+.SH ASCII FILE
+metis tasks kept in ascii files have two layers -- a grouping record and a
+task record.  the file suffix should be ".tasks" for clarity.
+
+.B grouping record , e.g., "<major> § <minor>"
+.nf
+this allows the tasks to be grouped into a two layer heirarchy -- major
+then minor.  both are text strings of 0 to 18 characters.
+
+examples...
+   metis              § metis_data.c
+   robotics           § hexapod
+
+.B detailed record , e.g., "<cats> § <dest>"
+.nf
+the categories are each a single character representing urgency,
+importance, estimate, progress, and a tbd/expansion char (see values below).
+the description is a text string of 0 to 100 characters.
+
+examples...
+   tl1#· § increase font sizes to fit current limits and show better
+   dw1·· § define task format when included in source file
+   dw2>· § all views make open/missing task slots transparent
+
+major and minor groups are taken from the very last grouping record read and
+added to the detailed task.
+
+.SH SOURCE CODE FILE
+when a metis task is kept in a source code file, the format is simplier.  to
+build it, simply prefix the detailed record with "* metis § " and the program
+will be able to find it.
+
+.B single line format
+   /* metis § tn1·· § never allow MODE_NONE, must not pop last mode */
+
+.B multi-line comment format
+   /*
+    * metis § tn1·· § never allow MODE_NONE, must not pop last mode
+    */
+
+.B major and minor groups
+are automatically assigned as the program name and source code file
+respectively.
+
+.SH MASTER DUMP
+in order to analyze or consolidate, the master dump puts all task information on
+a single line, heedless of redundancy.  i chose not to break up the categories
+to re-use existing design and code.
+
+examples...
+   major § minor § tn1<· § and the description goes at the end
+   major § two   § ww4·· § and a second task goes here
+
+.SH URGENCY
+the urgency category assigns a preceived schedule to completion.
+
+.nf
+!      now-now     already on-going and just need a reminder
+.nf
+t      today       don't walk away for the day until its done
+.nf
+s      soonest     keep at the top of the list
+.nf
+d      days        must complete inside a week
+.nf
+w      weeks       must complete inside a month
+.nf
+m      months      must complete inside a quarter
+.nf
+q      quarters    must complete inside a year
+.nf
+y      years       long-term planning
+.nf
+·      tbd         no idea, but needed to get it recorded
+
+.SH IMPORTANCE
+the importance category assigns a preceived value to the work.
+
+.nf
+!      now-now     already on-going and just need a reminder
+.nf
+a      absolute    do-or-die, must be done
+.nf
+n      need        serious value and required
+.nf
+w      want        would add value to me, but not manditory
+.nf
+l      like        enjoy the idea of having it
+.nf
+m      might       its a possibility, still thinking
+.nf
+i      idea        just recording it
+.nf
+·      tbd         no idea, but needed to get it recorded
+
+.SH ESTIMATE
+the estimate category assigns a preceived effort to completion.
+
+.nf
+!      5m          very, very short
+.nf
+s      15m         not long, but not trivial
+.nf
+m      30m         aroung half an hour
+.nf
+1      1h          around an hour
+.nf
+2      2hrs        couple hours
+.nf
+4      4hrs        around a half day of work
+.nf
+8      8hrs        full day of work
+.nf
++      bigger      really should get broken down
+.nf
+·      tbd         no idea, but needed to get it recorded
+
+.SH PROGRESS
+the progress category assigns a preceived work status.
+
+.nf
+·      backlog     no action yet
+.nf
+<      focus       ready for action, top of list
+.nf
+o      wip         work in progress
+.nf
+>      closing     work done, wrapping up, notifying, etc
+.nf
+#      done        fully completed
+.nf
+x      cancelled   cut out of work
+
+.SH CONFIGURATION
+zero, zilch, zippo
+
+.SH AUTHOR
+jelloshrike at gmail dot com
+
+.SH COLOPHON
+this page is part of a documentation package meant to make use of the
+heatherly tools easier and faster.
+
