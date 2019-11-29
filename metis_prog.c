@@ -63,11 +63,16 @@ PROG_init          (void)
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(set globals)--------------------*/
    FILTER_clear ();
+   my.daemon  = 'y';
    my.lines   = '-';
    my.sort    = '-';
    my.order   = 'a';
    my.ncols   = 0;
    my.nrows   = 0;
+   my.s_wide  = 1366;  /* temp default for my iconia */
+   my.s_tall  = 1536;  /* temp default for my iconia */
+   my.c_wide  =  300;
+   my.r_tall  =   45;
    my.source  = DATA_PIPE;
    my.format  = FORMAT_RSHORT;
    format_column ();
@@ -102,20 +107,25 @@ PROG_args          (int argc, char *argv[])
       else if (strncmp (a, "-i"          ,  2) == 0 && len == 3)  my.cimp  = a[2];
       else if (strncmp (a, "-e"          ,  2) == 0 && len == 3)  my.cest  = a[2];
       else if (strncmp (a, "-f"          ,  2) == 0 && len == 3)  my.cflg  = a[2];
-      else if (strcmp  (a, "--lines"         ) == 0)              my.lines = 'y';
       /*---(initial format)--------------*/
-      else if (strcmp  (a, "--ticker"        ) == 0)  format_ticker (FORMAT_TICKER);
-      else if (strcmp  (a, "--baseline"      ) == 0)  format_ticker (FORMAT_BASELINE);
+      else if (strcmp  (a, "--ticker"        ) == 0)  my.format = FORMAT_TICKER;
+      else if (strcmp  (a, "--baseline"      ) == 0)  my.format = FORMAT_BASELINE;
       else if (strcmp  (a, "--short"         ) == 0)  my.format = FORMAT_RSHORT;
       else if (strcmp  (a, "--lshort"        ) == 0)  my.format = FORMAT_LSHORT;
       else if (strcmp  (a, "--long"          ) == 0)  my.format = FORMAT_RLONG;
       else if (strcmp  (a, "--llong"         ) == 0)  my.format = FORMAT_LLONG;
-      else if (strcmp  (a, "--wide"          ) == 0)  format_wideview ();
-      else if (strcmp  (a, "--extra"         ) == 0)  format_extra();
+      else if (strcmp  (a, "--streamer"      ) == 0)  my.format = FORMAT_STREAMER;
+      else if (strcmp  (a, "--wide"          ) == 0)  my.format = FORMAT_WIDE;
+      else if (strcmp  (a, "--project"       ) == 0)  my.format = FORMAT_PROJECT;
+      else if (strcmp  (a, "--extra"         ) == 0)  my.format = FORMAT_EXTRA;
       /*---(task/data source)------------*/
       else if (strcmp  (a, "--master"        ) == 0)  my.source = DATA_MASTER;
       else if (strcmp  (a, "--source"        ) == 0)  my.source = DATA_SOURCES;
       else if (strcmp  (a, "--code"          ) == 0)  my.source = DATA_SOURCES;
+      /*---(control)---------------------*/
+      else if (strcmp  (a, "--lines"         ) == 0)  my.lines  = 'y';
+      else if (strcmp  (a, "--foreground"    ) == 0)  my.daemon = '-';
+      /*---(file)------------------------*/
       else if (strncmp (a, "-"           ,  1) != 0)  {
          strncpy (my.file, a, LEN_RECD);
          my.source = DATA_CUSTOM;
@@ -123,6 +133,7 @@ PROG_args          (int argc, char *argv[])
       /*---(unknown)---------------------*/
       else   printf("arg <%s> not understood\n", a);
    }
+   FORMAT_refresh ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -152,8 +163,10 @@ PROG_final         (void)
       return -1;
    }
    /*> task_list ();                                                                  <*/
-   rc = daemon (1, 0);
-   if (rc != 0) return rc;
+   if (my.daemon == 'y') {
+      rc = daemon (1, 0);
+      if (rc != 0) return rc;
+   }
    /*---(open window)---------------------------*/
    api_yvikeys_init      ();
    /*---(create texture)------------------------*/
@@ -164,7 +177,7 @@ PROG_final         (void)
    yVIKEYS_cmds_direct   (":window col_rig");
    yVIKEYS_map_refresh ();
    /*---(ready display)-------------------------*/
-   /*> OPENGL_resize (my.win_w, my.win_h);                                            <*/
+   /*> OPENGL_resize (my.w_wide, my.w_tall);                                            <*/
    prog_signals();
    /*---(complete)------------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);

@@ -17,6 +17,9 @@
 #include   "metis.h"
 
 
+
+
+
 /*===[[ METIS BACKLOG ]]======================================================*
  *
  * metis  dw2·  when filtered to zero cards, display blank card
@@ -35,8 +38,6 @@ char   face_fixed [30] = "hack";
 float  txf_off   = 0.00;
 float  txf_space = 1.15;
 
-
-/*---(opengl objects)--------------------*/
 
 
 
@@ -176,10 +177,10 @@ char
 OPENGL_resize           (uint a_w, uint a_h)
 {
    if (a_h == 0) a_h = 1;
-   glViewport(0,  0, my.win_w, my.win_h);
+   glViewport(0,  0, my.w_wide, my.w_tall);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   glOrtho(        0,   my.win_w, -my.win_h,  0, -500.0,  500.0);
+   glOrtho(        0,   my.w_wide, -my.w_tall,  0, -500.0,  500.0);
    glMatrixMode(GL_MODELVIEW);
    return 0;
 }
@@ -206,8 +207,6 @@ OPENGL__panel        (float a_wtop, float a_wlef, float a_wbot, float a_wrig, fl
    DEBUG_GRAF   yLOG_double   ("a_tbot"     , a_tbot);
    DEBUG_GRAF   yLOG_double   ("a_trig"     , a_trig);
    /*---(draw it)------------------------*/
-   /*> a_wtop += 300;                                                                 <*/
-   /*> a_wbot += 300;                                                                 <*/
    glBindTexture   (GL_TEXTURE_2D, my.g_tex);
    glBegin(GL_POLYGON); {
       /*---(top/lef)--------*/
@@ -244,14 +243,12 @@ OPENGL_show        (void)
    float     x_max;
    float     z;
    int       i;
-   float       x_wwide     =  300;
-   float       x_wtall     =   60;
    int      x_left, x_bott, x_wide, x_tall;
    int      x_xmin, x_xmax;
    int      x_ymin, x_ymax;
    char        x_mode      =  '-';
    static char x_modesave  =  '-';
-   float       x_offset    =  0.0;
+   float       x_cur, y_cur;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    x_mode = yVIKEYS_mode ();
@@ -265,10 +262,10 @@ OPENGL_show        (void)
    /*---(prepare drawing)----------------*/
    DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
-   DEBUG_GRAF   yLOG_value    ("win_h"     , my.win_h);
-   DEBUG_GRAF   yLOG_value    ("win_w"     , my.win_w);
-   DEBUG_GRAF   yLOG_value    ("tex_h"     , my.tex_h);
-   DEBUG_GRAF   yLOG_value    ("tex_w"     , my.tex_w);
+   DEBUG_GRAF   yLOG_value    ("w_tall"     , my.w_tall);
+   DEBUG_GRAF   yLOG_value    ("w_wide"     , my.w_wide);
+   DEBUG_GRAF   yLOG_value    ("t_tall"     , my.t_tall);
+   DEBUG_GRAF   yLOG_value    ("t_wide"     , my.t_wide);
    DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
    DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
    DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
@@ -282,28 +279,28 @@ OPENGL_show        (void)
    DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
    DEBUG_GRAF   yLOG_value    ("my.ecol"   , my.ecol);
    /*---(horizontal views)---------------*/
-   if (strchr(FORMAT_HORZ, my.format) != 0) {
+   if (strchr (FORMAT_HORZ, my.format) != 0) {
       DEBUG_GRAF   yLOG_note     ("horizontal formats----------");
       /*---(consistent)------------------*/
       /*> x_wtop  = 0.0;                                                              <*/
-      x_wtop  = -195.0;
-      x_wbot  = x_wtop - 45.0;
+      x_wtop  = -my.m_offset;
+      if (strchr (FORMAT_TICKERS, my.format) != NULL)  x_wbot  = x_wtop - my.r_tall;
+      else                                             x_wbot  = -my.w_tall;
       x_ttop  = 1.0;
       x_tbot  = 0.0;
-      if (my.format != FORMAT_TICKER)  x_wwide = 325;
       /*---(panel one/lef)---------------*/
       x_wlef  = 0.0;
-      x_tlef  = (my.ccol  * x_wwide) / my.tex_w;
+      x_tlef  = (my.ccol  * my.c_offset) / (float) my.t_wide;
       if (my.ncols - my.ccol > my.wcols) {
          x_max  = my.ccol + my.wcols;
          x_cnt  = my.wcols;
-         x_wrig = my.win_w;
+         x_wrig = my.w_wide;
       } else {
          x_max  = my.ncols;
          x_cnt  = my.ncols - my.ccol;
-         x_wrig = (x_cnt / my.wcols) * my.win_w;
+         x_wrig = (x_cnt / my.wcols) * my.w_wide;
       }
-      x_trig   = (x_max    * x_wwide) / my.tex_w;
+      x_trig   = (x_max    * my.c_offset) / my.t_wide;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
       DEBUG_GRAF   yLOG_double   ("x_tlef"    , x_tlef);
@@ -312,45 +309,40 @@ OPENGL_show        (void)
       DEBUG_GRAF   yLOG_double   ("x_wrig"    , x_wrig);
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       /*---(panel two/rig)---------------*/
-      if (x_wrig < my.win_w) {
+      if (x_wrig < my.w_wide) {
          x_wlef = x_wrig;
-         x_wrig = my.win_w;
+         x_wrig = my.w_wide;
          x_tlef = 0.0;
          x_max  = my.wcols - x_cnt;
-         x_trig = (x_max    * x_wwide) / my.tex_w;
+         x_trig = (x_max    * my.c_offset) / my.t_wide;
          OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       }
       /*---(current)---------------------*/
-      x_offset = 0.0;
-      glColor4f (  1.000,  1.000,  1.000, 1.000);
-      glBegin(GL_POLYGON); {
-         glVertex3f (x_offset +   2.0, -195.0 -  6.0,   80.0);
-         glVertex3f (x_offset +  38.0, -195.0 - 43.0,   80.0);
-         glVertex3f (x_offset +  25.0, -195.0 - 43.0,   80.0);
-         glVertex3f (x_offset +   2.0, -195.0 - 20.0,   80.0);
-      } glEnd();
+      x_cur    = 0.0;
+      y_cur    = -my.m_offset;
+      /*---(done)------------------------*/
    }
    /*---(vertical views)-----------------*/
    else {
       DEBUG_GRAF   yLOG_note     ("vertical formats------------");
       /*---(consistent)------------------*/
       x_wlef  = 0.0;
-      x_wrig  = my.win_w;
+      x_wrig  = my.w_wide;
       x_tlef  = 0.0;
       x_trig  = 1.0;
       /*---(updates)---------------------*/
       x_wtop  = 0.0;
-      x_ttop  = 1.0 - ((my.brow  *  x_wtall) / my.tex_h);
+      x_ttop  = 1.0 - ((my.brow  *  my.r_offset) / (float) my.t_tall);
       if (my.nrows - my.brow > my.wrows) {
          x_max  = my.brow + my.wrows;
          x_cnt  = my.wrows;
-         x_wbot = -my.win_h;
+         x_wbot = -my.w_tall;
       } else {
          x_max  = my.nrows;
          x_cnt  = my.nrows - my.brow;
-         x_wbot = -(x_cnt / my.wrows) * my.win_h;
+         x_wbot = -(x_cnt / my.wrows) * my.w_tall;
       }
-      x_tbot   = 1.0 - ((x_max    *  x_wtall) / my.tex_h);
+      x_tbot   = 1.0 - ((x_max    *  my.r_offset) / (float) my.t_tall);
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
       DEBUG_GRAF   yLOG_double   ("x_ttop"    , x_ttop);
@@ -359,16 +351,18 @@ OPENGL_show        (void)
       DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       /*---(current)---------------------*/
-      x_offset = -(my.crow - my.brow) * 60.0;
-      glColor4f (  1.000,  1.000,  1.000, 1.000);
-      glBegin(GL_POLYGON); {
-         glVertex3f (    2.0, x_offset -  6.0,   80.0);
-         glVertex3f (   38.0, x_offset - 43.0,   80.0);
-         glVertex3f (   25.0, x_offset - 43.0,   80.0);
-         glVertex3f (    2.0, x_offset - 20.0,   80.0);
-      } glEnd();
+      x_cur    = 0.0;
+      y_cur    = -(my.crow - my.brow) * my.r_offset;
       /*---(done)------------------------*/
    }
+   /*---(current)---------------------*/
+   glColor4f (  1.000,  1.000,  1.000, 1.000);
+   glBegin(GL_POLYGON); {
+      glVertex3f (x_cur +   2.0, y_cur -  6.0,   80.0);
+      glVertex3f (x_cur +  38.0, y_cur - 43.0,   80.0);
+      glVertex3f (x_cur +  25.0, y_cur - 43.0,   80.0);
+      glVertex3f (x_cur +   2.0, y_cur - 20.0,   80.0);
+   } glEnd();
    /*---(force mask redraw)--------------*/
    if (x_mode != x_modesave) {
       switch (x_mode) {
@@ -408,10 +402,10 @@ OPENGL__base       (char  a_value)
       break;
    }
    glBegin(GL_POLYGON); {
-      glVertex3f (    0.0,    0.0,   -1.0);
-      glVertex3f (  300.0,    0.0,   -1.0);
-      glVertex3f (  300.0,  -45.0,   -1.0);
-      glVertex3f (    0.0,  -45.0,   -1.0);
+      glVertex3f (      0.0,        0.0,   -1.0);
+      glVertex3f (my.c_wide,        0.0,   -1.0);
+      glVertex3f (my.c_wide, -my.r_tall,   -1.0);
+      glVertex3f (      0.0, -my.r_tall,   -1.0);
    } glEnd();
    return 0;
 }
@@ -678,6 +672,9 @@ OPENGL_draw        (void)
    int       pos     = 0;
    int       x_max   = 0;
    float     x_inc   = 0.0;
+   int       n       =    0;
+   short       x_pos       =    0;
+   short       y_pos       =    0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(create objects)-----------------*/
@@ -685,10 +682,10 @@ OPENGL_draw        (void)
    DEBUG_GRAF   yLOG_note     ("delete old texture");
    if (my.g_tex != -1)  yGLTEX_free (&my.g_tex, &my.g_fbo, &my.g_dep);
    DEBUG_GRAF   yLOG_note     ("create texture");
-   yGLTEX_new (&my.g_tex, &my.g_fbo, &my.g_dep, my.tex_w, my.tex_h);
+   yGLTEX_new (&my.g_tex, &my.g_fbo, &my.g_dep, my.t_wide, my.t_tall);
    /*---(setup)--------------------------*/
    DEBUG_GRAF   yLOG_note     ("setup opengl view");
-   yGLTEX_draw_start (my.g_fbo, YGLTEX_TOPLEF, my.tex_w, my.tex_h, 1.0);
+   yGLTEX_draw_start (my.g_fbo, YGLTEX_TOPLEF, my.t_wide, my.t_tall, 1.0);
    /*---(tasks)--------------------------*/
    DEBUG_GRAF   yLOG_note     ("draw tasks");
    glColor4f (0.0f, 0.0f, 0.0f, 1.0f);
@@ -698,65 +695,35 @@ OPENGL_draw        (void)
    DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
    DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
    switch (my.format) {
-   case FORMAT_TICKER   :
-      OPENGL__colrow (my.tcols, 300.0,   0.0);
-      break;
-   case FORMAT_BASELINE :
-      OPENGL__colrow (my.tcols, 325.0,   0.0);
+   case FORMAT_TICKER   : case FORMAT_BASELINE :
+      OPENGL__colrow (my.tcols, my.c_offset,   0.0);
       break;
    case FORMAT_RSHORT   : case FORMAT_LSHORT   :
-      OPENGL__colrow (my.trows,   0.0, -60.0);
-      break;
    case FORMAT_RLONG    : case FORMAT_LLONG    :
-      OPENGL__colrow (my.trows,   0.0, -60.0);
+   case FORMAT_STREAMER :
+      OPENGL__colrow (my.trows,   0.0, -my.r_offset);
       break;
-   case FORMAT_WIDE     :
-      for (j = 0; j < my.ncols; ++j) {
-         pos = 0;
-         glPushMatrix(); {
-            for (i = 0; i < 12; ++i) {
-               if ((j * 12) + i >= MAX_CARDS) continue;
-               OPENGL__card((j * 12) + i);
-               glTranslatef(    0.0,  -60.0,   0.0);
-               pos -= 60;
-               g_tasks [j * 12 + i].pos = pos;
-            }
-         } glPopMatrix();
-         glTranslatef(    320.0,  0.0,   0.0);
-      }
-      break;
-   case FORMAT_PROJECT  :
-      for (j = 1; j <= my.ncols; ++j) {
-         /*> printf("drawing col %2d\n", j);                                       <*/
-         pos = 0;
-         glPushMatrix(); {
-            for (i = 0; i < g_ntask; ++i) {
-               if (g_tasks [i].col != j) continue;
-               if (pos == 0 && g_tasks [i].row == 2) glTranslatef(    0.0,  -60.0,   0.0);
-               /*> printf("   card  %3d\n", i);                                    <*/
-               OPENGL__card(i);
-               glTranslatef(    0.0,  -60.0,   0.0);
-               pos -= 60;
-               g_tasks [i].pos = pos;
-            }
-         } glPopMatrix();
-         glTranslatef(    320.0,  0.0,   0.0);
-      }
-      break;
-   case FORMAT_EXTRA    :
-      for (j = 0; j < my.ncols; ++j) {
-         pos = 0;
-         glPushMatrix(); {
-            for (i = 0; i < 16; ++i) {
-               if ((j * 16) + i >= MAX_CARDS) continue;
-               OPENGL__card((j * 16) + i);
-               glTranslatef(    0.0,  -60.0,   0.0);
-               pos -= 60;
-               g_tasks [j * 16 + i].pos = pos;
-            }
-         } glPopMatrix();
-         glTranslatef(    320.0,  0.0,   0.0);
-      }
+   case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
+      glPushMatrix(); {
+         for (j = 0; j < my.wcols; ++j) {
+            glPushMatrix(); {
+               for (i = 0; i < my.wrows; ++i) {
+                  n = format_check (my.ccol + j + 1, i + 1);
+                  if (n <= 0)  break;
+                  g_tasks [n - 1].pos = j * my.wrows + i;
+                  g_tasks [n - 1].x   = x_pos;
+                  g_tasks [n - 1].y   = y_pos;
+                  g_tasks [n - 1].col = j;
+                  g_tasks [n - 1].row = i;
+                  y_pos += my.r_offset;
+                  OPENGL__card (n - 1);
+                  glTranslatef(0.0, -my.r_offset,   0.0);
+               }
+            } glPopMatrix();
+            x_pos += my.c_offset;
+            glTranslatef (my.c_offset, 0.0, 0.0);
+         }
+      } glPopMatrix();
       break;
    }
    /*> printf("   ending draw\n");                                                    <*/
@@ -782,7 +749,7 @@ OPENGL_mask             (void)
    int       i         = 0;
    int       j         = 0;
    int       k         = 0;
-   Pixmap    bounds    = XCreatePixmap(DISP, BASE, my.win_w, my.win_h, 1);
+   Pixmap    bounds    = XCreatePixmap(DISP, BASE, my.w_wide, my.w_tall, 1);
    int       x_col      = 0;
    int         x_max       =    0;
    float       x_inc       =    0;
@@ -803,55 +770,36 @@ OPENGL_mask             (void)
    x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);
    DEBUG_GRAF   yLOG_char     ("x_status"  , x_status);
    XSetForeground(DISP, gc, 0);
-   XFillRectangle(DISP, bounds, gc, 0, 0, my.win_w, my.win_h);
+   XFillRectangle(DISP, bounds, gc, 0, 0, my.w_wide, my.w_tall);
    XSetForeground(DISP, gc, 1);
    /*---(establish mask)-----------------*/
    switch (my.format) {
-   case FORMAT_TICKER   :
-      x_inc = 300.0;
-   case FORMAT_BASELINE :
-      if (x_inc == 0.0)  x_inc = 325.0;
-      DEBUG_GRAF   yLOG_value    ("x_inc"     , x_inc);
+   case FORMAT_TICKER   : case FORMAT_BASELINE :
       x_max = my.wcols;
       if (x_max >= my.nact)  x_max = my.nact;
-      /*> for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc, 0, 300, 45);   <*/
-      /*> for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc,   0, 300, 220);   <*/
-      for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * x_inc, 195, 300, 45);
+      for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
       break;
    case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
-      x_inc = 60.0;
       x_max = my.wrows;
       if (x_max >= my.nact)  x_max = my.nact;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       for (i = 0; i < x_max; ++i) {
-         XFillRectangle (DISP, bounds, gc,   0, i * x_inc, 300, 45);
-      }
-      XFillRectangle (DISP, bounds, gc,   0,  my.wrows * x_inc, 300, 15);
-      break;
-   case FORMAT_WIDE     :
-      for (j = 0; j < 4; ++j) {
-         for (i = 0; i < 12; ++i) {
-            if (g_tasks [j* my.wrows + i].imp != '?') XFillRectangle(DISP, bounds, gc,  j * 320, i * 60, 300, 45);
-         }
+         XFillRectangle (DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
       }
       break;
-   case FORMAT_PROJECT  :
+   case FORMAT_STREAMER :
+      x_max = my.wrows;
+      if (x_max >= my.nact)  x_max = my.nact;
+      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
+      for (i = 0; i < x_max; ++i) {
+         XFillRectangle (DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
+      }
+      break;
+   case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
       for (j = 0; j < my.wcols; ++j) {
-         x_col = my.ccol + j;
-         if (x_col >= my.ncols) x_col -= my.ncols;
          for (i = 0; i < my.wrows; ++i) {
-            for (k = 0; k < g_ntask; ++k) {
-               if (g_tasks [k].col != x_col + 1)           continue;
-               if (g_tasks [k].row != i + 1)              continue;
-               XFillRectangle(DISP, bounds, gc,  j * 320, i * 60, 300, 45);
-            }
-         }
-      }
-      break;
-   case FORMAT_EXTRA    :
-      for (j = 0; j < 4; ++j) {
-         for (i = 0; i < 16; ++i) {
-            if (g_tasks [j * 16 + i].imp != '?') XFillRectangle(DISP, bounds, gc,  j * 320, i * 60, 300, 45);
+            if (format_check (my.ccol + j + 1, i + 1) <= 0)  continue;
+            XFillRectangle(DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
          }
       }
       break;
@@ -859,18 +807,12 @@ OPENGL_mask             (void)
    /*---(check for menu)-----------------*/
    if (x_mode == SMOD_MENUS) {
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
-      if (strchr (FORMAT_HORZ, my.format) != NULL) {
+      if (strchr (FORMAT_TICKERS, my.format) != NULL) {
          XFillRectangle (DISP, bounds, gc,  0, 40, 280, 220);
       } else {
-         XFillRectangle (DISP, bounds, gc, 10, 10, 280, 260);
+         XFillRectangle (DISP, bounds, gc, my.w_wide / 2 - 140, 10, 280, 260);
       }
    }
-   /*---(status bar)---------------------*/
-   /*> if (x_status == 'y') {                                                         <* 
-    *>    x_max = my.nact;                                                            <* 
-    *>    if (x_max > 12)  x_max = 12;                                                <* 
-    *>    XFillRectangle (DISP, bounds, gc,   0, my.nact * x_inc, 300, 45);           <* 
-    *> }                                                                              <*/
    /*---(set mask)-----------------------*/
    XShapeCombineMask (DISP, BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/

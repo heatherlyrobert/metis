@@ -16,16 +16,20 @@ api_yvikeys__resize     (char a_startup)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        x_cmd       [LEN_RECD];
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(size main)----------------------*/
    if (a_startup == 'y') {
-      yVIKEYS_view_config   ("metis_tasklist", P_VERNUM, YVIKEYS_OPENGL, my.win_w, my.win_h, 0);
+      yVIKEYS_view_config   ("metis_tasklist", P_VERNUM, YVIKEYS_OPENGL, my.w_wide, my.w_tall, 0);
+      yX11_screensize (&my.s_wide, &my.s_tall, NULL);
+      DEBUG_GRAF   yLOG_complex ("screen"    , "%4dw, %4dt", my.s_wide, my.s_tall);
       sleep (1);
    } else {
-      yVIKEYS_view_resize   (my.win_w, my.win_h, 0);
+      yVIKEYS_view_resize   (my.w_wide, my.w_tall, 0);
    }
    /*---(size parts)---------------------*/
-   yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, my.win_w, -my.win_h, my.win_h, 0, 0, 0, OPENGL_show);
-   if (strchr(FORMAT_HORZ, my.format) != 0) {
+   yVIKEYS_view_setup    (YVIKEYS_MAIN , YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0, my.w_wide, -my.w_tall, my.w_tall, 0, 0, 0, OPENGL_show);
+   if (strchr (FORMAT_TICKERS, my.format) != 0) {
       yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_TOPCEN,  10, 280     , -230.0   , 20      , 0, 0, 0, NULL);
       yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_TOPLEF,   0,   0     , 0        , 0       , 0, 0, 0, NULL);
    } else {
@@ -33,9 +37,10 @@ api_yvikeys__resize     (char a_startup)
       yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_TOPCEN,   0,   0     , 0        , 0       , 0, 0, 0, NULL);
    }
    /*---(call placement)-----------------*/
-   sprintf (x_cmd, "wmctrl -r 'metis_tasklist' -e 0,%d,%d,%d,%d", my.win_x, my.win_y, my.win_w, my.win_h);
+   sprintf (x_cmd, "wmctrl -r 'metis_tasklist' -e 0,%d,%d,%d,%d", my.w_left, my.w_topp, my.w_wide, my.w_tall);
    system  (x_cmd);
    /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -190,11 +195,14 @@ api_yvikeys_mapper      (char a_req)
    my.crow = g_ymap.ucur;
    my.erow = g_ymap.uend;
    api_yvikeys__unmap (&g_bmap);
-   if (strchr (FORMAT_HORZ, my.format) != NULL) {
+   if (strchr (FORMAT_TICKERS, my.format) != NULL) {
       api_yvikeys__linear (a_req, &g_xmap, my.tcols, my.wcols);
       api_yvikeys__unmap  (&g_ymap);
-   } else {
+   } else if (strchr (FORMAT_COLUMNS, my.format) != NULL) {
       api_yvikeys__unmap  (&g_xmap);
+      api_yvikeys__linear (a_req, &g_ymap, my.trows, my.wrows);
+   } else { 
+      api_yvikeys__linear (a_req, &g_xmap, my.tcols, my.wcols);
       api_yvikeys__linear (a_req, &g_ymap, my.trows, my.wrows);
    }
    api_yvikeys__unmap (&g_zmap);
@@ -274,19 +282,22 @@ api_yvikeys_filter      (char *a_which, char *a_string)
 char
 api_yvikeys_window      (char *a_format)
 {
+   static      x_save      = '-';
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    if (a_format == NULL) return -1;
-   /*---(change format)-------------------------*/
-   if      (strcmp (a_format, "col_rig" ) == 0)  { my.format = FORMAT_RSHORT; format_column (); }
-   else if (strcmp (a_format, "col_lef" ) == 0)  { my.format = FORMAT_LSHORT; format_column (); }
-   else if (strcmp (a_format, "long_rig") == 0)  { my.format = FORMAT_RLONG ; format_column (); }
-   else if (strcmp (a_format, "long_lef") == 0)  { my.format = FORMAT_LLONG ; format_column (); }
-   else if (strcmp (a_format, "ticker"  ) == 0)  format_ticker (FORMAT_TICKER);
-   else if (strcmp (a_format, "baseline") == 0)  format_ticker (FORMAT_BASELINE);
-   else if (strcmp (a_format, "project" ) == 0)  format_projects ();
-   else if (strcmp (a_format, "wide"    ) == 0)  format_wideview ();
-   else if (strcmp (a_format, "extra"   ) == 0)  format_extra    ();
-   else if (strcmp (a_format, "sticky"  ) == 0) {
+   /*---(change format)------------------*/
+   if      (strcmp (a_format, "col_rig" ) == 0)  my.format = FORMAT_RSHORT;
+   else if (strcmp (a_format, "col_lef" ) == 0)  my.format = FORMAT_LSHORT;
+   else if (strcmp (a_format, "long_rig") == 0)  my.format = FORMAT_RLONG;
+   else if (strcmp (a_format, "long_lef") == 0)  my.format = FORMAT_LLONG;
+   else if (strcmp (a_format, "streamer") == 0)  my.format = FORMAT_STREAMER;
+   else if (strcmp (a_format, "ticker"  ) == 0)  my.format = FORMAT_TICKER;
+   else if (strcmp (a_format, "baseline") == 0)  my.format = FORMAT_BASELINE;
+   else if (strcmp (a_format, "project" ) == 0)  my.format = FORMAT_PROJECT;
+   else if (strcmp (a_format, "wide"    ) == 0)  my.format = FORMAT_WIDE;
+   else if (strcmp (a_format, "extra"   ) == 0)  my.format = FORMAT_EXTRA;
+   /*---(change attributes)--------------*/
+   if (strcmp (a_format, "sticky"  ) == 0) {
       system ("wmctrl -r 'metis_tasklist' -b add,sticky");
       return 0;
    }
@@ -294,7 +305,13 @@ api_yvikeys_window      (char *a_format)
       system ("wmctrl -r 'metis_tasklist' -b remove,sticky");
       return 0;
    }
-   else                                       return -2;
+   if (my.format == x_save) {
+      DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   /*---(update)-------------------------*/
+   x_save = my.format;
+   FORMAT_refresh ();
    api_yvikeys__resize   ('-');
    SORT_refresh   ();
    FILTER_refresh ();
@@ -302,7 +319,7 @@ api_yvikeys_window      (char *a_format)
    api_yvikeys_mapper  (YVIKEYS_INIT);
    OPENGL_draw ();
    OPENGL_mask();
-   /*---(complete)------------------------------*/
+   /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }

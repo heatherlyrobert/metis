@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.4-, bring back functionality after big updates"
-#define     P_VERNUM    "1.4a"
-#define     P_VERTXT    "all horz and vert modes are working"
+#define     P_VERNUM    "1.4b"
+#define     P_VERTXT    "big views (wide, project, and extra) are now showing"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -227,6 +227,7 @@ extern char      one [20];
 typedef     struct cMY     tMY;
 struct cMY {
    /*---(program wide)-------------------*/
+   char        daemon;                      /* daemon vs foreground mode      */
    char        quit;                        /* stop the program               */
    char        trouble;                     /* flag bad keys                  */
    char        keys        [LEN_LABEL];     /* batch/menu keys to execute     */
@@ -282,17 +283,24 @@ struct cMY {
    double      mspeed;
    double      change;
    /*---(win/tex)------------------------*/
-   char        win_title   [LEN_DESC];   /* window title                   */
-   int         win_x;                    /* window left                    */
-   int         win_y;                    /* window top                     */
-   int         win_w;                    /* window width                   */
-   int         win_h;                    /* window height                  */
-   int         tex_w;                    /* texture width                  */
-   int         tex_h;                    /* texture height                 */
+   char        win_title   [LEN_DESC];   /* window title                      */
+   int         s_wide;                   /* screen width                      */
+   int         s_tall;                   /* screen height                     */
+   int         c_wide;                   /* column width                      */
+   int         c_offset;                 /* column spacing offset             */
+   int         r_tall;                   /* row height                        */
+   int         r_offset;                 /* row spacing offset                */
+   int         w_left;                   /* window left                       */
+   int         w_wide;                   /* window width                      */
+   int         w_topp;                   /* window top                        */
+   int         w_tall;                   /* window height                     */
+   int         t_wide;                   /* texture width                     */
+   int         t_tall;                   /* texture height                    */
+   int         m_offset;                 /* menu space allowed (horz)         */
    /*---(opengl objects)-----------------*/
-   uint        g_tex;                    /* task texture                   */
-   uint        g_fbo;                    /* task fbo                       */
-   uint        g_dep;                    /* task depth                     */
+   uint        g_tex;                    /* task texture                      */
+   uint        g_fbo;                    /* task fbo                          */
+   uint        g_dep;                    /* task depth                        */
    /*---(done)---------------------------*/
 };
 extern tMY   my;
@@ -315,21 +323,23 @@ extern int   max_disp;
 #define   FORMAT_RLONG        'R'
 #define   FORMAT_LSHORT       'l'
 #define   FORMAT_LLONG        'L'
-#define   FORMAT_STREAMER     's'
+#define   FORMAT_STREAMER     'S'
 #define   FORMAT_WIDE         'w'
 #define   FORMAT_PROJECT      'p'
 #define   FORMAT_EXTRA        'x'
 
-#define   FORMAT_COLUMNS      "rlRL"
+#define   FORMAT_COLUMNS      "rlRLS"
 #define   FORMAT_RIGHTS       "rR"
 #define   FORMAT_LONGS        "RL"
 #define   FORMAT_TICKERS      "tb"
+#define   FORMAT_LARGES       "wpx"
 
-#define   FORMAT_ALL          "tbrlRLswpx"
+#define   FORMAT_ALL          "tbrlRLSwpx"
 #define   FORMAT_HORZ         "tbwpx"
 
 
-#define   MAX_COLS     20
+#define   MAX_COLS    15
+#define   MAX_ROWS    100
 #define   STOP        0.0000
 
 extern float     step;
@@ -378,8 +388,10 @@ int         DATA_cursor             (char a_type);
 char*       DATA__unit              (char *a_question, int a_num);
 
 char        FORMAT_init             (void);
+int         format_check            (int a_col, int a_row);
 char        format_column           (void);
-char        format_ticker           (char a_type);
+char        format_ticker           (void);
+char        format_streamer         (void);
 char        format_projects         (void);
 char        format_wideview         (void);
 char        format_extra            (void);
