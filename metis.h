@@ -23,8 +23,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.4-, bring back functionality after big updates"
-#define     P_VERNUM    "1.4b"
-#define     P_VERTXT    "big views (wide, project, and extra) are now showing"
+#define     P_VERNUM    "1.4c"
+#define     P_VERTXT    "create unit testing for formatting -- solved some issues ;)"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -288,8 +288,10 @@ struct cMY {
    int         s_tall;                   /* screen height                     */
    int         c_wide;                   /* column width                      */
    int         c_offset;                 /* column spacing offset             */
+   int         c_over;                   /* extra columns shown in window     */
    int         r_tall;                   /* row height                        */
    int         r_offset;                 /* row spacing offset                */
+   int         r_over;                   /* extra rows shown in window        */
    int         w_left;                   /* window left                       */
    int         w_wide;                   /* window width                      */
    int         w_topp;                   /* window top                        */
@@ -357,6 +359,7 @@ task_list          (void);
 char             /* [G-----] output a formatted structure of tasks -----------*/
 task_structure     (void);
 
+char       task_dump          (void);
 
 /*---(program-level)------------------*/
 char       OPENGL_init              (void);

@@ -310,11 +310,11 @@ api_yvikeys_window      (char *a_format)
       return 0;
    }
    /*---(update)-------------------------*/
+   SORT_refresh   ();
+   FILTER_refresh ();
    x_save = my.format;
    FORMAT_refresh ();
    api_yvikeys__resize   ('-');
-   SORT_refresh   ();
-   FILTER_refresh ();
    yVIKEYS_map_refresh ();
    api_yvikeys_mapper  (YVIKEYS_INIT);
    OPENGL_draw ();

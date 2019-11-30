@@ -44,25 +44,39 @@ format__clear      (void)
          s_map [x_col][x_row] = -1;
       }
    }
+   my.ncols = my.nrows = 0;
    return 0;
 }
 
 int
 format__assign     (void)
 {
+   /*---(locals)-----------+-----+-----+-*/
    int         x_col, x_row;
    int         n           =    0;
+   int         c           =    0;
+   /*---(prepare)------------------------*/
    format__clear ();
+   n = DATA_cursor ('[');
+   if (n < 0)  return c;
+   /*---(walk tasks)---------------------*/
    for (x_col = 1; x_col <= my.tcols; ++x_col) {
-      if (n     >= g_ntask)  break;
       for (x_row = 1; x_row <= my.trows; ++x_row) {
-         if (n     >= g_ntask)  break;
-         ++n;
+         /*---(process)--------*/
+         ++c;
          s_map [x_col][x_row] = n;
          s_map [x_col][0    ] = x_row;
+         /*---(check maxes)----*/
+         if (my.ncols < x_col)  my.ncols = x_col;
+         if (my.nrows < x_row)  my.nrows = x_row;
+         /*---(next)-----------*/
+         n = DATA_cursor ('>');
+         if (n < 0)     return c;
+         /*---(done)-----------*/
       }
    }
-   return n;
+   /*---(complete)-----------------------*/
+   return c;
 }
 
 int
@@ -98,8 +112,8 @@ format__wintex     (void)
    /*---(window)-------------------------*/
    DEBUG_USER   yLOG_sint     (my.w_left);
    DEBUG_USER   yLOG_sint     (my.w_topp);
-   my.w_wide   = my.wcols * my.c_offset;
-   my.w_tall   = my.wrows * my.r_offset + my.m_offset;
+   my.w_wide   = (my.wcols + my.c_over) * my.c_offset;
+   my.w_tall   = (my.wrows + my.r_over) * my.r_offset + my.m_offset;
    DEBUG_USER   yLOG_sint     (my.w_wide);
    DEBUG_USER   yLOG_sint     (my.w_tall);
    /*---(texture)------------------------*/
@@ -122,15 +136,15 @@ format_streamer    (void)
    my.c_offset = 300;
    my.wcols    =   1;
    my.tcols    =   1;
-   my.ncols    =   1;
    DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  44;
-   my.wrows    =  round ((float) my.s_tall / my.r_offset);
+   my.wrows    =  my.s_tall / my.r_offset;
+   if (my.wrows * my.r_offset < my.w_tall)   my.r_over = 1;
    DEBUG_USER   yLOG_sint     (my.wrows);
    my.trows    =  60;
-   if (my.nact <= my.trows)  my.nrows = my.nact;
-   else                      my.nrows = my.trows;
+   /*> if (my.nact <= my.trows)  my.nrows = my.nact;                                  <* 
+    *> else                      my.nrows = my.trows;                                 <*/
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -151,14 +165,15 @@ format_ticker           (void)
    my.r_offset =  45;
    my.wrows    =   1;
    my.trows    =   1;
-   my.nrows    =   1;
+   /*> my.nrows    =   1;                                                             <*/
    /*---(columns)------------------------*/
    my.c_offset = 300;
    if (my.format != FORMAT_TICKER)  my.c_offset = 325;
-   my.wcols    =   6;
+   my.wcols    =   4;
+   my.c_over   =   1;
    my.tcols    =  12;
-   if (my.nact <= my.tcols)  my.ncols = my.nact;
-   else                      my.ncols = my.tcols;
+   /*> if (my.nact <= my.tcols)  my.ncols = my.nact;                                  <* 
+    *> else                      my.ncols = my.tcols;                                 <*/
    /*---(menu spacing)-------------------*/
    my.m_offset = 195;
    /*---(win/tex)------------------------*/
@@ -183,13 +198,13 @@ format_column      (void)
       my.wrows  =  12;
    DEBUG_USER   yLOG_sint     (my.wrows);
    my.trows    =  60;
-   if (my.nact <= my.trows)  my.nrows = my.nact;
-   else                      my.nrows = my.trows;
+   /*> if (my.nact <= my.trows)  my.nrows = my.nact;                                  <* 
+    *> else                      my.nrows = my.trows;                                 <*/
    /*---(columns)------------------------*/
    my.c_offset = 300;
    my.wcols    =   1;
    my.tcols    =   1;
-   my.ncols    =   1;
+   /*> my.ncols    =   1;                                                             <*/
    DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
@@ -214,13 +229,13 @@ format_wideview    (void)
    my.c_offset = 320;
    my.wcols    =   4;
    my.tcols    =  12;
-   my.ncols    =  12;
+   /*> my.ncols    =  12;                                                             <*/
    DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  60;
    my.wrows    =  12;
    my.trows    =  12;
-   my.nrows    =  12;
+   /*> my.nrows    =  12;                                                             <*/
    DEBUG_USER   yLOG_sint     (my.wrows);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
@@ -242,13 +257,13 @@ format_projects    (void)
    my.c_offset = 320;
    my.wcols    =   4;
    my.tcols    =  12;
-   my.ncols    =  12;
+   /*> my.ncols    =  12;                                                             <*/
    DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  60;
    my.wrows    =  25;
    my.trows    =  25;
-   my.nrows    =  25;
+   /*> my.nrows    =  25;                                                             <*/
    DEBUG_USER   yLOG_sint     (my.wrows);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
@@ -270,13 +285,13 @@ format_extra       (void)
    my.c_offset = 320;
    my.wcols    =   4;
    my.tcols    =  12;
-   my.ncols    =  12;
+   /*> my.ncols    =  12;                                                             <*/
    DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  44;
-   my.wrows    =  round ((float) my.s_tall / my.r_offset);
-   my.trows    =  my.wrows;
-   my.nrows    =  my.wrows;
+   my.wrows    =  my.s_tall / my.r_offset;
+   if (my.wrows * my.r_offset < my.w_tall)   my.r_over = 1;
+   my.trows    =  my.wrows + my.r_over;
    DEBUG_USER   yLOG_sint     (my.wrows);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
@@ -296,7 +311,9 @@ FORMAT_refresh          (void)
    DEBUG_USER   yLOG_enter    (__FUNCTION__);
    /*---(globals)------------------------*/
    my.c_wide  =  300;
+   my.c_over  =    0;
    my.r_tall  =   45;
+   my.r_over  =    0;
    /*---(specifics)----------------------*/
    switch (my.format) {
    case FORMAT_TICKER  : case FORMAT_BASELINE :
@@ -317,10 +334,14 @@ FORMAT_refresh          (void)
    case FORMAT_EXTRA   :
       format_extra    ();
       break;
+   default  :
+      my.format = FORMAT_RSHORT;
+      format_column   ();
+      break;
    }
    format__clear  ();
    format__assign ();
-   format__show   ();
+   /*> format__show   ();                                                             <*/
    /*---(complete)------------------------------*/
    DEBUG_USER   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -338,12 +359,29 @@ FORMAT__unit       (char *a_question, int a_num)
 {
    /*---(locals)-------------------------*/
    char        rc          =    0;
-   char        t           [LEN_HUND]   = "[]";
-   char        s           [LEN_HUND]   = "[]";
+   int         i           =    0;
+   char        t           [LEN_HUND]   = "";
+   char        s           [LEN_LABEL]  = "";
    /*---(overall)------------------------*/
    strcpy (unit_answer, "FORMAT           : question not understood");
    if      (strcmp (a_question, "count"         ) == 0) {
       snprintf (unit_answer, LEN_FULL, "DATA count       : %d", g_ntask);
+   }
+   else if (strcmp (a_question, "units"         ) == 0) {
+      snprintf (unit_answer, LEN_FULL, "FORMAT unit  (%c) : wide %4dt %4dw %4do %4dn     - tall %4dt %4dw %4do %4dn     -", my.format, my.tcols, my.wcols, my.c_over, my.ncols, my.trows, my.wrows, my.r_over, my.nrows);
+   }
+   else if (strcmp (a_question, "window"        ) == 0) {
+      snprintf (unit_answer, LEN_FULL, "FORMAT win   (%c) : wide %4ds %4dc %4do %4dl %4dw tall %4ds %4dr %4do %4dt %4dt", my.format, my.s_wide, my.c_wide, my.c_offset, my.w_left, my.w_wide, my.s_tall, my.r_tall, my.r_offset, my.w_topp, my.w_tall);
+   }
+   else if (strcmp (a_question, "map"           ) == 0) {
+      sprintf (t, "%2d   ", s_map [a_num][0]);
+      for (i = 1; i <= 20; ++i) {
+         if (s_map [a_num][i] > -1)  sprintf (s, " %2d", s_map [a_num][i]);
+         else                        sprintf (s, "  -");
+         strlcat (t, s, LEN_HUND);
+      }
+      if (s_map [a_num][0] > 20)  strlcat (t, " >", LEN_HUND);
+      snprintf (unit_answer, LEN_FULL, "FORMAT map  (%2d) : %s", a_num, t);
    }
    /*---(complete)-----------------------*/
    return unit_answer;

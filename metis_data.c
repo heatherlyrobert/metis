@@ -146,6 +146,7 @@ DATA_init               (void)
    g_ntask  = 0;
    my.nact  = 0;
    yVIKEYS_cmds_add (YVIKEYS_M_FILE   , "refresh"     , ""    , ""     , api_yvikeys_refresh , ""                   );
+   yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "dump"        , ""    , ""     , task_dump           , ""                   );
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -705,6 +706,27 @@ task_structure     (void)
    }
    printf (" num     ------one------     ------two------\n");
    printf ("g_ntask = %3d, groups = %3d\n", g_ntask, n);
+   /*---(complete)-----------------------*/
+   return 0;
+}
+
+char
+task_dump          (void)
+{
+   /*---(locals)-----------+-----------+-*/
+   int         i           =    0;
+   int         c           =    0;
+   /*---(display)------------------------*/
+   for (i = 0; i < g_ntask; ++i) {
+      if (g_tasks [i].act != 'y')  continue;
+      if (c % 5 == 0) printf ("##-----one--------  -------two--------  uiep·  ----------------------------------text-------------------------------- \n");
+      printf ("%-18s  %-18s ", g_tasks [i].one, g_tasks [i].two);
+      printf (" %c%c%c%c· "    , g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
+      printf (" %-70.70s "     , g_tasks [i].txt);
+      printf ("\n");
+      ++c;
+   }
+   printf ("## end-of-file\n");
    /*---(complete)-----------------------*/
    return 0;
 }

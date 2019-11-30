@@ -292,13 +292,13 @@ OPENGL_show        (void)
       x_wlef  = 0.0;
       x_tlef  = (my.ccol  * my.c_offset) / (float) my.t_wide;
       if (my.ncols - my.ccol > my.wcols) {
-         x_max  = my.ccol + my.wcols;
-         x_cnt  = my.wcols;
+         x_max  = my.ccol + (my.wcols + my.c_over);
+         x_cnt  = my.wcols + my.c_over;
          x_wrig = my.w_wide;
       } else {
          x_max  = my.ncols;
          x_cnt  = my.ncols - my.ccol;
-         x_wrig = (x_cnt / my.wcols) * my.w_wide;
+         x_wrig = (x_cnt / (my.wcols + my.c_over)) * my.w_wide;
       }
       x_trig   = (x_max    * my.c_offset) / my.t_wide;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
@@ -313,13 +313,18 @@ OPENGL_show        (void)
          x_wlef = x_wrig;
          x_wrig = my.w_wide;
          x_tlef = 0.0;
-         x_max  = my.wcols - x_cnt;
+         x_max  = (my.wcols + my.c_over) - x_cnt;
          x_trig = (x_max    * my.c_offset) / my.t_wide;
          OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
       }
       /*---(current)---------------------*/
-      x_cur    = 0.0;
-      y_cur    = -my.m_offset;
+      if (strchr (FORMAT_LARGES, my.format) != NULL) {
+         x_cur    = -(my.ccol - my.bcol) * my.c_offset;
+         y_cur    = -(my.crow - my.brow) * my.r_offset;
+      } else {
+         x_cur    = 0.0;
+         y_cur    = -my.m_offset;
+      }
       /*---(done)------------------------*/
    }
    /*---(vertical views)-----------------*/
@@ -709,14 +714,14 @@ OPENGL_draw        (void)
             glPushMatrix(); {
                for (i = 0; i < my.wrows; ++i) {
                   n = format_check (my.ccol + j + 1, i + 1);
-                  if (n <= 0)  break;
-                  g_tasks [n - 1].pos = j * my.wrows + i;
-                  g_tasks [n - 1].x   = x_pos;
-                  g_tasks [n - 1].y   = y_pos;
-                  g_tasks [n - 1].col = j;
-                  g_tasks [n - 1].row = i;
+                  if (n < 0)  continue;
+                  g_tasks [n].pos = j * my.wrows + i;
+                  g_tasks [n].x   = x_pos;
+                  g_tasks [n].y   = y_pos;
+                  g_tasks [n].col = j;
+                  g_tasks [n].row = i;
                   y_pos += my.r_offset;
-                  OPENGL__card (n - 1);
+                  OPENGL__card (n);
                   glTranslatef(0.0, -my.r_offset,   0.0);
                }
             } glPopMatrix();
@@ -749,16 +754,18 @@ OPENGL_mask             (void)
    int       i         = 0;
    int       j         = 0;
    int       k         = 0;
-   Pixmap    bounds    = XCreatePixmap(DISP, BASE, my.w_wide, my.w_tall, 1);
+   Pixmap    bounds;
+   GC        gc;
    int       x_col      = 0;
    int         x_max       =    0;
    float       x_inc       =    0;
    char        x_mode      =  '-';
    char        x_status    =  '-';
    /*---(prepare)------------------------*/
-   GC        gc        = XCreateGC(DISP, bounds, 0, NULL);
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   bounds    = XCreatePixmap (YX_DISP, YX_BASE, my.w_wide, my.w_tall, 1);
+   gc        = XCreateGC     (YX_DISP, bounds, 0, NULL);
    x_mode = yVIKEYS_mode ();
    DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("g_major"   , g_major);
@@ -769,37 +776,37 @@ OPENGL_mask             (void)
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
    x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);
    DEBUG_GRAF   yLOG_char     ("x_status"  , x_status);
-   XSetForeground(DISP, gc, 0);
-   XFillRectangle(DISP, bounds, gc, 0, 0, my.w_wide, my.w_tall);
-   XSetForeground(DISP, gc, 1);
+   XSetForeground (YX_DISP, gc, 0);
+   XFillRectangle (YX_DISP, bounds, gc, 0, 0, my.w_wide, my.w_tall);
+   XSetForeground (YX_DISP, gc, 1);
    /*---(establish mask)-----------------*/
    switch (my.format) {
    case FORMAT_TICKER   : case FORMAT_BASELINE :
-      x_max = my.wcols;
+      x_max = my.wcols + my.c_over;
       if (x_max >= my.nact)  x_max = my.nact;
-      for (i = 0; i < x_max; ++i)  XFillRectangle (DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
+      for (i = 0; i < x_max; ++i)  XFillRectangle (YX_DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
       break;
    case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
       x_max = my.wrows;
       if (x_max >= my.nact)  x_max = my.nact;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       for (i = 0; i < x_max; ++i) {
-         XFillRectangle (DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
+         XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
       }
       break;
    case FORMAT_STREAMER :
-      x_max = my.wrows;
+      x_max = my.wrows + my.r_over;
       if (x_max >= my.nact)  x_max = my.nact;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       for (i = 0; i < x_max; ++i) {
-         XFillRectangle (DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
+         XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
       }
       break;
    case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
-      for (j = 0; j < my.wcols; ++j) {
-         for (i = 0; i < my.wrows; ++i) {
-            if (format_check (my.ccol + j + 1, i + 1) <= 0)  continue;
-            XFillRectangle(DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
+      for (j = 0; j < (my.wcols + my.c_over); ++j) {
+         for (i = 0; i < (my.wrows + my.r_over); ++i) {
+            if (format_check (my.ccol + j + 1, i + 1) < 0)  continue;
+            XFillRectangle(YX_DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
          }
       }
       break;
@@ -808,16 +815,16 @@ OPENGL_mask             (void)
    if (x_mode == SMOD_MENUS) {
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
       if (strchr (FORMAT_TICKERS, my.format) != NULL) {
-         XFillRectangle (DISP, bounds, gc,  0, 40, 280, 220);
+         XFillRectangle (YX_DISP, bounds, gc,  0, 40, 280, 220);
       } else {
-         XFillRectangle (DISP, bounds, gc, my.w_wide / 2 - 140, 10, 280, 260);
+         XFillRectangle (YX_DISP, bounds, gc, my.w_wide / 2 - 140, 10, 280, 260);
       }
    }
    /*---(set mask)-----------------------*/
-   XShapeCombineMask (DISP, BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
+   XShapeCombineMask (YX_DISP, YX_BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/
-   XFreePixmap (DISP, bounds);
-   XFreeGC     (DISP, gc);
+   XFreePixmap (YX_DISP, bounds);
+   XFreeGC     (YX_DISP, gc);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
