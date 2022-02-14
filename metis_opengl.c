@@ -57,20 +57,24 @@ OPENGL__colors          (char *a_valid, char a_color)
    char        i           =    0;
    DEBUG_GRAF   yLOG_info     ("a_valid"    , a_valid);
    DEBUG_GRAF   yLOG_char     ("a_color"    , a_color);
-   p = strchr (a_valid, a_color);
-   if (p == NULL)   i = 100;
-   else             i = p - a_valid;
+   if      (a_color == 0  ) i = 100;
+   else if (a_color == '·') i = 100;
+   else {
+      p = strchr (a_valid, a_color);
+      if (p == NULL)    i = 100;
+      else              i = p - a_valid;
+   }
    DEBUG_GRAF   yLOG_value    ("i"          , i);
    switch (i) {
    case  0  : glColor3f (  1.000,  0.000,  0.000); break;
-   case  1  : glColor3f (  1.000,  0.455,  0.000); break;
+   case  1  : glColor3f (  0.900,  0.455,  0.000); break;
    case  2  : glColor3f (  0.800,  0.733,  0.000); break;
    case  3  : glColor3f (  0.200,  0.667,  0.200); break;
    case  4  : glColor3f (  0.000,  0.600,  0.600); break;
-   case  5  : glColor3f (  0.400,  0.000,  0.600); break;
-   case  6  : glColor3f (  0.800,  0.000,  0.800); break;
+   case  5  : glColor3f (  0.600,  0.000,  0.800); break;
+   case  6  : glColor3f (  0.600,  0.000,  0.600); break;
    case  7  : glColor3f (  0.400,  0.400,  0.400); break;
-   default  : glColor3f (  0.250,  0.250,  0.250); break;
+   default  : glColor3f (  0.700,  0.700,  0.700); break;
    }
    return 0;
 }
@@ -161,7 +165,7 @@ OPENGL_init (void)
    my.g_tex     =    -1;
    my.g_fbo     =    -1;
    my.g_dep     =    -1;
-   yGLTEX_init ();
+   yGLTEX_config ();
    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -198,14 +202,8 @@ OPENGL__panel        (float a_wtop, float a_wlef, float a_wbot, float a_wrig, fl
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(display)------------------------*/
-   DEBUG_GRAF   yLOG_double   ("a_wtop"     , a_wtop);
-   DEBUG_GRAF   yLOG_double   ("a_wlef"     , a_wlef);
-   DEBUG_GRAF   yLOG_double   ("a_wbot"     , a_wbot);
-   DEBUG_GRAF   yLOG_double   ("a_wrig"     , a_wrig);
-   DEBUG_GRAF   yLOG_double   ("a_ttop"     , a_ttop);
-   DEBUG_GRAF   yLOG_double   ("a_tlef"     , a_tlef);
-   DEBUG_GRAF   yLOG_double   ("a_tbot"     , a_tbot);
-   DEBUG_GRAF   yLOG_double   ("a_trig"     , a_trig);
+   DEBUG_GRAF   yLOG_complex  ("window"    , "%8.3ft, %8.3fl, %8.3fr, %8.3ft, %8.3fb", my.w_tall, a_wlef, a_wrig, a_wtop, a_wbot);
+   DEBUG_GRAF   yLOG_complex  ("texture"   , "%8.3ft, %8.3fl, %8.3fr, %8.3ft, %8.3fb", my.t_tall, a_tlef, a_trig, a_ttop, a_tbot);
    /*---(draw it)------------------------*/
    glBindTexture   (GL_TEXTURE_2D, my.g_tex);
    glBegin(GL_POLYGON); {
@@ -229,145 +227,165 @@ OPENGL__panel        (float a_wtop, float a_wlef, float a_wbot, float a_wrig, fl
    return 0;
 }
 
+char          /*--> display tickers ------------------------------------------*/
+OPENGL_show__tickers    (float *a_xcur, float *a_ycur)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   float     x_wlef, x_wrig, x_wtop, x_wbot;
+   float     x_tlef, x_trig, x_ttop, x_tbot;
+   float     x_max , x_cnt;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_note     ("ticker formats--------------");
+   /*---(consistent)---------------------*/
+   x_wtop  = -my.m_offset;
+   x_wbot  = x_wtop - my.r_tall;
+   x_ttop  = 1.0;
+   x_tbot  = 0.0;
+   /*---(panel one/lef)---------------*/
+   x_wlef  = 0.0;
+   x_tlef  = (my.bcol  * my.c_offset) / (float) my.t_wide;
+   if (my.ncols - my.ccol > my.wcols) {
+      x_max  = my.bcol + (my.wcols + my.c_over);
+      x_cnt  = my.wcols + my.c_over;
+      x_wrig = my.w_wide;
+   } else {
+      x_max  = my.ncols;
+      x_cnt  = my.ncols - my.bcol;
+      x_wrig = (x_cnt / (my.wcols + my.c_over)) * my.w_wide;
+   }
+   x_trig   = (x_max    * my.c_offset) / my.t_wide;
+   /*---(output)-------------------------*/
+   DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.ncols, my.bcol, my.ccol, my.ecol, my.c_offset);
+   DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
+   /*---(draw)---------------------------*/
+   OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+   /*---(panel two/rig)---------------*/
+   if (x_wrig < my.w_wide) {
+      x_wlef = x_wrig;
+      x_wrig = my.w_wide;
+      x_tlef = 0.0;
+      x_max  = (my.wcols + my.c_over) - x_cnt;
+      x_trig = (x_max    * my.c_offset) / my.t_wide;
+      /*---(output)-------------------------*/
+      DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.ncols, my.bcol, my.ccol, my.ecol, my.c_offset);
+      DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
+      /*---(draw)------------------------*/
+      OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+   }
+   /*---(current)---------------------*/
+   if (a_xcur != NULL)  *a_xcur    = (my.ccol - my.bcol) * my.c_offset;
+   if (a_ycur != NULL)  *a_ycur    = -my.m_offset;
+   /*---(complete)--------------------*/
+   return 0;
+}
+
+char
+OPENGL_show__columns    (float *a_xcur, float *a_ycur)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   float     x_wlef, x_wrig, x_wtop, x_wbot;
+   float     x_tlef, x_trig, x_ttop, x_tbot;
+   float     x_max , x_cnt;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_note     ("column formats--------------");
+   /*---(consistent)---------------------*/
+   x_wlef  = 0.0;
+   x_wrig  = my.w_wide;
+   x_tlef  = 0.0;
+   x_trig  = 1.0;
+   /*---(updates)------------------------*/
+   x_wtop  = 0.0;
+   x_ttop  = 1.0 - ((my.brow  *  my.r_offset) / (float) my.t_tall);
+   if (my.nrows - my.brow > my.wrows) {
+      x_max  = my.brow + my.wrows;
+      x_cnt  = my.wrows;
+      x_wbot = -my.w_tall;
+   } else {
+      x_max  = my.nrows;
+      x_cnt  = my.nrows - my.brow;
+      x_wbot = -(x_cnt / my.wrows) * my.w_tall;
+   }
+   x_tbot   = 1.0 - ((x_max    *  my.r_offset) / (float) my.t_tall);
+   /*---(output)-------------------------*/
+   DEBUG_GRAF   yLOG_complex  ("rows"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.nrows, my.brow, my.crow, my.erow, my.r_offset);
+   DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
+   /*---(draw)---------------------------*/
+   OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+   /*---(current)------------------------*/
+   if (a_xcur != NULL)  *a_xcur    = 0.0;
+   if (a_ycur != NULL)  *a_ycur    = -(my.crow - my.brow) * my.r_offset;
+   /*---(complete)--------------------*/
+   return 0;
+}
+
+char
+OPENGL_show__larges     (float *a_xcur, float *a_ycur)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   float     x_wlef, x_wrig, x_wtop, x_wbot;
+   float     x_tlef, x_trig, x_ttop, x_tbot;
+   float     x_max , x_cnt;
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_note     ("large formats---------------");
+   /*---(consistent)---------------------*/
+   x_wtop  = 0.0;
+   x_wbot  = -my.w_tall;
+   x_ttop  = 1.0;
+   x_tbot  = 0.0;
+   x_wlef  = 0.0;
+   x_wrig  = my.w_wide;
+   /*---(panel one/lef)---------------*/
+   x_tlef  = (my.bcol        * my.c_offset) / (float) my.t_wide;
+   x_trig  = ((my.bcol + 4)  * my.c_offset) / (float) my.t_wide;
+   /*---(output)-------------------------*/
+   DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.ncols, my.bcol, my.ccol, my.ecol, my.c_offset);
+   DEBUG_GRAF   yLOG_complex  ("rows"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.nrows, my.brow, my.crow, my.erow, my.r_offset);
+   DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
+   /*---(draw)---------------------------*/
+   OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+   /*---(current)---------------------*/
+   if (a_xcur != NULL)  *a_xcur    = (my.ccol - my.bcol) * my.c_offset;
+   if (a_ycur != NULL)  *a_ycur    = -(my.crow - my.brow) * my.r_offset;
+   /*---(complete)--------------------*/
+   return 0;
+}
+
+char
+OPENGL_show__current    (float a_xcur, float a_ycur)
+{
+   glColor4f (  1.000,  1.000,  1.000, 1.000);
+   glBegin(GL_POLYGON); {
+      glVertex3f (a_xcur +   2.0, a_ycur -  6.0,   80.0);
+      glVertex3f (a_xcur +  38.0, a_ycur - 43.0,   80.0);
+      glVertex3f (a_xcur +  25.0, a_ycur - 43.0,   80.0);
+      glVertex3f (a_xcur +   2.0, a_ycur - 20.0,   80.0);
+   } glEnd();
+}
+
 char       /* PURPOSE : place the texture in the window ----------------------*/
 OPENGL_show        (void)
 {
    /*---(locals)-------------------------*/
    char        rc          =    0;
-   float     offset, ratio;
-   float     tx1, ty1, tx2, ty2;
-   float     wx1, wy1, wx2, wy2;
-   float     x_tlef, x_trig, x_ttop, x_tbot;
-   float     x_wlef, x_wrig, x_wtop, x_wbot;
-   float     x_cnt;
-   float     x_max;
-   float     z;
-   int       i;
-   int      x_left, x_bott, x_wide, x_tall;
-   int      x_xmin, x_xmax;
-   int      x_ymin, x_ymax;
    char        x_mode      =  '-';
+   char        x_stat      =  '-';
+   char        x_help     =   '-';
    static char x_modesave  =  '-';
+   static char x_statsave  =   0 ;
+   static char x_helpsave =   '-';
    float       x_cur, y_cur;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
-   x_mode = yVIKEYS_mode ();
+   DEBUG_GRAF   yLOG_char     ("format"    , my.format);
+   /*> x_mode = yVIKEYS_mode ();                                                      <*/
    DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("x_modesave", x_modesave);
-   /*---(coordinates)--------------------*/
-   yVIKEYS_view_size     (YVIKEYS_MAIN, &x_left, &x_wide, &x_bott, &x_tall, NULL);
-   DEBUG_GRAF   yLOG_complex  ("size"      , "%3dl, %3dw, %3db, %3dt", x_left, x_wide, x_bott, x_tall);
-   yVIKEYS_view_bounds   (YVIKEYS_MAIN, &x_xmin, &x_xmax, &x_ymin, &x_ymax);
-   DEBUG_GRAF   yLOG_complex  ("bounds"    , "%3dx to %3dx, %3dy to %3dy", x_xmin, x_xmax, x_ymin, x_ymax);
-   /*---(prepare drawing)----------------*/
-   DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
-   DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
-   DEBUG_GRAF   yLOG_value    ("w_tall"     , my.w_tall);
-   DEBUG_GRAF   yLOG_value    ("w_wide"     , my.w_wide);
-   DEBUG_GRAF   yLOG_value    ("t_tall"     , my.t_tall);
-   DEBUG_GRAF   yLOG_value    ("t_wide"     , my.t_wide);
-   DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
-   DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
-   DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
-   DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
-   DEBUG_GRAF   yLOG_value    ("my.ncols"  , my.ncols);
-   DEBUG_GRAF   yLOG_value    ("my.nrows"  , my.nrows);
-   DEBUG_GRAF   yLOG_value    ("my.brow"   , my.brow);
-   DEBUG_GRAF   yLOG_value    ("my.crow"   , my.crow);
-   DEBUG_GRAF   yLOG_value    ("my.erow"   , my.erow);
-   DEBUG_GRAF   yLOG_value    ("my.bcol"   , my.bcol);
-   DEBUG_GRAF   yLOG_value    ("my.ccol"   , my.ccol);
-   DEBUG_GRAF   yLOG_value    ("my.ecol"   , my.ecol);
-   /*---(horizontal views)---------------*/
-   if (strchr (FORMAT_HORZ, my.format) != 0) {
-      DEBUG_GRAF   yLOG_note     ("horizontal formats----------");
-      /*---(consistent)------------------*/
-      /*> x_wtop  = 0.0;                                                              <*/
-      x_wtop  = -my.m_offset;
-      if (strchr (FORMAT_TICKERS, my.format) != NULL)  x_wbot  = x_wtop - my.r_tall;
-      else                                             x_wbot  = -my.w_tall;
-      x_ttop  = 1.0;
-      x_tbot  = 0.0;
-      /*---(panel one/lef)---------------*/
-      x_wlef  = 0.0;
-      x_tlef  = (my.ccol  * my.c_offset) / (float) my.t_wide;
-      if (my.ncols - my.ccol > my.wcols) {
-         x_max  = my.ccol + (my.wcols + my.c_over);
-         x_cnt  = my.wcols + my.c_over;
-         x_wrig = my.w_wide;
-      } else {
-         x_max  = my.ncols;
-         x_cnt  = my.ncols - my.ccol;
-         x_wrig = (x_cnt / (my.wcols + my.c_over)) * my.w_wide;
-      }
-      x_trig   = (x_max    * my.c_offset) / my.t_wide;
-      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
-      DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
-      DEBUG_GRAF   yLOG_double   ("x_tlef"    , x_tlef);
-      DEBUG_GRAF   yLOG_double   ("x_trig"    , x_trig);
-      DEBUG_GRAF   yLOG_double   ("x_wlef"    , x_wlef);
-      DEBUG_GRAF   yLOG_double   ("x_wrig"    , x_wrig);
-      OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
-      /*---(panel two/rig)---------------*/
-      if (x_wrig < my.w_wide) {
-         x_wlef = x_wrig;
-         x_wrig = my.w_wide;
-         x_tlef = 0.0;
-         x_max  = (my.wcols + my.c_over) - x_cnt;
-         x_trig = (x_max    * my.c_offset) / my.t_wide;
-         OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
-      }
-      /*---(current)---------------------*/
-      if (strchr (FORMAT_LARGES, my.format) != NULL) {
-         x_cur    = -(my.ccol - my.bcol) * my.c_offset;
-         y_cur    = -(my.crow - my.brow) * my.r_offset;
-      } else {
-         x_cur    = 0.0;
-         y_cur    = -my.m_offset;
-      }
-      /*---(done)------------------------*/
-   }
-   /*---(vertical views)-----------------*/
-   else {
-      DEBUG_GRAF   yLOG_note     ("vertical formats------------");
-      /*---(consistent)------------------*/
-      x_wlef  = 0.0;
-      x_wrig  = my.w_wide;
-      x_tlef  = 0.0;
-      x_trig  = 1.0;
-      /*---(updates)---------------------*/
-      x_wtop  = 0.0;
-      x_ttop  = 1.0 - ((my.brow  *  my.r_offset) / (float) my.t_tall);
-      if (my.nrows - my.brow > my.wrows) {
-         x_max  = my.brow + my.wrows;
-         x_cnt  = my.wrows;
-         x_wbot = -my.w_tall;
-      } else {
-         x_max  = my.nrows;
-         x_cnt  = my.nrows - my.brow;
-         x_wbot = -(x_cnt / my.wrows) * my.w_tall;
-      }
-      x_tbot   = 1.0 - ((x_max    *  my.r_offset) / (float) my.t_tall);
-      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
-      DEBUG_GRAF   yLOG_value    ("x_cnt"     , x_cnt);
-      DEBUG_GRAF   yLOG_double   ("x_ttop"    , x_ttop);
-      DEBUG_GRAF   yLOG_double   ("x_tbot"    , x_tbot);
-      DEBUG_GRAF   yLOG_double   ("x_wtop"    , x_wtop);
-      DEBUG_GRAF   yLOG_double   ("x_wbot"    , x_wbot);
-      OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
-      /*---(current)---------------------*/
-      x_cur    = 0.0;
-      y_cur    = -(my.crow - my.brow) * my.r_offset;
-      /*---(done)------------------------*/
-   }
-   /*---(current)---------------------*/
-   glColor4f (  1.000,  1.000,  1.000, 1.000);
-   glBegin(GL_POLYGON); {
-      glVertex3f (x_cur +   2.0, y_cur -  6.0,   80.0);
-      glVertex3f (x_cur +  38.0, y_cur - 43.0,   80.0);
-      glVertex3f (x_cur +  25.0, y_cur - 43.0,   80.0);
-      glVertex3f (x_cur +   2.0, y_cur - 20.0,   80.0);
-   } glEnd();
+   /*> x_stat = yVIKEYS_view_showing (YVIKEYS_STATUS);                                <*/
+   DEBUG_GRAF   yLOG_char     ("x_stat"    , x_stat);
+   DEBUG_GRAF   yLOG_char     ("x_statsave", x_statsave);
+   /*> x_help = yVIKEYS_help ();                                                      <*/
+   DEBUG_GRAF   yLOG_char     ("x_help"    , x_help);
+   DEBUG_GRAF   yLOG_char     ("x_helpsave", x_helpsave);
    /*---(force mask redraw)--------------*/
    if (x_mode != x_modesave) {
       switch (x_mode) {
@@ -379,7 +397,30 @@ OPENGL_show        (void)
       case UMOD_HISTORY : OPENGL_mask ();  break;
       }
    }
+   if (x_help != x_helpsave) {
+      OPENGL_mask ();
+      OPENGL_draw ();
+   }
+   if (x_stat != x_statsave) {
+      OPENGL_mask ();
+   }
    x_modesave = x_mode;
+   x_statsave = x_stat;
+   x_helpsave = x_help;
+   /*---(tickers)------------------------*/
+   if (strchr (FORMAT_TICKERS, my.format) != 0) {
+      OPENGL_show__tickers (&x_cur, &y_cur);
+   }
+   /*---(columns)------------------------*/
+   else if (strchr (FORMAT_COLUMNS, my.format) != 0) {
+      OPENGL_show__columns (&x_cur, &y_cur);
+   }
+   /*---(larges)-------------------------*/
+   else {
+      OPENGL_show__larges  (&x_cur, &y_cur);
+   }
+   /*---(current)---------------------*/
+   OPENGL_show__current (x_cur, y_cur);
    /*---(complete)-------------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -395,15 +436,29 @@ static void      o___TASKS___________________o (void) {;}
 char          /*----: lay down the base color --------------------------------*/
 OPENGL__base       (char  a_value)
 {
+   DEBUG_GRAF   yLOG_senter   (__FUNCTION__);
+   DEBUG_GRAF   yLOG_sint     (a_value);
    switch (a_value) {
-   case '?' : case '+' : case '·' :
-      glColor3f (  0.700,  0.500,  0.300);
+   case '<' :
+      glColor3f (  1.000,  0.700,  0.700);
       break;
-   case '<' : case 'o' : case '>' :
-      glColor3f (  0.800,  0.800,  0.800);
+   case 'o' :
+      glColor3f (  0.700,  1.000,  0.700);
       break;
-   case '#' : case 'x' : default  :
-      glColor3f (  0.400,  0.400,  0.400);
+   case '>' :
+      glColor3f (  0.700,  0.700,  1.000);
+      break;
+   case '#' :
+      glColor3f (  0.700,  0.450,  0.250);
+      break;
+   case 'x' :
+      glColor3f (  0.500,  0.500,  0.500);
+      break;
+   case '·' :
+      glColor3f (  0.800,  0.800,  0.000);
+      break;
+   default  :
+      glColor3f (  0.700,  0.700,  0.700);
       break;
    }
    glBegin(GL_POLYGON); {
@@ -412,6 +467,7 @@ OPENGL__base       (char  a_value)
       glVertex3f (my.c_wide, -my.r_tall,   -1.0);
       glVertex3f (      0.0, -my.r_tall,   -1.0);
    } glEnd();
+   DEBUG_GRAF   yLOG_sexit    (__FUNCTION__);
    return 0;
 }
 
@@ -422,10 +478,12 @@ static float   s_urg_fg [12] = {   0.0,  -2.0,   2.0, 300.0,  -2.0,  12.0, 300.0
 char
 OPENGL__urg             (char  a_value)
 {
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (  0.000,  0.000,  0.000,  1.000);
    OPENGL__polygon (s_urg_bg);
    OPENGL__colors  (my.urgs, a_value);
    OPENGL__polygon (s_urg_fg);
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -438,11 +496,13 @@ static float   s_imp_fg [12] = {   0.0,   0.0,  12.0,  22.0,   0.0,  12.0,  67.0
 char
 OPENGL__imp             (char  a_value)
 {
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (  0.000,  0.000,  0.000,  1.000);
    OPENGL__polygon (s_imp_bg);
    OPENGL__polygon (s_imp_sh);
    OPENGL__colors  (my.imps, a_value);
    OPENGL__polygon (s_imp_fg);
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -453,10 +513,12 @@ static float   s_est_fg [12] = {   0.0, -17.0,   7.0,  56.0, -17.0,   7.0,  56.0
 char
 OPENGL__est    (char  a_value)
 {
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (0.0, 0.0, 0.0, 1.0);
    OPENGL__polygon (s_est_bg);
    OPENGL__colors  (my.ests, a_value);
    OPENGL__polygon (s_est_fg);
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -486,59 +548,132 @@ OPENGL__bullets         (void)
 }
 
 char
-OPENGL__text            (int a_index)
+OPENGL__text            (int a_index, char *a_major, char *a_minor, char *a_text)
 {
-   char  temp[100];
-   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-   /*---(major text)----------------------------*/
+   char        temp        [LEN_LABEL];
+   glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      glTranslatef(  53.0,  -8.0,  40.0);
-      glTranslatef(   0.0, txf_off,   0.0);
-      /*> snprintf(temp, 10, "%1d/%1d", a_index + 1, g_ntask - 1);                     <*/
-      snprintf(temp, 10, "%d", a_index + 1);
-      /*> if (a_index < g_ntask - 1) yFONT_print  (my.pretty,  7, YF_MIDCEN, temp);    <*/
-      yFONT_print  (my.pretty,  8, YF_MIDCEN, temp);
-      glTranslatef(  72.0,   0.0,   0.0);
-      yFONT_print  (my.pretty,  8, YF_MIDCEN, g_tasks [a_index].one);
-      glTranslatef( 105.0,   0,   0);
-      yFONT_print  (my.pretty,  8, YF_MIDCEN, g_tasks [a_index].two);
-      glTranslatef(-160.0, -10.0,   0.0);
-      glTranslatef(   0.0, txf_off - 1.0,   0.0);
+      glTranslatef (  53.0,  -8.0,  40.0);
+      glTranslatef (   0.0, txf_off,   0.0);
+      if (a_index >= 0) {
+         snprintf (temp, 10, "%d", a_index + 1);
+         yFONT_print  (my.pretty,  8, YF_MIDCEN, temp);
+      }
+      glTranslatef (  72.0,   0.0,   0.0);
+      yFONT_print  (my.pretty,  8, YF_MIDCEN, a_major);
+      glTranslatef ( 105.0,   0,   0);
+      yFONT_print  (my.pretty,  8, YF_MIDCEN, a_minor);
+      glTranslatef (-160.0, -10.0,   0.0);
+      glTranslatef (   0.0, txf_off - 1.0,   0.0);
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      yFONT_printw (my.pretty,  8, YF_TOPLEF, g_tasks [a_index].txt, 205, 35, txf_space);
+      yFONT_printw (my.pretty,  8, YF_TOPLEF, a_text, 205, 35, txf_space);
    } glPopMatrix();
-   /*---(letters)-------------------------------*/
+   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   return 0;
+}
+
+char
+OPENGL__cats            (char a_urg, char a_imp, char a_est, char a_prg)
+{
+   char        temp        [LEN_LABEL];
+   glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
       glTranslatef(  21.0, -15.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
-      snprintf(temp, 4, "%c", g_tasks [a_index].urg);
-      yFONT_print(my.pretty,  9, YF_BASCEN, temp);
+      snprintf (temp, 4, "%c", a_urg);
+      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
       glTranslatef(  12.0, -12.0,   0.0);
-      snprintf(temp, 4, "%c", g_tasks [a_index].imp);
-      yFONT_print(my.pretty,  9, YF_BASCEN, temp);
+      snprintf (temp, 4, "%c", a_imp);
+      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
       glTranslatef(  12.0, -12.0,   0.0);
-      snprintf(temp, 4, "%c", g_tasks [a_index].est);
-      yFONT_print(my.pretty,  9, YF_BASCEN, temp);
+      snprintf (temp, 4, "%c", a_est);
+      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
       glTranslatef( 247.0,   2.0,   0.0);
-      snprintf(temp, 4, "%c", g_tasks [a_index].prg);
-      yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
-      if (my.lines == 'y') {
-         glTranslatef( -15.0,   0.0,   0.0);
-         snprintf(temp, 4, "%d", g_ntask);
-         yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
-         glTranslatef( -15.0,   0.0,   0.0);
-         snprintf(temp, 4, "%d", g_tasks [a_index].seq);
-         yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
-         glTranslatef( -15.0,   0.0,   0.0);
-         snprintf(temp, 4, "%d", g_tasks [a_index].line);
-         yFONT_print(my.pretty,  8, YF_MIDCEN, temp);
-      }
+      snprintf (temp, 4, "%c", a_prg);
+      yFONT_print (my.pretty,  8, YF_MIDCEN, temp);
    } glPopMatrix();
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    return 0;
 }
+
+char
+OPENGL__debug           (int a_total, int a_seq, int a_line)
+{
+   char        temp        [LEN_LABEL];
+   glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+   glPushMatrix(); {
+      if (my.lines == 'y') {
+         glTranslatef ( -15.0,   0.0,   0.0);
+         snprintf (temp, 4, "%d", a_total);
+         yFONT_print (my.pretty,  8, YF_MIDCEN, temp);
+         glTranslatef ( -15.0,   0.0,   0.0);
+         snprintf (temp, 4, "%d", a_seq);
+         yFONT_print (my.pretty,  8, YF_MIDCEN, temp);
+         glTranslatef ( -15.0,   0.0,   0.0);
+         snprintf (temp, 4, "%d", a_line);
+         yFONT_print (my.pretty,  8, YF_MIDCEN, temp);
+      }
+   } glPopMatrix();
+   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   return 0;
+}
+
+/*> char                                                                                         <* 
+ *> OPENGL__text_OLD        (int a_index)                                                        <* 
+ *> {                                                                                            <* 
+ *>    char  temp[100];                                                                          <* 
+ *>    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                              <* 
+ *>    /+---(major text)----------------------------+/                                           <* 
+ *>    glPushMatrix(); {                                                                         <* 
+ *>       glColor4f (0.0, 0.0, 0.0, 1.0);                                                        <* 
+ *>       glTranslatef(  53.0,  -8.0,  40.0);                                                    <* 
+ *>       glTranslatef(   0.0, txf_off,   0.0);                                                  <* 
+ *>       /+> snprintf(temp, 10, "%1d/%1d", a_index + 1, g_ntask - 1);                     <+/   <* 
+ *>       snprintf(temp, 10, "%d", a_index + 1);                                                 <* 
+ *>       /+> if (a_index < g_ntask - 1) yFONT_print  (my.pretty,  7, YF_MIDCEN, temp);    <+/   <* 
+ *>       yFONT_print  (my.pretty,  8, YF_MIDCEN, temp);                                         <* 
+ *>       glTranslatef(  72.0,   0.0,   0.0);                                                    <* 
+ *>       yFONT_print  (my.pretty,  8, YF_MIDCEN, g_tasks [a_index].one);                        <* 
+ *>       glTranslatef( 105.0,   0,   0);                                                        <* 
+ *>       yFONT_print  (my.pretty,  8, YF_MIDCEN, g_tasks [a_index].two);                        <* 
+ *>       glTranslatef(-160.0, -10.0,   0.0);                                                    <* 
+ *>       glTranslatef(   0.0, txf_off - 1.0,   0.0);                                            <* 
+ *>       glColor4f (0.0, 0.0, 0.0, 1.0);                                                        <* 
+ *>       yFONT_printw (my.pretty,  8, YF_TOPLEF, g_tasks [a_index].txt, 205, 35, txf_space);    <* 
+ *>    } glPopMatrix();                                                                          <* 
+ *>    /+---(letters)-------------------------------+/                                           <* 
+ *>    glPushMatrix(); {                                                                         <* 
+ *>       glColor4f (0.0, 0.0, 0.0, 1.0);                                                        <* 
+ *>       glTranslatef(  21.0, -15.0,  40.0);                                                    <* 
+ *>       glTranslatef(   0.0, txf_off,   0.0);                                                  <* 
+ *>       snprintf(temp, 4, "%c", g_tasks [a_index].urg);                                        <* 
+ *>       yFONT_print(my.pretty,  9, YF_BASCEN, temp);                                           <* 
+ *>       glTranslatef(  12.0, -12.0,   0.0);                                                    <* 
+ *>       snprintf(temp, 4, "%c", g_tasks [a_index].imp);                                        <* 
+ *>       yFONT_print(my.pretty,  9, YF_BASCEN, temp);                                           <* 
+ *>       glTranslatef(  12.0, -12.0,   0.0);                                                    <* 
+ *>       snprintf(temp, 4, "%c", g_tasks [a_index].est);                                        <* 
+ *>       yFONT_print(my.pretty,  9, YF_BASCEN, temp);                                           <* 
+ *>       glTranslatef( 247.0,   2.0,   0.0);                                                    <* 
+ *>       snprintf(temp, 4, "%c", g_tasks [a_index].prg);                                        <* 
+ *>       yFONT_print(my.pretty,  8, YF_MIDCEN, temp);                                           <* 
+ *>       if (my.lines == 'y') {                                                                 <* 
+ *>          glTranslatef( -15.0,   0.0,   0.0);                                                 <* 
+ *>          snprintf(temp, 4, "%d", g_ntask);                                                   <* 
+ *>          yFONT_print(my.pretty,  8, YF_MIDCEN, temp);                                        <* 
+ *>          glTranslatef( -15.0,   0.0,   0.0);                                                 <* 
+ *>          snprintf(temp, 4, "%d", g_tasks [a_index].seq);                                     <* 
+ *>          yFONT_print(my.pretty,  8, YF_MIDCEN, temp);                                        <* 
+ *>          glTranslatef( -15.0,   0.0,   0.0);                                                 <* 
+ *>          snprintf(temp, 4, "%d", g_tasks [a_index].line);                                    <* 
+ *>          yFONT_print(my.pretty,  8, YF_MIDCEN, temp);                                        <* 
+ *>       }                                                                                      <* 
+ *>    } glPopMatrix();                                                                          <* 
+ *>    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                                        <* 
+ *>    return 0;                                                                                 <* 
+ *> }                                                                                            <*/
 
 char               /* PURPOSE : draw two and bottom borders ------------------*/
 OPENGL__borders         (void)
@@ -595,7 +730,9 @@ OPENGL__card     (int a_index)
    OPENGL__est     (g_tasks [a_index].est);
    OPENGL__imp     (g_tasks [a_index].imp);
    OPENGL__bullets ();
-   OPENGL__text    (a_index);
+   OPENGL__text    (a_index, g_tasks [a_index].one, g_tasks [a_index].two, g_tasks [a_index].txt);
+   OPENGL__cats    (g_tasks [a_index].urg, g_tasks [a_index].imp, g_tasks [a_index].est, g_tasks [a_index].prg);
+   OPENGL__debug   (g_ntask, g_tasks [a_index].seq, g_tasks [a_index].line);
    OPENGL__borders ();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -667,7 +804,27 @@ OPENGL__colrow      (int a_max, short a_xinc, short a_yinc)
 }
 
 char
-OPENGL_draw        (void)
+opengl__draw_prep       (void)
+{
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(create objects)-----------------*/
+   /*> printf("   entered\n");                                                        <*/
+   DEBUG_GRAF   yLOG_note     ("delete old texture");
+   if (my.g_tex != -1)  yGLTEX_free (&my.g_tex, &my.g_fbo, &my.g_dep);
+   DEBUG_GRAF   yLOG_note     ("create texture");
+   yGLTEX_new (&my.g_tex, &my.g_fbo, &my.g_dep, my.t_wide, my.t_tall);
+   /*---(setup)--------------------------*/
+   DEBUG_GRAF   yLOG_note     ("setup opengl view");
+   yGLTEX_draw (my.g_fbo, YGLTEX_TOPLEF, my.t_wide, my.t_tall, 1.0);
+   glColor4f (0.0f, 0.0f, 0.0f, 1.0f);
+   /*---(complete)-------------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+OPENGL_normal      (void)
 {
    /*---(locals)-------------------------*/
    int       i;                             /* loop iterator -- word          */
@@ -682,23 +839,11 @@ OPENGL_draw        (void)
    short       y_pos       =    0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
-   /*---(create objects)-----------------*/
-   /*> printf("   entered\n");                                                        <*/
-   DEBUG_GRAF   yLOG_note     ("delete old texture");
-   if (my.g_tex != -1)  yGLTEX_free (&my.g_tex, &my.g_fbo, &my.g_dep);
-   DEBUG_GRAF   yLOG_note     ("create texture");
-   yGLTEX_new (&my.g_tex, &my.g_fbo, &my.g_dep, my.t_wide, my.t_tall);
-   /*---(setup)--------------------------*/
-   DEBUG_GRAF   yLOG_note     ("setup opengl view");
-   yGLTEX_draw_start (my.g_fbo, YGLTEX_TOPLEF, my.t_wide, my.t_tall, 1.0);
-   /*---(tasks)--------------------------*/
-   DEBUG_GRAF   yLOG_note     ("draw tasks");
-   glColor4f (0.0f, 0.0f, 0.0f, 1.0f);
-   /*> printf("g_ntask = %3d\n", g_ntask);                                              <*/
-   /*> printf("   starting draw\n");                                                  <*/
+   /*---(debugging)----------------------*/
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
    DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
    DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
+   /*---(draw)---------------------------*/
    switch (my.format) {
    case FORMAT_TICKER   : case FORMAT_BASELINE :
       OPENGL__colrow (my.tcols, my.c_offset,   0.0);
@@ -731,11 +876,114 @@ OPENGL_draw        (void)
       } glPopMatrix();
       break;
    }
-   /*> printf("   ending draw\n");                                                    <*/
-   /*> printf("width = %d\n", w);                                                     <*/
-   /*---(mipmaps)------------------------*/
-   yGLTEX_draw_end (my.g_tex);
    /*---(complete)-------------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+OPENGL_help_one         (char a_type, int a_col)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   int         i           =    0;
+   int         x_max       =    0;
+   char       *p           = NULL;
+   char        x_major     [LEN_LABEL];
+   char        x_label     [LEN_LABEL];
+   char        x_desc      [LEN_HUND ];
+   char        x_text      [LEN_RECD ];
+   char        x_abbr      =  '-';
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(prepare)------------------------*/
+   DEBUG_GRAF   yLOG_char     ("a_type"    , a_type);
+   --rce;  switch (a_type) {
+   case 'u' : p = my.urgs;  strlcpy (x_major, "urgency"   , LEN_LABEL); break;
+   case 'i' : p = my.imps;  strlcpy (x_major, "importance",  LEN_LABEL); break;
+   case 'e' : p = my.ests;  strlcpy (x_major, "estimate"  , LEN_LABEL); break;
+   case 'p' : p = my.prgs;  strlcpy (x_major, "progress"  , LEN_LABEL); break;
+   default  : 
+              DEBUG_GRAF   yLOG_exitr    (__FUNCTION__, rce);
+              return rce;
+   }
+   DEBUG_GRAF   yLOG_info     ("p"         , p);
+   x_max = strlen (p);
+   DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
+   /*---(draw)---------------------------*/
+   glPushMatrix(); {
+      DEBUG_GRAF   yLOG_value    ("a_col"     , a_col);
+      DEBUG_GRAF   yLOG_value    ("c_offset"  , my.c_offset);
+      glTranslatef (a_col * my.c_offset, 0.0, 0.0);
+      for (i = 0; i < x_max; ++i) {
+         x_abbr = p [i];
+         DATA_catinfo (a_type, x_abbr, x_label, x_desc);
+         sprintf (x_text, "%s, %s", x_label, x_desc);
+         if (a_type == 'p')   OPENGL__base    (x_abbr);
+         else                 OPENGL__base    (0);
+         if (a_type == 'u')   OPENGL__urg     (x_abbr);
+         else                 OPENGL__urg     (0);
+         if (a_type == 'i')   OPENGL__imp     (x_abbr);
+         else                 OPENGL__imp     (0);
+         if (a_type == 'e')   OPENGL__est     (x_abbr);
+         else                 OPENGL__est     (0);
+         OPENGL__bullets ();
+         OPENGL__text    (-1, x_major, x_label, x_text);
+         switch (a_type) {
+         case 'u' :OPENGL__cats    (x_abbr, ' ', ' ', ' ');  break;
+         case 'i' :OPENGL__cats    (' ', x_abbr, ' ', ' ');  break;
+         case 'e' :OPENGL__cats    (' ', ' ', x_abbr, ' ');  break;
+         case 'p' :OPENGL__cats    (' ', ' ', ' ', x_abbr);  break;
+         }
+         OPENGL__borders ();
+         glTranslatef(0.0, -my.r_offset,   0.0);
+      }
+   } glPopMatrix();
+   /*---(complete)-------------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+OPENGL_help_full    (void)
+{
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   OPENGL_help_one  ('u', 0);
+   OPENGL_help_one  ('i', 1);
+   OPENGL_help_one  ('e', 2);
+   OPENGL_help_one  ('p', 3);
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+OPENGL_draw        (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        x_help      =  '-';
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(prepare)------------------------*/
+   opengl__draw_prep ();
+   /*> x_help = yVIKEYS_help ();                                                      <*/
+   DEBUG_GRAF   yLOG_char     ("x_help"    , x_help);
+   /*---(choose drawer)------------------*/
+   switch (x_help) {
+   case 'f' :
+      OPENGL_help_full ();
+      break;
+   case 'u' : case 'i' : case 'e' : case 'p' :
+      OPENGL_help_one  (x_help, 0);
+      break;
+   default  :
+      OPENGL_normal    ();
+      break;
+   }
+   /*---(mipmaps)------------------------*/
+   yGLTEX_done (my.g_tex);
+   /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -761,12 +1009,15 @@ OPENGL_mask             (void)
    float       x_inc       =    0;
    char        x_mode      =  '-';
    char        x_status    =  '-';
-   /*---(prepare)------------------------*/
+   char        x_help      =  '-';
+   char        x_abbr      =  '-';
+   char        x_types     [LEN_LABEL] = "uiep";
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
-   bounds    = XCreatePixmap (YX_DISP, YX_BASE, my.w_wide, my.w_tall, 1);
+   /*---(prepare)------------------------*/
+   bounds    = XCreatePixmap (YX_DISP, YX_BASE, my.w_wide, my.w_ftall, 1);
    gc        = XCreateGC     (YX_DISP, bounds, 0, NULL);
-   x_mode = yVIKEYS_mode ();
+   /*> x_mode = yVIKEYS_mode ();                                                      <*/
    DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("g_major"   , g_major);
    DEBUG_GRAF   yLOG_char     ("g_minor"   , g_minor);
@@ -774,52 +1025,82 @@ OPENGL_mask             (void)
    DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
    DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
-   x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);
+   /*> x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);   <*/
    DEBUG_GRAF   yLOG_char     ("x_status"  , x_status);
    XSetForeground (YX_DISP, gc, 0);
-   XFillRectangle (YX_DISP, bounds, gc, 0, 0, my.w_wide, my.w_tall);
+   XFillRectangle (YX_DISP, bounds, gc, 0, 0, my.w_wide, my.w_ftall);
    XSetForeground (YX_DISP, gc, 1);
    /*---(establish mask)-----------------*/
-   switch (my.format) {
-   case FORMAT_TICKER   : case FORMAT_BASELINE :
-      x_max = my.wcols + my.c_over;
-      if (x_max >= my.nact)  x_max = my.nact;
-      for (i = 0; i < x_max; ++i)  XFillRectangle (YX_DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
-      break;
-   case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
-      x_max = my.wrows;
-      if (x_max >= my.nact)  x_max = my.nact;
+   /*> x_help = yVIKEYS_help ();                                                      <*/
+   DEBUG_GRAF   yLOG_char     ("x_help"    , x_help);
+   if (strchr (x_types, x_help) != NULL) {
+      switch (x_help) {
+      case 'u' : x_max = strlen (my.urgs);  break;
+      case 'i' : x_max = strlen (my.imps);  break;
+      case 'e' : x_max = strlen (my.ests);  break;
+      case 'p' : x_max = strlen (my.prgs);  break;
+      }
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       for (i = 0; i < x_max; ++i) {
          XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
       }
-      break;
-   case FORMAT_STREAMER :
-      x_max = my.wrows + my.r_over;
-      if (x_max >= my.nact)  x_max = my.nact;
-      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
-      for (i = 0; i < x_max; ++i) {
-         XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
-      }
-      break;
-   case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
-      for (j = 0; j < (my.wcols + my.c_over); ++j) {
-         for (i = 0; i < (my.wrows + my.r_over); ++i) {
-            if (format_check (my.ccol + j + 1, i + 1) < 0)  continue;
-            XFillRectangle(YX_DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
+   }
+   else if (x_help == 'f') {
+      for (j = 0; j < 4; ++j) {
+         x_abbr = x_types [j];
+         switch (x_abbr) {
+         case 'u' : x_max = strlen (my.urgs);  break;
+         case 'i' : x_max = strlen (my.imps);  break;
+         case 'e' : x_max = strlen (my.ests);  break;
+         case 'p' : x_max = strlen (my.prgs);  break;
+         }
+         for (i = 0; i < x_max; ++i) {
+            XFillRectangle (YX_DISP, bounds, gc, j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
          }
       }
-      break;
+   }
+   else {
+      switch (my.format) {
+      case FORMAT_TICKER   : case FORMAT_BASELINE :
+         x_max = my.wcols + my.c_over;
+         if (x_max >= my.nact)  x_max = my.nact;
+         for (i = 0; i < x_max; ++i)  XFillRectangle (YX_DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
+         break;
+      case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
+         x_max = my.wrows;
+         if (x_max >= my.nact)  x_max = my.nact;
+         DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
+         for (i = 0; i < x_max; ++i) {
+            XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
+         }
+         break;
+      case FORMAT_STREAMER :
+         x_max = my.wrows + my.r_over;
+         if (x_max >= my.nact)  x_max = my.nact;
+         DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
+         for (i = 0; i < x_max; ++i) {
+            XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
+         }
+         break;
+      case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
+         for (j = 0; j < (my.wcols + my.c_over); ++j) {
+            for (i = 0; i < (my.wrows + my.r_over); ++i) {
+               if (format_check (my.bcol + j + 1, i + 1) < 0)  continue;
+               XFillRectangle(YX_DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
+            }
+         }
+         break;
+      }
    }
    /*---(check for menu)-----------------*/
    if (x_mode == SMOD_MENUS) {
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
-      if (strchr (FORMAT_TICKERS, my.format) != NULL) {
-         XFillRectangle (YX_DISP, bounds, gc,  0, 40, 280, 220);
-      } else {
-         XFillRectangle (YX_DISP, bounds, gc, my.w_wide / 2 - 140, 10, 280, 260);
-      }
+      XFillRectangle (YX_DISP, bounds, gc, my.w_wide / 2 - 140, 40, 280, 200);
    }
+   /*---(check for status bar)-----------*/
+   /*> if (yVIKEYS_view_showing (YVIKEYS_STATUS)) {                                    <* 
+    *>    XFillRectangle (YX_DISP, bounds, gc, 0.0, my.w_ftall - 15, my.w_wide, 15);   <* 
+    *> }                                                                               <*/
    /*---(set mask)-----------------------*/
    XShapeCombineMask (YX_DISP, YX_BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/

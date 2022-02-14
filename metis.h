@@ -7,24 +7,33 @@
 
 #define     P_FOCUS     "PT (productivity/time mgmt)"
 #define     P_NICHE     "td (todo list)"
+#define     P_SUBJECT   "task management"
 #define     P_PURPOSE   "task consolitation, visualization, and navigation system"
 
-#define     P_NAMESAKE  "metis"
-#define     P_HERITAGE  "titan goddess of wisdom, wise counsel, cunning, prudence, and deep thought"
+#define     P_NAMESAKE  "metis-okeanides (wise-counsel)"
+#define     P_HERITAGE  "titan goddess of deep thought, wisdom, wise counsel, and cunning"
 #define     P_IMAGERY   "singularly graceful, stately, and regal goddess"
+#define     P_REASON    "smart task management leads to better priorities and decisions"
+
+#define     P_ONELINE   P_NAMESAKE " " P_SUBJECT
+
+#define     P_BASENAME  "metis"
+#define     P_FULLPATH  "/usr/local/bin/metis"
+#define     P_SUFFIX    "tasks"
+#define     P_CONTENT   "scan-card task list"
 
 #define     P_SYSTEM    "gnu/linux   (powerful, ubiquitous, technical, and hackable)"
 #define     P_LANGUAGE  "ansi-c      (wicked, limitless, universal, and everlasting)"
 #define     P_CODESIZE  "large       (appoximately 10,000 slocl)"
+#define     P_DEPENDS   "none"
 
 #define     P_AUTHOR    "heatherlyrobert"
 #define     P_CREATED   "2008-06"
-#define     P_DEPENDS   "none"
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
-#define     P_VERMINOR  "1.4-, bring back functionality after big updates"
-#define     P_VERNUM    "1.4c"
-#define     P_VERTXT    "create unit testing for formatting -- solved some issues ;)"
+#define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
+#define     P_VERNUM    "1.5a"
+#define     P_VERTXT    "put yJOBS in and now can do one basic inventory report"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -145,11 +154,27 @@
 /*===[[ CUSTOM LIBRARIES ]]===================================================*/
 #include    <yURG.h>         /* CUSTOM : heatherly urgent processing          */
 #include    <yLOG.h>         /* CUSTOM : heatherly program logging            */
-#include    <yVIKEYS.h>      /* CUSTOM : heatherly vi_keys standard           */
+
+/*---(custom vi-keys)--------------------*/
+#include    <yKEYS.h>             /* heatherly vi-keys key handling           */
+#include    <yMODE.h>             /* heatherly vi-keys mode tracking          */
+#include    <yMACRO.h>            /* heatherly vi-keys macro processing       */
+#include    <ySRC.h>              /* heatherly vi-keys source editing         */
+#include    <yCMD.h>              /* heatherly vi-keys command processing     */
+#include    <yVIEW.h>             /* heatherly vi-keys view management        */
+#include    <yMAP.h>              /* heatherly vi-keys location management    */
+#include    <yFILE.h>             /* heatherly vi-keys content file handling  */
+#include    <yVIOPENGL.h>         /* heatherly vi-keys opengl handler         */
+
+#include    <yJOBS.h>             /* heatherly job execution and control      */
+#include    <yREGEX.h>       /* CUSTOM  heatherly regular expressions         */
+
+
 #include    <ySTR.h>         /* CUSTOM : heatherly string handling            */
 #include    <yX11.h>         /* heatherly xlib/glx setup            */
 #include    <yFONT.h>        /* heatherly text display for opengl   */
 #include    <yGLTEX.h>       /* heatherly opengl texture support              */
+#include    <yCOLOR.h>       /* heatherly opengl color support                */
 
 #include   <stdio.h>
 #include   <stdlib.h>                  /* getenv()                            */
@@ -194,6 +219,7 @@ struct      cCARD
    char        txt         [LEN_HUND]; /* text of task                        */
    /*---(source data)--------------------*/
    short       seq;                    /* original order (to unsort)          */
+   char        source      [LEN_HUND]; /* text of task                        */
    short       line;                   /* source line in file                 */
    /*---(filtering)----------------------*/
    char        act;                    /* active (y/n)                        */
@@ -218,14 +244,22 @@ extern char      one [20];
 
 #define     FILE_MASTER    "/home/member/g_hlosdo/metis.tasks"
 
+#define     DATA_NONE      '-'
 #define     DATA_SOURCES   's'
 #define     DATA_MASTER    'm'
 #define     DATA_CUSTOM    'c'
 #define     DATA_PIPE      'p'
+#define     DATA_ALL       "smcp"
 
 
 typedef     struct cMY     tMY;
 struct cMY {
+   /*---(yJOBS)----------------*/
+   char        run_as;                      /* khronos, eos, heracles, ...    */
+   char        run_mode;                    /* verify, install, audit, ...    */
+   char        run_file    [LEN_PATH];      /* file to act on                 */
+   int         run_uid;                     /* uid of person who launched     */
+   long        runtime;
    /*---(program wide)-------------------*/
    char        daemon;                      /* daemon vs foreground mode      */
    char        quit;                        /* stop the program               */
@@ -296,6 +330,7 @@ struct cMY {
    int         w_wide;                   /* window width                      */
    int         w_topp;                   /* window top                        */
    int         w_tall;                   /* window height                     */
+   int         w_ftall;                  /* window height + status bar        */
    int         t_wide;                   /* texture width                     */
    int         t_tall;                   /* texture height                    */
    int         m_offset;                 /* menu space allowed (horz)         */
@@ -347,7 +382,7 @@ extern int   max_disp;
 extern float     step;
 
 /*---(prototypes)------------------------*/
-int        main              (int argc, char *argv[]);
+int        main              (int a_argc, char *a_argv []);
 
 
 char       font_load         (void);
@@ -377,14 +412,15 @@ void       prog_catch        (int);
 char       prog_signals      (void);
 
 /*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+char        DATA_catinfo            (char a_type, char a_abbr, char *a_label, char *a_desc);
 char        DATA_init               (void);
 char        DATA__header            (char *a_recd);
 char        DATA__stats             (char *a_stats);
-char        DATA__detail            (char *a_recd, int a_line);
+char        DATA__detail            (char *a_source, int a_line, char *a_recd);
 char        DATA__read              (char *a_filename);
 char        DATA__master            (void);
 char        DATA__custom            (void);
-char        DATA__sources           (void);
+char        DATA__sources           (char *a_suffix);
 char        DATA__blankcard         (void);
 char        DATA_refresh            (void);
 int         DATA_cursor             (char a_type);
@@ -400,15 +436,27 @@ char        format_wideview         (void);
 char        format_extra            (void);
 char        FORMAT_refresh          (void);
 
-char        PROG_init               (void);
-char        PROG_args               (int argc, char *argv[]);
-char        PROG_begin              (void);
-char        PROG_final              (void);
-char        PROG_wrap               (void);
-char        PROG_end                (void);
+
+/*---(preinit)--------------*/
+char        PROG_urgents            (int a_argc, char *a_argv []);
+/*---(startup)--------------*/
+char        PROG_reset_yjobs        (void);
+char        PROG__init              (void);
+char        PROG__args              (int a_argc, char *a_argv []);
+char        PROG__begin             (void);
+char        PROG_startup            (int a_argc, char *a_argv []);
+/*---(execution)------------*/
+char        PROG_dawn               (void);
+char        PROG_dusk               (void);
+char        PROG_dispatch           (void);
+/*---(shutdown)-------------*/
+char        PROG__end               (void);
+char        PROG_shutdown           (void);
+/*---(unittest)-------------*/
 char        PROG__unit_quiet        (void);
 char        PROG__unit_loud         (void);
 char        PROG__unit_end          (void);
+/*---(done)-----------------*/
 
 char        FILTER_init             (void);
 char        FILTER_clear            (void);
@@ -431,5 +479,7 @@ char        api_yvikeys_filter      (char *a_which, char *a_string);
 char        api_yvikeys_window      (char *a_format);
 char        api_yvikeys_refresh     (void);
 
+
+char        metis_reporter          (void);
 
 /*============================----end-of-source---============================*/

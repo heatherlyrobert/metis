@@ -58,7 +58,7 @@ examples...
    metis              § metis_data.c
    robotics           § hexapod
 
-.B detailed record , e.g., "<cats> § <dest>"
+.B detailed record , e.g., "<cats> § <text>"
 .nf
 the categories are each a single character representing urgency,
 importance, estimate, progress, and a tbd/expansion char (see values below).
@@ -71,6 +71,12 @@ examples...
 
 major and minor groups are taken from the very last grouping record read and
 added to the detailed task.
+
+.B consolidated, e.g., "<major> § <minor> § <cats> § <text>"
+.nf
+grouping and detailed records are concatinated in single line.  while
+this causes redundancy in grouping, it is useful for later consumption
+by spreadsheets, databases, and reporting.
 
 .SH SOURCE CODE FILE
 when a metis task is kept in a source code file, the format is simplier.  to

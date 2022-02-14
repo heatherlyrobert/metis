@@ -44,11 +44,49 @@ PROG_version       (void)
    return verstring;
 }
 
-char             /* [------] immediate program initialization ----------------*/
-PROG_init          (void)
+
+
+/*====================------------------------------------====================*/
+/*===----                       pre-initialization                     ----===*/
+/*====================------------------------------------====================*/
+static void      o___PREINIT_________________o (void) {;}
+
+
+char
+PROG_urgents            (int a_argc, char *a_argv [])
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rc          =    0;
+   /*---(initialize)---------------------*/
+   yURG_all_mute ();
+   rc = yURG_logger  (a_argc, a_argv);
+   rc = yURG_urgs    (a_argc, a_argv);
+   return 0;
+}
+
+
+
+/*====================------------------------------------====================*/
+/*===----                        program startup                       ----===*/
+/*====================------------------------------------====================*/
+static void      o___STARTUP_________________o (void) {;}
+
+char
+PROG_reset_yjobs   (void)
+{
+   my.run_as   = IAM_METIS;
+   my.run_mode = ACT_NONE;
+   strcpy (my.run_file, "");
+   return 0;
+}
+
+char             /* [------] immediate program initialization ----------------*/
+PROG__init              (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(log header)---------------------*/
    DEBUG_PROG   yLOG_info     ("purpose" , P_PURPOSE);
    DEBUG_PROG   yLOG_info     ("namesake", P_NAMESAKE);
@@ -58,9 +96,13 @@ PROG_init          (void)
    DEBUG_PROG   yLOG_info     ("yURG"    , yURG_version    ());
    DEBUG_PROG   yLOG_info     ("ySTR"    , ySTR_version    ());
    DEBUG_PROG   yLOG_info     ("yLOG"    , yLOGS_version   ());
-   DEBUG_PROG   yLOG_info     ("yVIKEYS" , yVIKEYS_version ());
-   /*---(header)-------------------------*/
-   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   DEBUG_PROG   yLOG_info     ("yVIOPEN" , yVIOPENGL_version ());
+   DEBUG_PROG   yLOG_info     ("yJOBS"   , yJOBS_version   ());
+   /*---(yJOB config)--------------------*/
+   PROG_reset_yjobs ();
+   my.run_uid     = getuid ();
+   my.runtime     = time (NULL);
+   DEBUG_TOPS  yLOG_char    ("run_as"    , my.run_as);
    /*---(set globals)--------------------*/
    FILTER_clear ();
    my.daemon  = 'y';
@@ -73,15 +115,13 @@ PROG_init          (void)
    my.s_tall  = 1536;  /* temp default for my iconia */
    my.c_wide  =  300;
    my.r_tall  =   45;
-   my.source  = DATA_PIPE;
+   my.source  = DATA_NONE;
    my.format  = FORMAT_RSHORT;
    format_column ();
    my.quit    = '-';
    my.trouble = '-';
    strlcpy (my.win_title, "metis_tasklist", LEN_DESC);
    /*---(yvikeys config)-----------------*/
-   rc = yVIKEYS_init   (MODE_MAP);
-   rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");
    DATA_init ();
    FILTER_init ();
    FORMAT_init ();
@@ -91,22 +131,44 @@ PROG_init          (void)
 }
 
 char             /* [------] process the command line arguments --------------*/
-PROG_args          (int argc, char *argv[])
+PROG__args              (int a_argc, char *a_argv [])
 {
-   char     *a         = NULL;         /* current argument                    */
-   int       i         = 0;            /* loop iterator -- arguments          */
-   int       len       = 0;            /* argument length                     */
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   char       *a           = NULL;         /* current argument                    */
+   char       *b           = NULL;          /* next argument                  */
+   int         i           = 0;            /* loop iterator -- arguments          */
+   int         l           = 0;            /* argument length                     */
+   int         x_total     = 0;
+   int         x_args      = 0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   for (i = 1; i < argc; ++i) {
-      a = argv[i];
+   if (a_argv > 0)  yJOBS_runas (&(my.run_as), a_argv [0]);
+   DEBUG_TOPS  yLOG_char    ("run_as"    , my.run_as);
+   for (i = 1; i < a_argc; ++i) {
+      /*---(get arg)---------------------*/
+      a = a_argv [i];
+      if (a == NULL) {
+         yURG_err ('f', "arg %d is NULL", i);
+         DEBUG_TOPS   yLOG_note    ("FATAL, found a null argument, really bad news");
+         DEBUG_TOPS   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+      ++x_total;
+      /*---(screen urgents)--------------*/
       if (a[0] == '@')  continue;
-      len = strlen(a);
+      /*---(prepare)---------------------*/
+      DEBUG_ARGS  yLOG_info    ("cli arg", a);
+      ++x_args;
+      if (i < a_argc - 1)  b = a_argv [i + 1];
+      else                 b = NULL;
+      l = strlen(a);
       /*---(statistics filtering)--------*/
-      if      (strncmp (a, "-u"          ,  2) == 0 && len == 3)  my.curg  = a[2];
-      else if (strncmp (a, "-i"          ,  2) == 0 && len == 3)  my.cimp  = a[2];
-      else if (strncmp (a, "-e"          ,  2) == 0 && len == 3)  my.cest  = a[2];
-      else if (strncmp (a, "-f"          ,  2) == 0 && len == 3)  my.cflg  = a[2];
+      if      (strncmp (a, "-u"          ,  2) == 0 && l == 3)  my.curg  = a[2];
+      else if (strncmp (a, "-i"          ,  2) == 0 && l == 3)  my.cimp  = a[2];
+      else if (strncmp (a, "-e"          ,  2) == 0 && l == 3)  my.cest  = a[2];
+      else if (strncmp (a, "-f"          ,  2) == 0 && l == 3)  my.cflg  = a[2];
       /*---(initial format)--------------*/
       else if (strcmp  (a, "--ticker"        ) == 0)  my.format = FORMAT_TICKER;
       else if (strcmp  (a, "--baseline"      ) == 0)  my.format = FORMAT_BASELINE;
@@ -120,19 +182,26 @@ PROG_args          (int argc, char *argv[])
       else if (strcmp  (a, "--extra"         ) == 0)  my.format = FORMAT_EXTRA;
       /*---(task/data source)------------*/
       else if (strcmp  (a, "--master"        ) == 0)  my.source = DATA_MASTER;
-      else if (strcmp  (a, "--source"        ) == 0)  my.source = DATA_SOURCES;
       else if (strcmp  (a, "--code"          ) == 0)  my.source = DATA_SOURCES;
       /*---(control)---------------------*/
       else if (strcmp  (a, "--lines"         ) == 0)  my.lines  = 'y';
       else if (strcmp  (a, "--foreground"    ) == 0)  my.daemon = '-';
       /*---(file)------------------------*/
-      else if (strncmp (a, "-"           ,  1) != 0)  {
-         strncpy (my.file, a, LEN_RECD);
-         my.source = DATA_CUSTOM;
-      }
+      /*> else if (strncmp (a, "-"           ,  1) != 0)  {                           <* 
+       *>    strncpy (my.file, a, LEN_RECD);                                          <* 
+       *>    my.source = DATA_CUSTOM;                                                 <* 
+       *> }                                                                           <*/
       /*---(unknown)---------------------*/
-      else   printf("arg <%s> not understood\n", a);
+      else {
+         rc = yJOBS_args_handle (&(my.run_as), &(my.run_mode), my.run_file, &i, a, b);
+         if (rc < 0) {
+            DEBUG_TOPS  yLOG_note  ("argument not understood");
+            DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rc);
+            return rc;
+         }
+      }
    }
+   yJOBS_final (my.run_uid);
    FORMAT_refresh ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
@@ -140,28 +209,79 @@ PROG_args          (int argc, char *argv[])
 }
 
 char             /* [------] drive program setup activities ------------------*/
-PROG_begin         (void)
+PROG__begin             (void)
 {
+   char        rce         =  -10;
+   char        rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   /*---(overall)------------------------*/
-   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
-   return 0;
-}
-
-char             /* [------] drive program setup activities ------------------*/
-PROG_final         (void)
-{
-   char rc;
-   /*---(header)-------------------------*/
-   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   DATA_refresh   ();
+   /*---(process data)-------------------*/
+   rc = DATA_refresh   ();
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    SORT_refresh   ();
    FILTER_refresh ();
    if (g_ntask <= 0) {
       printf ("no data found\n");
       return -1;
    }
+   /*---(overall)------------------------*/
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+PROG_startup            (int a_argc, char *a_argv [])
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   yURG_stage_check (YURG_BEG);
+   DEBUG_TOPS  yLOG_enter   (__FUNCTION__);
+   /*---(initialize)---------------------*/
+   if (rc >= 0) {
+      rc = PROG__init    ();
+      DEBUG_TOPS  yLOG_value   ("init"      , rc);
+   }
+   /*---(arguments)----------------------*/
+   if (rc >= 0) {
+      rc = PROG__args    (a_argc, a_argv);
+      DEBUG_TOPS  yLOG_value   ("args"      , rc);
+   }
+   /*---(begin)--------------------------*/
+   if (rc >= 0) {
+      rc = PROG__begin   ();
+      DEBUG_TOPS  yLOG_value   ("args"      , rc);
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_TOPS  yLOG_exit  (__FUNCTION__);
+   yURG_stage_check (YURG_MID);
+   return rc;
+}
+
+
+
+/*====================------------------------------------====================*/
+/*===----                        program execution                     ----===*/
+/*====================------------------------------------====================*/
+static void      o___EXECUTION_______________o (void) {;}
+
+char             /* [------] drive program setup activities ------------------*/
+PROG_dawn          (void)
+{
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+
+   rc = yVIOPENGL_init ("metis", P_VERNUM, MODE_MAP, my.w_wide, my.w_tall);
+   /*> rc = FILE_init      ();                                                        <*/
+   /*> rc = yFILE_whoami   (P_FULLPATH, P_VERNUM, P_VERTXT, P_ONELINE, P_SUFFIX, P_CONTENT, NULL, NULL, NULL);   <*/
+   /*> rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");   <*/
+
    /*> task_list ();                                                                  <*/
    if (my.daemon == 'y') {
       rc = daemon (1, 0);
@@ -174,8 +294,13 @@ PROG_final         (void)
    OPENGL_init  ();
    /*> OPENGL_draw  ();                                                               <* 
     *> OPENGL_mask  ();                                                               <*/
-   yVIKEYS_cmds_direct   (":window col_rig");
-   yVIKEYS_map_refresh ();
+   /*> yVIKEYS_cmds_direct   (":window col_rig");                                     <* 
+    *> yVIKEYS_menu_add ("µv?u", "urgent"    , ":help u¦");                           <* 
+    *> yVIKEYS_menu_add ("µv?i", "important" , ":help i¦");                           <* 
+    *> yVIKEYS_menu_add ("µv?e", "estimate"  , ":help e¦");                           <* 
+    *> yVIKEYS_menu_add ("µv?p", "progress"  , ":help p¦");                           <* 
+    *> yVIKEYS_menu_add ("µv?f", "full"      , ":help f¦");                           <* 
+    *> yVIKEYS_map_refresh ();                                                        <*/
    /*---(ready display)-------------------------*/
    /*> OPENGL_resize (my.w_wide, my.w_tall);                                            <*/
    prog_signals();
@@ -185,23 +310,108 @@ PROG_final         (void)
 }
 
 char             /* [------] drive the program closure activities ------------*/
-PROG_wrap          (void)
+PROG_dusk               (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    font_delete();
    /*> yX11_end();                  /+ close window and xwin context            +/    <*/
-   yVIKEYS_wrap ();
+   yVIOPENGL_wrap ();
+   DEBUG_PROG   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+PROG_dispatch           (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   IF_VERBOSE   yURG_msg ('>', "%s", P_ONELINE);
+   /*---(route action)-------------------*/
+   --rce;  switch (my.run_mode) {
+      /*---(basic)-----------------------*/
+   case ACT_STATS       :
+      /*> rc = PROG__stats    ();                                                     <*/
+      break;
+      /*---(incomming)-------------------*/
+   case CASE_VERIFY     :
+      /*> rc = PROG__verify   ();                                                     <*/
+      break;
+   case CASE_REGISTER   :
+      /*> rc = PROG__register ();                                                     <*/
+      break;
+   case CASE_UPDATE     :
+      /*> rc = PROG__update   ();                                                     <*/
+      break;
+   case CASE_INSTALL    :
+      /*> rc = PROG__install  ();                                                     <*/
+      break;
+      /*---(outgoing)--------------------*/
+   case CASE_WITHDRAW   :
+      /*> rc = PROG__withdraw ();                                                     <*/
+      break;
+   case CASE_CLEAR      :
+      /*> rc = PROG__clear    ();                                                     <*/
+      break;
+   case CASE_REMOVE     :
+      /*> rc = PROG__remove   ();                                                     <*/
+      break;
+      /*---(central)---------------------*/
+   case CASE_REPORT     :
+      rc = metis_reporter   ();
+      break;
+   case CASE_AUDIT      :
+      /*> rc = PROG__audit    ();                                                     <*/
+      break;
+      /*---(execute)---------------------*/
+   case CASE_GATHER     :
+      /*> rc = PROG__system   ();                                                     <*/
+      break;
+   case CASE_NORMAL     : case CASE_STRICT     :
+      rc = PROG_dawn    ();
+      if (rc >= 0)  rc = yVIOPENGL_main  ("keys", "every", NULL);
+      rc = PROG_dusk   ();
+      break;
+      /*---(trouble)---------------------*/
+   default              :
+      rc = rce;
+      break;
+   }
+   /*---(cut-off)------------------------*/
+   yURG_all_mute ();
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return rc;
+}
+
+
+
+/*====================------------------------------------====================*/
+/*===----                        program shutdown                      ----===*/
+/*====================------------------------------------====================*/
+static void      o___SHUTDOWN________________o (void) {;}
+
+char             /* [------] drive the program closure activities ------------*/
+PROG__end               (void)
+{
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char             /* [------] drive the program closure activities ------------*/
-PROG_end           (void)
+PROG_shutdown           (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   PROG__end ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
+   DEBUG_TOPS   yLOGS_end    ();
    return 0;
 }
 
@@ -258,11 +468,8 @@ PROG__unit_quiet        (void)
 {
    int         x_argc      = 1;
    char       *x_args [1]  = { "metis" };
-   yURG_logger (1, x_args);
-   PROG_init   ();
-   yURG_urgs   (1, x_args);
-   PROG_args   (1, x_args);
-   PROG_begin  ();
+   PROG_urgents  (x_argc, x_args);
+   PROG_startup  (x_argc, x_args);
    return 0;
 }
 
@@ -271,18 +478,15 @@ PROG__unit_loud         (void)
 {
    int         x_argc      = 3;
    char       *x_args [20] = { "metis_unit", "@@kitchen", "@@sort"  };
-   yURG_logger (x_argc, x_args);
-   PROG_init   ();
-   yURG_urgs   (x_argc, x_args);
-   PROG_args   (x_argc, x_args);
-   PROG_begin  ();
+   PROG_urgents  (x_argc, x_args);
+   PROG_startup  (x_argc, x_args);
    return 0;
 }
 
 char         /*-> set up program urgents/debugging ---[ light  [uz.210.001.01]*/ /*-[00.0000.00#.!]-*/ /*-[--.---.---.--]-*/
 PROG__unit_end          (void)
 {
-   PROG_end       ();
+   PROG_shutdown ();
    return 0;
 }
 

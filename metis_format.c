@@ -20,19 +20,19 @@ static void      o___POLYMORPH_______________o (void) {;}
 char
 FORMAT_init        (void)
 {
-   yVIKEYS_cmds_add (YVIKEYS_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );
-   yVIKEYS_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");
-   yVIKEYS_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");
-   yVIKEYS_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");
-   yVIKEYS_menu_add ("µvwL", "long/lef"  , ":window long_lef¦");
-   yVIKEYS_menu_add ("µvwS", "streamer"  , ":window streamer¦");
-   yVIKEYS_menu_add ("µvwt", "ticker"    , ":window ticker¦");
-   yVIKEYS_menu_add ("µvwb", "baseline"  , ":window baseline¦");
-   yVIKEYS_menu_add ("µvwp", "project"   , ":window project¦");
-   yVIKEYS_menu_add ("µvww", "wideview"  , ":window wide¦");
-   yVIKEYS_menu_add ("µvwx", "extra"     , ":window extra¦");
-   yVIKEYS_menu_add ("µvws", "sticky"    , ":window sticky¦");
-   yVIKEYS_menu_add ("µvwn", "nonstick"  , ":window nonstick¦");
+   /*> yVIKEYS_cmds_add (YVIKEYS_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );   <* 
+    *> yVIKEYS_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");                                                                       <* 
+    *> yVIKEYS_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");                                                                      <* 
+    *> yVIKEYS_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");                                                                       <* 
+    *> yVIKEYS_menu_add ("µvwL", "long/lef"  , ":window long_lef¦");                                                                      <* 
+    *> yVIKEYS_menu_add ("µvwS", "streamer"  , ":window streamer¦");                                                                      <* 
+    *> yVIKEYS_menu_add ("µvwt", "ticker"    , ":window ticker¦");                                                                        <* 
+    *> yVIKEYS_menu_add ("µvwb", "baseline"  , ":window baseline¦");                                                                      <* 
+    *> yVIKEYS_menu_add ("µvwp", "project"   , ":window project¦");                                                                       <* 
+    *> yVIKEYS_menu_add ("µvww", "wideview"  , ":window wide¦");                                                                          <* 
+    *> yVIKEYS_menu_add ("µvwx", "extra"     , ":window extra¦");                                                                         <* 
+    *> yVIKEYS_menu_add ("µvws", "sticky"    , ":window sticky¦");                                                                        <* 
+    *> yVIKEYS_menu_add ("µvwn", "nonstick"  , ":window nonstick¦");                                                                      <*/
 }
 
 char
@@ -110,12 +110,9 @@ char
 format__wintex     (void)
 {
    /*---(window)-------------------------*/
-   DEBUG_USER   yLOG_sint     (my.w_left);
-   DEBUG_USER   yLOG_sint     (my.w_topp);
    my.w_wide   = (my.wcols + my.c_over) * my.c_offset;
    my.w_tall   = (my.wrows + my.r_over) * my.r_offset + my.m_offset;
-   DEBUG_USER   yLOG_sint     (my.w_wide);
-   DEBUG_USER   yLOG_sint     (my.w_tall);
+   my.w_ftall  = my.w_tall + 15.0;
    /*---(texture)------------------------*/
    my.t_wide   = my.tcols * my.c_offset;
    my.t_tall   = my.trows * my.r_offset;
@@ -128,29 +125,45 @@ format__wintex     (void)
 }
 
 char
+format__fulldebug  (void)
+{
+   /*---(prework)------------------------*/
+   DEBUG_USER   yLOG_snote    ("cr");
+   DEBUG_USER   yLOG_sint     (my.wcols);
+   DEBUG_USER   yLOG_sint     (my.wrows);
+   DEBUG_USER   yLOG_snote    ("win");
+   DEBUG_USER   yLOG_sint     (my.w_wide);
+   DEBUG_USER   yLOG_sint     (my.w_tall);
+   DEBUG_USER   yLOG_snote    ("tex");
+   DEBUG_USER   yLOG_sint     (my.t_wide);
+   DEBUG_USER   yLOG_sint     (my.t_tall);
+   DEBUG_USER   yLOG_snote    ("xy");
+   DEBUG_USER   yLOG_sint     (my.w_left);
+   DEBUG_USER   yLOG_sint     (my.w_topp);
+   return 0;
+}
+
+
+char
 format_streamer    (void)
 {
    /*---(header)-------------------------*/
-   DEBUG_USER   yLOG_enter    (__FUNCTION__);
+   DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 300;
    my.wcols    =   1;
    my.tcols    =   1;
-   DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  44;
    my.wrows    =  my.s_tall / my.r_offset;
-   if (my.wrows * my.r_offset < my.w_tall)   my.r_over = 1;
-   DEBUG_USER   yLOG_sint     (my.wrows);
    my.trows    =  60;
-   /*> if (my.nact <= my.trows)  my.nrows = my.nact;                                  <* 
-    *> else                      my.nrows = my.trows;                                 <*/
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
    my.w_left  = my.s_wide - my.c_offset;
-   my.w_topp  = 0;
    format__wintex ();
+   my.w_topp  = (my.s_tall - my.w_ftall) / 2;
+   format__fulldebug ();
    /*---(complete)-----------------------*/
    DEBUG_USER   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -160,26 +173,24 @@ char
 format_ticker           (void)
 {
    /*---(header)-------------------------*/
-   DEBUG_USER   yLOG_enter    (__FUNCTION__);
+   DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(rows)---------------------------*/
    my.r_offset =  45;
    my.wrows    =   1;
    my.trows    =   1;
-   /*> my.nrows    =   1;                                                             <*/
    /*---(columns)------------------------*/
    my.c_offset = 300;
    if (my.format != FORMAT_TICKER)  my.c_offset = 325;
    my.wcols    =   4;
    my.c_over   =   1;
    my.tcols    =  12;
-   /*> if (my.nact <= my.tcols)  my.ncols = my.nact;                                  <* 
-    *> else                      my.ncols = my.tcols;                                 <*/
    /*---(menu spacing)-------------------*/
    my.m_offset = 195;
    /*---(win/tex)------------------------*/
    my.w_left   =    0;
-   my.w_topp   = (my.s_tall / 2.0) - my.r_offset - my.m_offset;
    format__wintex ();
+   my.w_topp   = (my.s_tall / 2.0) - my.r_offset - my.m_offset;
+   format__fulldebug ();
    /*---(complete)-----------------------*/
    DEBUG_USER   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -196,16 +207,11 @@ format_column      (void)
       my.wrows  =  25;
    else
       my.wrows  =  12;
-   DEBUG_USER   yLOG_sint     (my.wrows);
    my.trows    =  60;
-   /*> if (my.nact <= my.trows)  my.nrows = my.nact;                                  <* 
-    *> else                      my.nrows = my.trows;                                 <*/
    /*---(columns)------------------------*/
    my.c_offset = 300;
    my.wcols    =   1;
    my.tcols    =   1;
-   /*> my.ncols    =   1;                                                             <*/
-   DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -213,8 +219,12 @@ format_column      (void)
       my.w_left  = my.s_wide - my.c_offset - 15;
    else
       my.w_left  =   15;
-   my.w_topp   = 25;
    format__wintex ();
+   if (strchr (FORMAT_LONGS , my.format) != NULL)
+      my.w_topp  = (my.s_tall - my.w_ftall) / 2;
+   else
+      my.w_topp  = ((my.s_tall / 2) - my.w_ftall) / 2;
+   format__fulldebug ();
    /*---(complete)-----------------------*/
    DEBUG_USER   yLOG_sexit    (__FUNCTION__);
    return 0;
@@ -224,25 +234,22 @@ char
 format_wideview    (void)
 {
    /*---(header)-------------------------*/
-   DEBUG_USER   yLOG_enter    (__FUNCTION__);
+   DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 320;
    my.wcols    =   4;
    my.tcols    =  12;
-   /*> my.ncols    =  12;                                                             <*/
-   DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  60;
    my.wrows    =  12;
    my.trows    =  12;
-   /*> my.nrows    =  12;                                                             <*/
-   DEBUG_USER   yLOG_sint     (my.wrows);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
    my.w_left   =  (my.s_wide - (4 * my.c_wide) - (3 * (my.c_offset - my.c_wide))) / 2;
-   my.w_topp   =  25;
    format__wintex ();
+   my.w_topp  = ((my.s_tall / 2) - my.w_ftall) / 2;
+   format__fulldebug ();
    /*---(complete)-----------------------*/
    DEBUG_USER   yLOG_sexit    (__FUNCTION__);
    return 0;
@@ -252,25 +259,22 @@ char
 format_projects    (void)
 {
    /*---(header)-------------------------*/
-   DEBUG_USER   yLOG_enter    (__FUNCTION__);
+   DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 320;
    my.wcols    =   4;
    my.tcols    =  12;
-   /*> my.ncols    =  12;                                                             <*/
-   DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  60;
    my.wrows    =  25;
    my.trows    =  25;
-   /*> my.nrows    =  25;                                                             <*/
-   DEBUG_USER   yLOG_sint     (my.wrows);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
    my.w_left   =  (my.s_wide - (4 * my.c_wide) - (3 * (my.c_offset - my.c_wide))) / 2;
-   my.w_topp   =  25;
    format__wintex ();
+   my.w_topp  = (my.s_tall - my.w_ftall) / 2;
+   format__fulldebug ();
    /*---(complete)-----------------------*/
    DEBUG_USER   yLOG_sexit    (__FUNCTION__);
    return 0;
@@ -280,25 +284,22 @@ char
 format_extra       (void)
 {
    /*---(header)-------------------------*/
-   DEBUG_USER   yLOG_enter    (__FUNCTION__);
+   DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 320;
    my.wcols    =   4;
    my.tcols    =  12;
-   /*> my.ncols    =  12;                                                             <*/
-   DEBUG_USER   yLOG_sint     (my.wcols);
    /*---(rows)---------------------------*/
    my.r_offset =  44;
    my.wrows    =  my.s_tall / my.r_offset;
-   if (my.wrows * my.r_offset < my.w_tall)   my.r_over = 1;
    my.trows    =  my.wrows + my.r_over;
-   DEBUG_USER   yLOG_sint     (my.wrows);
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
    my.w_left   =  (my.s_wide - (4 * my.c_wide) - (3 * (my.c_offset - my.c_wide))) / 2;
-   my.w_topp   =   0;
    format__wintex ();
+   my.w_topp  = (my.s_tall - my.w_ftall) / 2;
+   format__fulldebug ();
    /*---(complete)-----------------------*/
    DEBUG_USER   yLOG_sexit    (__FUNCTION__);
    return 0;
@@ -371,7 +372,7 @@ FORMAT__unit       (char *a_question, int a_num)
       snprintf (unit_answer, LEN_FULL, "FORMAT unit  (%c) : wide %4dt %4dw %4do %4dn     - tall %4dt %4dw %4do %4dn     -", my.format, my.tcols, my.wcols, my.c_over, my.ncols, my.trows, my.wrows, my.r_over, my.nrows);
    }
    else if (strcmp (a_question, "window"        ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "FORMAT win   (%c) : wide %4ds %4dc %4do %4dl %4dw tall %4ds %4dr %4do %4dt %4dt", my.format, my.s_wide, my.c_wide, my.c_offset, my.w_left, my.w_wide, my.s_tall, my.r_tall, my.r_offset, my.w_topp, my.w_tall);
+      snprintf (unit_answer, LEN_FULL, "FORMAT win   (%c) : wide %4ds %4dc %4do %4dl %4dw tall %4ds %4dr %4do %4dt %4dt %4df", my.format, my.s_wide, my.c_wide, my.c_offset, my.w_left, my.w_wide, my.s_tall, my.r_tall, my.r_offset, my.w_topp, my.w_tall, my.w_ftall);
    }
    else if (strcmp (a_question, "map"           ) == 0) {
       sprintf (t, "%2d   ", s_map [a_num][0]);

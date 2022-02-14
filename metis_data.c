@@ -14,55 +14,58 @@ int         g_ntask       =  0;
 
 
 
-#define  MAX_DECODE     100
+#define  MAX_DECODE      50
 typedef  struct  cDECODE  tDECODE;
 struct cDECODE {
    char        type;
    char        abbr;
-   char        label       [LEN_LABEL];
-   char        desc        [LEN_DESC];
-   float       red;
-   float       grn;
-   float       blu;
+   char       *label;
+   char       *desc;
 };
-tDECODE   g_decode   [MAX_DECODE] = {
+const tDECODE g_decode   [] = {
    /*---(urgency)------------------------*/
-   { 'u', '!', "now-now"     , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 't', "today"       , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 's', "soonest"     , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 'd', "days"        , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 'w', "weeks"       , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 'm', "months"      , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 'q', "quarters"    , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 'y', "years"       , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', 'b', "backlog"     , ""                                               , 0.000, 0.000, 0.000 },
-   { 'u', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'u', '*', "scheduled"   , "operates on a schedule or specifically called"                },
+   { 'u', '!', "now-now"     , "drop everything and get it done before anything else"         },
+   { 'u', 'T', "today"       , "need it by end-of-day, or worst before work starts tomorrow"  },
+   { 'u', 'S', "soonest"     , "do your best to get it done soon, don't get distracted"       },
+   { 'u', 'D', "days"        , "complete in a couple of days, or at least this week"          },
+   { 'u', 'w', "weeks"       , "complete in a couple weeks, or at least this month"           },
+   { 'u', 'm', "months"      , "complete in a couple months, or at least under a yaer"        },
+   { 'u', 'y', "years"       , "this task is long-term and is expected to by over a year"     },
+   { 'u', '-', "backlog"     , "not been assigned an urgency"                                 },
+   { 'u', '·', "undefined"   , "not been assigned an urgency"                                 },
    /*---(importance)---------------------*/
-   { 'i', '!', "now-now"     , ""                                               , 0.000, 0.000, 0.000 },
-   { 'i', 'a', "absolute"    , "true life or death for project, app, or me"     , 0.000, 0.000, 0.000 },
-   { 'i', 'n', "need"        , "must be completed to finish objective"          , 0.000, 0.000, 0.000 },
-   { 'i', 'w', "want"        , "want to complete, useful"                       , 0.000, 0.000, 0.000 },
-   { 'i', 'l', "like"        , "could be nice"                                  , 0.000, 0.000, 0.000 },
-   { 'i', 'm', "might"       , "plausable, could be done"                       , 0.000, 0.000, 0.000 },
-   { 'i', 'i', "idea"        , "possible, no thought applied yes"               , 0.000, 0.000, 0.000 },
-   { 'i', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'i', '!', "now-now"     , "drop everything as this takes priority over anything else"    },
+   { 'i', 'a', "absolute"    , "this is a true life or death for project, app, or me"         },
+   { 'i', 'n', "need"        , "must be completed, fact it is required to meeet objective"    },
+   { 'i', 'v', "value"       , "adds solid, logic additional value to the objective"          },
+   { 'i', 'c', "crave"       , "very strong want, true belief that this is necessary"         },
+   { 'i', 'w', "want"        , "desired, but not absolutely needed, in the final product"     },
+   { 'i', 'l', "like"        , "nice to have, but only if it comes unforced/naturally"        },
+   { 'i', 'm', "might"       , "plausable, could be done, but there is no real push"          },
+   { 'i', '-', "backlog"     , "not been assigned an importance"                              },
+   { 'i', '·', "undefined"   , "not been assigned an importance"                              },
    /*---(estimate)-----------------------*/
-   { 'e', '!', "5m"          , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', 's', "15m"         , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', 'm', "30m"         , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', '1', "60m"         , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', '2', "120m"        , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', '4', "240m"        , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', '8', "480m"        , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', '+', "longer"      , ""                                               , 0.000, 0.000, 0.000 },
-   { 'e', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'e', '*', "huge"        , "longer than a full day of work"                               },
+   { 'e', '8', "480m"        , "full day of work, or possibly until start of the next day"    },
+   { 'e', '4', "240m"        , "half day of work, which means serious focus and dedication"   },
+   { 'e', '2', "120m"        , "couple hours, meaning dedicated focus and continuous time"    },
+   { 'e', '1', "60m"         , "full hour of work is a moderate task that needs focus"        },
+   { 'e', 'h', "30m"         , "half hour of work is usually smaller, but needs attention"    },
+   { 'e', 'q', "15m"         , "quick task that likely takes a little thought and prep"       },
+   { 'e', '!', "5m"          , "very fast task to complete, likely without support or prep"   },
+   { 'e', '-', "backlog"     , "not been assigned an estimate yet"                            },
+   { 'e', '·', "undefined"   , "not been assigned an estimate yet"                            },
    /*---(progress)-----------------------*/
-   { 'p', '<', "starting"    , ""                                               , 0.000, 0.000, 0.000 },
-   { 'p', 'o', "active"      , ""                                               , 0.000, 0.000, 0.000 },
-   { 'p', '>', "checking"    , ""                                               , 0.000, 0.000, 0.000 },
-   { 'p', '#', "done"        , ""                                               , 0.000, 0.000, 0.000 },
-   { 'p', 'x', "cancelled"   , ""                                               , 0.000, 0.000, 0.000 },
-   { 'p', '·', "undefined"   , ""                                               , 0.000, 0.000, 0.000 },
+   { 'p', '·', "undefined"   , "work that has not been prepared or acted upon yet"            },
+   { 'p', '-', "backlog"     , "work that has not been prepared or acted upon yet"            },
+   { 'p', '<', "starting"    , "on longer tasks, indicates pre-work complete and task ready"  },
+   { 'p', 'o', "active"      , "selected for today and/or working it right now"               },
+   { 'p', '>', "checking"    , "on longer tasks, indicates post-work confirmation required"   },
+   { 'p', '#', "done"        , "successfully completed and any checking done"                 },
+   { 'p', 'x', "cancelled"   , "detiremened this effort is no longer necessary"               },
+   /*---(done)---------------------------*/
+   {  0 ,  0 , ""            , ""                                                             },
 };
 
 
@@ -76,6 +79,20 @@ static char      s_two [LEN_LABEL] = "blank";    /* group two  (save)           
 /*====================------------------------------------====================*/
 static void      o___UTILITY_________________o (void) {;}
 
+char
+DATA_catinfo            (char a_type, char a_abbr, char *a_label, char *a_desc)
+{
+   int         i           =    0;
+   for (i = 0; i < MAX_DECODE; ++i) {
+      if (g_decode [i].type == 0)       break;
+      if (g_decode [i].type != a_type)  continue;
+      if (g_decode [i].abbr != a_abbr)  continue;
+      if (a_label != NULL)  strlcpy (a_label, g_decode [i].label, LEN_LABEL);
+      if (a_desc  != NULL)  strlcpy (a_desc , g_decode [i].desc , LEN_HUND );
+      return 0;
+   }
+   return -1;
+}
 
 
 /*============================--------------------============================*/
@@ -128,6 +145,7 @@ DATA_init               (void)
    strlcpy (my.ests, "", LEN_LABEL);
    strlcpy (my.prgs, "", LEN_LABEL);
    for (i = 0; i < MAX_DECODE; ++i) {
+      if (g_decode [i].type == 0)                   break;
       sprintf (t, "%c", g_decode [i].abbr);
       switch (g_decode [i].type) {
       case 'u' : strlcat (my.urgs, t, LEN_LABEL);   break;
@@ -145,8 +163,8 @@ DATA_init               (void)
    }
    g_ntask  = 0;
    my.nact  = 0;
-   yVIKEYS_cmds_add (YVIKEYS_M_FILE   , "refresh"     , ""    , ""     , api_yvikeys_refresh , ""                   );
-   yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "dump"        , ""    , ""     , task_dump           , ""                   );
+   /*> yVIKEYS_cmds_add (YVIKEYS_M_FILE   , "refresh"     , ""    , ""     , api_yvikeys_refresh , ""                   );   <*/
+   /*> yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "dump"        , ""    , ""     , task_dump           , ""                   );   <*/
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -260,7 +278,7 @@ DATA__header            (char *a_recd)
 }
 
 char             /* [p-----] parse task detail -------------------------------*/
-DATA__detail       (char *a_recd, int a_line)
+DATA__detail       (char *a_source, int a_line, char *a_recd)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -310,6 +328,7 @@ DATA__detail       (char *a_recd, int a_line)
    /*---(categories)--------------------*/
    strlcpy  (g_tasks [g_ntask].one, s_one, LEN_LABEL);
    strlcpy  (g_tasks [g_ntask].two, s_two, LEN_LABEL);
+   strlcpy  (g_tasks [g_ntask].source, a_source, LEN_LABEL);
    g_tasks [g_ntask].line  = a_line;
    g_tasks [g_ntask].seq   = g_ntask;
    ++g_ntask;
@@ -369,26 +388,26 @@ DATA__file         (char *a_source)
       if      (strncmp (x_recd, "/* metis ", 10) == 0) {
          DEBUG_DATA   yLOG_note     ("FOUND, single-line or open comment (1)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 10, a);
+         DATA__detail (a_source, a, x_recd + 10);
       }
       else if (strncmp (x_recd, "   /* metis ", 13) == 0) {
          DEBUG_DATA   yLOG_note     ("FOUND, single-line or open comment (2)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 13, a);
+         DATA__detail (a_source, a, x_recd + 13);
       }
       else if (strncmp (x_recd, " * metis " , 10) == 0) {
          DEBUG_DATA   yLOG_note     ("FOUND, continuing comment (1)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 10, a);
+         DATA__detail (a_source, a, x_recd + 10);
       }
       else if (strncmp (x_recd, "    * metis " , 13) == 0) {
          DEBUG_DATA   yLOG_note     ("FOUND, continuing comment (2)");
          if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (x_recd + 13, a);
+         DATA__detail (a_source, a, x_recd + 13);
       }
       else if (strncmp (x_recd, "# metis " ,  9) == 0) {
          DEBUG_DATA   yLOG_note     ("FOUND, unit test comment");
-         DATA__detail (x_recd + 9, a);
+         DATA__detail (a_source, a, x_recd +  9);
       }
    }
    fclose(f);
@@ -422,7 +441,7 @@ DATA__stdin        (void)
       ++a;
       if (g_recd [0] == '#')   continue;
       if (g_recd [0] == '\0')  continue;
-      if (strncmp (g_recd, "  ", 2) == 0) rc = DATA__detail (g_recd, a);
+      if (strncmp (g_recd, "  ", 2) == 0) rc = DATA__detail ("stdin", a, g_recd);
       else                                rc = DATA__header (g_recd);
       /*> rc = DATA__detail ();                                                       <*/
       /*> if (rc < 0)                         return 0;                               <* 
@@ -462,7 +481,7 @@ DATA__read         (char *a_filename)
       ++a;
       if (g_recd [0] == '#')   continue;
       if (g_recd [0] == '\0')  continue;
-      if (strncmp (g_recd, "  ", 2) == 0) rc = DATA__detail (g_recd, a);
+      if (strncmp (g_recd, "  ", 2) == 0) rc = DATA__detail (a_filename, a, g_recd);
       else                                rc = DATA__header (g_recd);
       /*> rc = DATA__detail ();                                                       <*/
       /*> if (rc < 0)                         return 0;                               <* 
@@ -479,13 +498,12 @@ char DATA__master        (void) { return DATA__read    (FILE_MASTER); }
 char DATA__custom        (void) { return DATA__read    (my.file);     }
 
 char         /*--> make a list of input files --------------------------------*/
-DATA__sources       (void)
+DATA__sources       (char *a_suffix)
 {
    /*---(locals)-----------+-----+-----+-*/
-   int         rc          =    0;          /* generic return code            */
    char        rce         =  -10;          /* return code for errors         */
+   int         rc          =    0;          /* generic return code            */
    int         i           =    0;
-   char        x_suf       [LEN_LABEL];
    int         x_suflen    =    0;
    DIR        *x_dir       = NULL;          /* directory pointer              */
    tDIRENT    *x_file      = NULL;          /* directory entry pointer        */
@@ -496,67 +514,70 @@ DATA__sources       (void)
    int         x_good      =    0;          /* count of entries processed     */
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
-   /*---(process entries)----------------*/
-   for (i = 0; i < 3; ++i) {
-      switch (i) {
-      case 0 :  strcpy (x_suf, ".h");     break;
-      case 1 :  strcpy (x_suf, ".c");     break;
-      case 2 :  strcpy (x_suf, ".unit");  break;
-      }
-      x_suflen = strlen (x_suf);
-      DEBUG_INPT   yLOG_info    ("SUFFIX"    , x_suf);
-      /*---(open dir)-----------------------*/
-      x_dir = opendir(".");
-      DEBUG_INPT   yLOG_point   ("x_dir"      , x_dir);
-      --rce;  if (x_dir == NULL) {
-         DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
-         return  rce;
-      }
-      DEBUG_INPT   yLOG_note    ("openned successfully");
-      while (1) {
-         DEBUG_INPT   yLOG_note    ("processing entries");
-         /*---(read a directory entry)------*/
-         x_file = readdir (x_dir);
-         DEBUG_INPT   yLOG_point   ("x_file"    , x_file);
-         if (x_file == NULL)  break;
-         ++x_read;
-         /*---(filter by name)--------------*/
-         strlcpy (x_name, x_file->d_name, LEN_TITLE);
-         DEBUG_INPT   yLOG_info    ("x_name"    , x_name);
-         if (x_name [0] == '.')  {
-            DEBUG_INPT   yLOG_note    ("hidden, SKIP");
-            continue;
-         }
-         x_len = strlen (x_name);
-         DEBUG_INPT   yLOG_value   ("x_len"     , x_len);
-         if (x_len < x_suflen + 2) {
-            DEBUG_INPT   yLOG_note    ("name too short with suffix, SKIP");
-            continue;
-         }
-         /*---(cut on suffix len)-----------*/
-         DEBUG_INPT   yLOG_info    ("potential" , x_name + x_len - x_suflen);
-         if (strncmp (x_name + x_len - x_suflen, x_suf, x_suflen) != 0) {
-            DEBUG_INPT   yLOG_note    ("suffix does not match, SKIP");
-            continue;
-         }
-         /*---(filter unit test)------------*/
-         if (x_len > 7 && strcmp ("_unit.c", x_name + x_len - 7) == 0) {
-            DEBUG_INPT   yLOG_note    ("cut the unit testing code files, SKIP");
-            continue;
-         }
-         /*---(save)------------------------*/
-         DATA__file (x_name);
-         ++x_good;
-         DEBUG_INPT   yLOG_note    ("added to inventory");
-         /*---(done)------------------------*/
-      }
-      DEBUG_INPT   yLOG_value   ("x_read"    , x_read);
-      DEBUG_INPT   yLOG_value   ("x_good"    , x_good);
-      /*---(close dir)----------------------*/
-      DEBUG_INPT   yLOG_note    ("closing directory");
-      rc = closedir (x_dir);
-      DEBUG_INPT   yLOG_value   ("close_rc"  , rc);
+   /*---(defense)------------------------*/
+   DEBUG_INPT   yLOG_point   ("a_suffix"  , a_suffix);
+   --rce;  if (a_suffix == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return  rce;
    }
+   --rce;  if (a_suffix [0] != '.') {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return  rce;
+   }
+   /*---(process entries)----------------*/
+   x_suflen = strlen (a_suffix);
+   DEBUG_INPT   yLOG_info    ("SUFFIX"    , a_suffix);
+   /*---(open dir)-----------------------*/
+   x_dir = opendir(".");
+   DEBUG_INPT   yLOG_point   ("x_dir"      , x_dir);
+   --rce;  if (x_dir == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return  rce;
+   }
+   DEBUG_INPT   yLOG_note    ("openned successfully");
+   while (1) {
+      DEBUG_INPT   yLOG_note    ("processing entries");
+      /*---(read a directory entry)------*/
+      x_file = readdir (x_dir);
+      DEBUG_INPT   yLOG_point   ("x_file"    , x_file);
+      if (x_file == NULL)  break;
+      ++x_read;
+      /*---(filter by name)--------------*/
+      strlcpy (x_name, x_file->d_name, LEN_TITLE);
+      DEBUG_INPT   yLOG_info    ("x_name"    , x_name);
+      if (x_name [0] == '.')  {
+         DEBUG_INPT   yLOG_note    ("hidden, SKIP");
+         continue;
+      }
+      x_len = strlen (x_name);
+      DEBUG_INPT   yLOG_value   ("x_len"     , x_len);
+      if (x_len < x_suflen + 2) {
+         DEBUG_INPT   yLOG_note    ("name too short with suffix, SKIP");
+         continue;
+      }
+      /*---(cut on suffix len)-----------*/
+      DEBUG_INPT   yLOG_info    ("potential" , x_name + x_len - x_suflen);
+      if (strncmp (x_name + x_len - x_suflen, a_suffix, x_suflen) != 0) {
+         DEBUG_INPT   yLOG_note    ("suffix does not match, SKIP");
+         continue;
+      }
+      /*---(filter unit test)------------*/
+      if (x_len > 7 && strcmp ("_unit.c", x_name + x_len - 7) == 0) {
+         DEBUG_INPT   yLOG_note    ("cut the unit testing code files, SKIP");
+         continue;
+      }
+      /*---(save)------------------------*/
+      DATA__file (x_name);
+      ++x_good;
+      DEBUG_INPT   yLOG_note    ("added to inventory");
+      /*---(done)------------------------*/
+   }
+   DEBUG_INPT   yLOG_value   ("x_read"    , x_read);
+   DEBUG_INPT   yLOG_value   ("x_good"    , x_good);
+   /*---(close dir)----------------------*/
+   DEBUG_INPT   yLOG_note    ("closing directory");
+   rc = closedir (x_dir);
+   DEBUG_INPT   yLOG_value   ("close_rc"  , rc);
    /*> printf ("   end-of-files\n\n\n");                                              <*/
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
@@ -578,14 +599,27 @@ DATA__blankcard    (void)
 char
 DATA_refresh       (void)
 {
-   /*---(locals)-----------+-----------+-*/
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
    char        rc          =    0;
    static int  c           =    0;
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_INPT   yLOG_info    ("all"       , DATA_ALL);
    DEBUG_INPT   yLOG_char    ("source"    , my.source);
-   DEBUG_INPT   yLOG_value   ("c"         , c);
+   --rce;  if (my.source == 0 || my.source == DATA_NONE) {
+      yURG_err ('F', "data source set to (%c) NONE; must set with command-line option", my.source);
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (strchr (DATA_ALL, my.source) == NULL) {
+      yURG_err ('F', "data source set to (%c) UNKNOWN; must set with command-line option", my.source);
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(initialize)---------------------*/
+   DEBUG_INPT   yLOG_value   ("c"         , c);
    if (my.source == DATA_PIPE && c > 0) {
       DEBUG_INPT   yLOG_exit    (__FUNCTION__);
       return 0;
@@ -593,10 +627,20 @@ DATA_refresh       (void)
    DATA_init ();
    /*---(update)-------------------------*/
    switch (my.source) {
-   case DATA_SOURCES :  rc = DATA__sources ();   break;
-   case DATA_MASTER  :  rc = DATA__master  ();   break;
-   case DATA_CUSTOM  :  rc = DATA__custom  ();   break;
-   case DATA_PIPE    :  rc = DATA__stdin   ();   break;
+   case DATA_SOURCES :
+      rc = DATA__sources (".h");
+      rc = DATA__sources (".c");
+      rc = DATA__sources (".unit");
+      break;
+   case DATA_MASTER  :
+      rc = DATA__master  (); 
+      break;
+   case DATA_CUSTOM  :
+      rc = DATA__custom  ();
+      break;
+   case DATA_PIPE    :
+      rc = DATA__stdin   ();
+      break;
    }
    ++c;
    /*---(add placeholder)----------------*/
