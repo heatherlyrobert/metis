@@ -20,9 +20,17 @@
 
 
 
-/*===[[ METIS BACKLOG ]]======================================================*
+/*
  *
- * metis  dw2·  when filtered to zero cards, display blank card
+ * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
+ * metis § dw4#Ï § fix artifacting in OPENGL__polygon which looks like dashes at edges      § 1645047884 § 1645055000 §
+ * metis § dw2xÏ § fit urgency letter in urgency area -- less confusing                     § 1645047885 § 1645055000 §
+ * metis § dw2xÏ § fit estimate letter in estimate area -- less confusing                   § 1645047886 § 1645055000 §
+ * metis § dw2#Ï § fit progress letter in progress area -- less confusing                   § 1645047887 § 1645055000 §
+ * metis § sn4#Ï § get texture drawn to match yMAP position                                 § 1645047888 § 1645055000 §
+ * metis § ww1#Ï § lighten normal blue as it dulls text too much                            § 1645047889 § 1645055000 §
+ * metis § dw2·· § when filtered to zero cards, display blank card                          § 1645047890 § ·········· §
+ * metis § dw4·· § use yCOLOR to establish pallete and color selection                      § 1645047891 § ·········· §
  */
 
 float     g_alpha     = 0.0;
@@ -51,7 +59,7 @@ float  txf_space = 1.15;
 static void      o___PRIMATIVE_______________o (void) {;}
 
 char
-OPENGL__colors          (char *a_valid, char a_color)
+OPENGL__colors          (char *a_valid, char a_color, float a_alpha)
 {
    char       *p           = NULL;
    char        i           =    0;
@@ -66,43 +74,16 @@ OPENGL__colors          (char *a_valid, char a_color)
    }
    DEBUG_GRAF   yLOG_value    ("i"          , i);
    switch (i) {
-   case  0  : glColor3f (  1.000,  0.000,  0.000); break;
-   case  1  : glColor3f (  0.900,  0.455,  0.000); break;
-   case  2  : glColor3f (  0.800,  0.733,  0.000); break;
-   case  3  : glColor3f (  0.200,  0.667,  0.200); break;
-   case  4  : glColor3f (  0.000,  0.600,  0.600); break;
-   case  5  : glColor3f (  0.600,  0.000,  0.800); break;
-   case  6  : glColor3f (  0.600,  0.000,  0.600); break;
-   case  7  : glColor3f (  0.400,  0.400,  0.400); break;
-   default  : glColor3f (  0.700,  0.700,  0.700); break;
+   case  0  : glColor4f (  0.800,  0.100,  0.100, a_alpha); break;
+   case  1  : glColor4f (  0.800,  0.400,  0.000, a_alpha); break;
+   case  2  : glColor4f (  0.800,  0.800,  0.000, a_alpha); break;
+   case  3  : glColor4f (  0.000,  0.800,  0.000, a_alpha); break;
+   case  4  : glColor4f (  0.000,  0.800,  0.800, a_alpha); break;
+   case  5  : glColor4f (  0.300,  0.300,  1.000, a_alpha); break;
+   case  6  : glColor4f (  0.800,  0.000,  0.800, a_alpha); break;
+   case  7  : glColor4f (  0.700,  0.700,  0.700, a_alpha); break;
+   default  : glColor4f (  0.700,  0.700,  0.700, a_alpha); break;
    }
-   return 0;
-}
-
-char
-OPENGL__polygon         (float *a_array)
-{
-   glPushMatrix(); {
-      /*> glDisable(GL_BLEND);                                                        <*/
-      /*> glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                          <*/
-      /*> glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                <*/
-      /*> glBlendFunc(GL_SRC_ALPHA_SATURATE, GL_ONE);                                 <*/
-      glBegin(GL_POLYGON); {
-         glVertex3fv (a_array +  0);
-         glVertex3fv (a_array +  3);
-         glVertex3fv (a_array +  6);
-         glVertex3fv (a_array +  9);
-      } glEnd();
-      glTranslatef(0.0, 0.0, -2.0);
-      glBegin(GL_LINE_STRIP); {
-         glVertex3fv (a_array +  0);
-         glVertex3fv (a_array +  3);
-         glVertex3fv (a_array +  6);
-         glVertex3fv (a_array +  9);
-         glVertex3fv (a_array +  0);
-      } glEnd();
-      /*> glEnable(GL_BLEND);                                                         <*/
-   } glPopMatrix();
    return 0;
 }
 
@@ -166,7 +147,7 @@ OPENGL_init (void)
    my.g_fbo     =    -1;
    my.g_dep     =    -1;
    yGLTEX_config ();
-   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+   /*> glClearColor(0.0f, 0.0f, 0.0f, 1.0f);                                          <*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -181,11 +162,11 @@ char
 OPENGL_resize           (uint a_w, uint a_h)
 {
    if (a_h == 0) a_h = 1;
-   glViewport(0,  0, my.w_wide, my.w_tall);
-   glMatrixMode(GL_PROJECTION);
-   glLoadIdentity();
-   glOrtho(        0,   my.w_wide, -my.w_tall,  0, -500.0,  500.0);
-   glMatrixMode(GL_MODELVIEW);
+   /*> glViewport(0,  0, my.w_wide, my.w_tall);                                       <* 
+    *> glMatrixMode(GL_PROJECTION);                                                   <* 
+    *> glLoadIdentity();                                                              <* 
+    *> glOrtho(        0,   my.w_wide, -my.w_tall,  0, -500.0,  500.0);               <* 
+    *> glMatrixMode(GL_MODELVIEW);                                                    <*/
    return 0;
 }
 
@@ -243,37 +224,39 @@ OPENGL_show__tickers    (float *a_xcur, float *a_ycur)
    x_tbot  = 0.0;
    /*---(panel one/lef)---------------*/
    x_wlef  = 0.0;
-   x_tlef  = (my.bcol  * my.c_offset) / (float) my.t_wide;
-   if (my.ncols - my.ccol > my.wcols) {
-      x_max  = my.bcol + (my.wcols + my.c_over);
-      x_cnt  = my.wcols + my.c_over;
+   x_tlef  = (BCOL  * my.c_offset) / (float) my.t_wide;
+   if (NCOLS - CCOL > WCOLS) {
+      x_max  = BCOL + (WCOLS + my.c_over);
+      x_cnt  = WCOLS + my.c_over;
       x_wrig = my.w_wide;
    } else {
-      x_max  = my.ncols;
-      x_cnt  = my.ncols - my.bcol;
-      x_wrig = (x_cnt / (my.wcols + my.c_over)) * my.w_wide;
+      x_max  = NCOLS;
+      x_cnt  = NCOLS - BCOL;
+      x_wrig = (x_cnt / (WCOLS + my.c_over)) * my.w_wide;
    }
    x_trig   = (x_max    * my.c_offset) / my.t_wide;
    /*---(output)-------------------------*/
-   DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.ncols, my.bcol, my.ccol, my.ecol, my.c_offset);
+   DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , NCOLS, BCOL, CCOL, ECOL, my.c_offset);
    DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
    /*---(draw)---------------------------*/
-   OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
+   OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig,    x_ttop, x_tlef, x_tbot, x_trig);
+   /*> OPENGL__panel (0.0, 0.0, -240.0, 300.0,     1.000, 0.000, 0.933, 1.000);       <*/
+   /*> OPENGL__panel (240.0, 0.0, -240.0, 300.0,     0.000, 0.000, 1.000, 1.000);     <*/
    /*---(panel two/rig)---------------*/
    if (x_wrig < my.w_wide) {
       x_wlef = x_wrig;
       x_wrig = my.w_wide;
       x_tlef = 0.0;
-      x_max  = (my.wcols + my.c_over) - x_cnt;
+      x_max  = (WCOLS + my.c_over) - x_cnt;
       x_trig = (x_max    * my.c_offset) / my.t_wide;
       /*---(output)-------------------------*/
-      DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.ncols, my.bcol, my.ccol, my.ecol, my.c_offset);
+      DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , NCOLS, BCOL, CCOL, ECOL, my.c_offset);
       DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
       /*---(draw)------------------------*/
       OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
    }
    /*---(current)---------------------*/
-   if (a_xcur != NULL)  *a_xcur    = (my.ccol - my.bcol) * my.c_offset;
+   if (a_xcur != NULL)  *a_xcur    = (CCOL - BCOL) * my.c_offset;
    if (a_ycur != NULL)  *a_ycur    = -my.m_offset;
    /*---(complete)--------------------*/
    return 0;
@@ -288,6 +271,7 @@ OPENGL_show__columns    (float *a_xcur, float *a_ycur)
    float     x_max , x_cnt;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_note     ("column formats--------------");
+   DEBUG_GRAF   yLOG_complex  ("rows"      , "%3dw, %3dt, %3dn, %3db, %3dc, %3de, %3.0fo", WROWS, TROWS, NROWS, BROW, CROW, EROW, my.r_offset);
    /*---(consistent)---------------------*/
    x_wlef  = 0.0;
    x_wrig  = my.w_wide;
@@ -295,25 +279,24 @@ OPENGL_show__columns    (float *a_xcur, float *a_ycur)
    x_trig  = 1.0;
    /*---(updates)------------------------*/
    x_wtop  = 0.0;
-   x_ttop  = 1.0 - ((my.brow  *  my.r_offset) / (float) my.t_tall);
-   if (my.nrows - my.brow > my.wrows) {
-      x_max  = my.brow + my.wrows;
-      x_cnt  = my.wrows;
+   x_ttop  = 1.0 - ((BROW  *  my.r_offset) / (float) my.t_tall);
+   if (NROWS - BROW > WROWS) {
+      x_max  = BROW + WROWS;
+      x_cnt  = WROWS;
       x_wbot = -my.w_tall;
    } else {
-      x_max  = my.nrows;
-      x_cnt  = my.nrows - my.brow;
-      x_wbot = -(x_cnt / my.wrows) * my.w_tall;
+      x_max  = NROWS;
+      x_cnt  = NROWS - BROW;
+      x_wbot = -(x_cnt / WROWS) * my.w_tall;
    }
    x_tbot   = 1.0 - ((x_max    *  my.r_offset) / (float) my.t_tall);
    /*---(output)-------------------------*/
-   DEBUG_GRAF   yLOG_complex  ("rows"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.nrows, my.brow, my.crow, my.erow, my.r_offset);
    DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
    /*---(draw)---------------------------*/
    OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
    /*---(current)------------------------*/
    if (a_xcur != NULL)  *a_xcur    = 0.0;
-   if (a_ycur != NULL)  *a_ycur    = -(my.crow - my.brow) * my.r_offset;
+   if (a_ycur != NULL)  *a_ycur    = -(CROW - BROW) * my.r_offset;
    /*---(complete)--------------------*/
    return 0;
 }
@@ -335,17 +318,17 @@ OPENGL_show__larges     (float *a_xcur, float *a_ycur)
    x_wlef  = 0.0;
    x_wrig  = my.w_wide;
    /*---(panel one/lef)---------------*/
-   x_tlef  = (my.bcol        * my.c_offset) / (float) my.t_wide;
-   x_trig  = ((my.bcol + 4)  * my.c_offset) / (float) my.t_wide;
+   x_tlef  = (BCOL        * my.c_offset) / (float) my.t_wide;
+   x_trig  = ((BCOL + 4)  * my.c_offset) / (float) my.t_wide;
    /*---(output)-------------------------*/
-   DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.ncols, my.bcol, my.ccol, my.ecol, my.c_offset);
-   DEBUG_GRAF   yLOG_complex  ("rows"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , my.nrows, my.brow, my.crow, my.erow, my.r_offset);
+   DEBUG_GRAF   yLOG_complex  ("cols"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , NCOLS, BCOL, CCOL, ECOL, my.c_offset);
+   DEBUG_GRAF   yLOG_complex  ("rows"      , "%3dn, %3db, %3dc, %3de, %3.0fo"        , NROWS, BROW, CROW, EROW, my.r_offset);
    DEBUG_GRAF   yLOG_complex  ("working"   , "%8.3fc, %8.3fx"                        , x_cnt , x_max );
    /*---(draw)---------------------------*/
    OPENGL__panel (x_wtop, x_wlef, x_wbot, x_wrig, x_ttop, x_tlef, x_tbot, x_trig);
    /*---(current)---------------------*/
-   if (a_xcur != NULL)  *a_xcur    = (my.ccol - my.bcol) * my.c_offset;
-   if (a_ycur != NULL)  *a_ycur    = -(my.crow - my.brow) * my.r_offset;
+   if (a_xcur != NULL)  *a_xcur    = (CCOL - BCOL) * my.c_offset;
+   if (a_ycur != NULL)  *a_ycur    = -(CROW - BROW) * my.r_offset;
    /*---(complete)--------------------*/
    return 0;
 }
@@ -354,11 +337,23 @@ char
 OPENGL_show__current    (float a_xcur, float a_ycur)
 {
    glColor4f (  1.000,  1.000,  1.000, 1.000);
+   /*> glBegin(GL_POLYGON); {                                                         <* 
+    *>    glVertex3f (a_xcur +   2.0, a_ycur -  6.0,   80.0);                         <* 
+    *>    glVertex3f (a_xcur +  38.0, a_ycur - 43.0,   80.0);                         <* 
+    *>    glVertex3f (a_xcur +  25.0, a_ycur - 43.0,   80.0);                         <* 
+    *>    glVertex3f (a_xcur +   2.0, a_ycur - 20.0,   80.0);                         <* 
+    *> } glEnd();                                                                     <*/
+   /*> glBegin(GL_POLYGON); {                                                         <* 
+    *>    glVertex3f (a_xcur +  10.0, a_ycur - 16.0,   80.0);                         <* 
+    *>    glVertex3f (a_xcur +  30.0, a_ycur - 35.0,   80.0);                         <* 
+    *>    glVertex3f (a_xcur +  25.0, a_ycur - 35.0,   80.0);                         <* 
+    *>    glVertex3f (a_xcur +  10.0, a_ycur - 21.0,   80.0);                         <* 
+    *> } glEnd();                                                                     <*/
    glBegin(GL_POLYGON); {
-      glVertex3f (a_xcur +   2.0, a_ycur -  6.0,   80.0);
-      glVertex3f (a_xcur +  38.0, a_ycur - 43.0,   80.0);
-      glVertex3f (a_xcur +  25.0, a_ycur - 43.0,   80.0);
       glVertex3f (a_xcur +   2.0, a_ycur - 20.0,   80.0);
+      glVertex3f (a_xcur +   8.0, a_ycur - 14.0,   80.0);
+      glVertex3f (a_xcur +  14.0, a_ycur - 20.0,   80.0);
+      glVertex3f (a_xcur +   8.0, a_ycur - 26.0,   80.0);
    } glEnd();
 }
 
@@ -380,7 +375,7 @@ OPENGL_show        (void)
    /*> x_mode = yVIKEYS_mode ();                                                      <*/
    DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("x_modesave", x_modesave);
-   /*> x_stat = yVIKEYS_view_showing (YVIKEYS_STATUS);                                <*/
+   x_stat = yVIEW_showing (YVIEW_STATUS);
    DEBUG_GRAF   yLOG_char     ("x_stat"    , x_stat);
    DEBUG_GRAF   yLOG_char     ("x_statsave", x_statsave);
    /*> x_help = yVIKEYS_help ();                                                      <*/
@@ -438,86 +433,198 @@ OPENGL__base       (char  a_value)
 {
    DEBUG_GRAF   yLOG_senter   (__FUNCTION__);
    DEBUG_GRAF   yLOG_sint     (a_value);
-   switch (a_value) {
-   case '<' :
-      glColor3f (  1.000,  0.700,  0.700);
-      break;
-   case 'o' :
-      glColor3f (  0.700,  1.000,  0.700);
-      break;
-   case '>' :
-      glColor3f (  0.700,  0.700,  1.000);
-      break;
-   case '#' :
-      glColor3f (  0.700,  0.450,  0.250);
-      break;
-   case 'x' :
-      glColor3f (  0.500,  0.500,  0.500);
-      break;
-   case '·' :
-      glColor3f (  0.800,  0.800,  0.000);
-      break;
-   default  :
-      glColor3f (  0.700,  0.700,  0.700);
-      break;
-   }
+   /*---(back)---------------------------*/
+   glColor4f (  1.000,  1.000,  1.000,  1.000);
    glBegin(GL_POLYGON); {
-      glVertex3f (      0.0,        0.0,   -1.0);
-      glVertex3f (my.c_wide,        0.0,   -1.0);
-      glVertex3f (my.c_wide, -my.r_tall,   -1.0);
-      glVertex3f (      0.0, -my.r_tall,   -1.0);
+      glVertex3f (      0.0,        0.0,  -10.0);
+      glVertex3f (my.c_wide,        0.0,  -10.0);
+      glVertex3f (my.c_wide, -my.r_tall,  -10.0);
+      glVertex3f (      0.0, -my.r_tall,  -10.0);
    } glEnd();
+   /*---(aesthetic tint)-----------------*/
+   OPENGL__colors  (my.urgs, a_value, 0.3);
+   glBegin(GL_POLYGON); {
+      glVertex3f (      0.0,        0.0,  -10.0);
+      glVertex3f (my.c_wide,        0.0,  -10.0);
+      glVertex3f (my.c_wide, -my.r_tall,  -10.0);
+      glVertex3f (      0.0, -my.r_tall,  -10.0);
+   } glEnd();
+   /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_sexit    (__FUNCTION__);
    return 0;
 }
 
-/*                              ---top/left--------- ---top/right-------- ---bot/right-------- ---bot/left--------- */
-static float   s_urg_bg [12] = {   0.0,   0.0,   0.0, 300.0,   0.0,   0.0, 300.0, -17.0,   0.0,   0.0, -17.0,   0.0, };
-static float   s_urg_fg [12] = {   0.0,  -2.0,   2.0, 300.0,  -2.0,  12.0, 300.0, -15.0,   2.0,   0.0, -15.0,   2.0, };
-
 char
-OPENGL__urg             (char  a_value)
+OPENGL__urg             (char  a_value, int z)
 {
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (  0.000,  0.000,  0.000,  1.000);
-   OPENGL__polygon (s_urg_bg);
-   OPENGL__colors  (my.urgs, a_value);
-   OPENGL__polygon (s_urg_fg);
+   glBegin(GL_POLYGON); {
+      glVertex3f (  0.0,   0.0, z + 0.0);
+      glVertex3f (300.0,   0.0, z + 0.0);
+      glVertex3f (300.0, -17.0, z + 0.0);
+      glVertex3f (  0.0, -17.0, z + 0.0);
+   } glEnd();
+   OPENGL__colors  (my.urgs, a_value, 1.0);
+   glBegin(GL_POLYGON); {
+      glVertex3f (  2.0,  -2.0, z + 5.0);
+      glVertex3f (298.0,  -2.0, z + 5.0);
+      glVertex3f (298.0, -15.0, z + 5.0);
+      glVertex3f (  2.0, -15.0, z + 5.0);
+   } glEnd();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
-
-/*                              ---top/left--------- ---top/right-------- ---bot/right-------- ---bot/left--------- */
-static float   s_imp_sh [12] = {   0.0,   0.0,  10.0,  25.0,   0.0,  10.0,  25.0, -22.5,  10.0,   0.0, -22.5,  10.0, };
-static float   s_imp_bg [12] = {   0.0, -22.5,  10.0,  25.0,   0.0,  10.0,  70.0, -45.0,  10.0,  23.0, -45.0,  10.0, };
-static float   s_imp_fg [12] = {   0.0,   0.0,  12.0,  22.0,   0.0,  12.0,  67.0, -45.0,  12.0,  45.0, -45.0,  12.0, };
-
 char
-OPENGL__imp             (char  a_value)
+OPENGL__imp             (char  a_value, int z)
 {
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (  0.000,  0.000,  0.000,  1.000);
-   OPENGL__polygon (s_imp_bg);
-   OPENGL__polygon (s_imp_sh);
-   OPENGL__colors  (my.imps, a_value);
-   OPENGL__polygon (s_imp_fg);
+   glBegin(GL_POLYGON); {
+      glVertex3f (  0.0,   0.0, z + 0.0);
+      glVertex3f ( 25.0,   0.0, z + 0.0);
+      glVertex3f ( 70.0, -45.0, z + 0.0);
+      glVertex3f ( 20.0, -45.0, z + 0.0);
+      glVertex3f (  0.0, -25.0, z + 0.0);
+   } glEnd();
+   OPENGL__colors  (my.imps, a_value, 1.0);
+   glBegin(GL_POLYGON); {
+      glVertex3f (  2.0,  -2.0, z + 5.0);
+      glVertex3f ( 23.0,  -2.0, z + 5.0);
+      glVertex3f ( 65.0, -43.0, z + 5.0);
+      glVertex3f ( 43.0, -43.0, z + 5.0);
+   } glEnd();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
-/*                              ---top/left--------- ---top/right-------- ---bot/right-------- ---bot/left--------- */
-static float   s_est_bg [12] = {  30.0, -15.0,   5.0,  58.0, -15.0,   5.0,  58.0, -45.0,   5.0,  30.0, -45.0,   5.0, };
-static float   s_est_fg [12] = {   0.0, -17.0,   7.0,  56.0, -17.0,   7.0,  56.0, -45.0,   7.0,   0.0, -45.0,   7.0, };
-
 char
-OPENGL__est    (char  a_value)
+OPENGL__est    (char  a_value, int z)
 {
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (0.0, 0.0, 0.0, 1.0);
-   OPENGL__polygon (s_est_bg);
-   OPENGL__colors  (my.ests, a_value);
-   OPENGL__polygon (s_est_fg);
+   glBegin(GL_POLYGON); {
+      glVertex3f (  0.0, -15.0, z + 0.0);
+      glVertex3f ( 57.0, -15.0, z + 0.0);
+      glVertex3f ( 57.0, -45.0, z + 0.0);
+      glVertex3f (  0.0, -45.0, z + 0.0);
+   } glEnd();
+   OPENGL__colors  (my.ests, a_value, 1.0);
+   glBegin(GL_POLYGON); {
+      glVertex3f (  2.0, -17.0, z + 5.0);
+      glVertex3f ( 55.0, -17.0, z + 5.0);
+      glVertex3f ( 55.0, -43.0, z + 5.0);
+      glVertex3f (  2.0, -43.0, z + 5.0);
+   } glEnd();
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+OPENGL__prg    (char  a_value, int z)
+{
+   int         i           =    0;
+   int         y           =    0;
+   int         n           =    0;
+   char        t           [LEN_TERSE] = "";
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   glColor4f (0.0, 0.0, 0.0, 1.0);
+   glPushMatrix(); {
+      glTranslatef( 285.0, -15.0,  20.0);
+      glBegin(GL_POLYGON); {
+         glVertex3f(    0.0,    0.0, z + 0.0);
+         glVertex3f(   15.0,    0.0, z + 0.0);
+         glVertex3f(   15.0,  -30.0, z + 0.0);
+         glVertex3f(    0.0,  -30.0, z + 0.0);
+      } glEnd();
+   } glPopMatrix();
+   switch (a_value) {
+   case '·' :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
+   case '-' :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
+   case '<' :  glColor4f (0.60, 0.60, 0.60, 1.00);   break;
+   case 'o' :  glColor4f (0.45, 0.45, 0.45, 1.00);   break;
+   case '>' :  glColor4f (0.25, 0.25, 0.25, 1.00);   break;
+   case '#' :  glColor4f (0.00, 0.00, 0.00, 1.00);   break;
+   case 'x' :  glColor4f (0.00, 0.00, 0.50, 1.00);   break;
+   case 'd' :  glColor4f (0.50, 0.00, 0.00, 1.00);   break;
+   default  :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
+   }
+   glPushMatrix(); {
+      glTranslatef( 287.0, -17.0,  40.0);
+      glBegin(GL_POLYGON); {
+         glVertex3f(    0.0,    0.0, z + 5.0);
+         glVertex3f(   11.0,    0.0, z + 5.0);
+         glVertex3f(   11.0,  -26.0, z + 5.0);
+         glVertex3f(    0.0,  -26.0, z + 5.0);
+      } glEnd();
+   } glPopMatrix();
+   switch (a_value) {
+   case '·' : case '-' : case '<' : case 'o' :
+      glColor4f (0.00, 0.00, 0.00, 1.00);   break;
+   case '>' : case '#' : case 'x' :
+      glColor4f (1.00, 1.00, 1.00, 1.00);   break;
+   default  :
+      glColor4f (1.00, 1.00, 1.00, 1.00);   break;
+   }
+   glPushMatrix(); {
+      glTranslatef( 292.0, -25.0, 80.0);
+      snprintf (t, 4, "%c", a_value);
+      yFONT_print (my.pretty,  8, YF_BASCEN, t);
+   } glPopMatrix();
+   /*> glColor4f (0.0, 0.0, 0.0, 1.0);                                                <* 
+    *> for (i = 0; i < 3; ++i) {                                                      <* 
+    *>    y = -22 - (8 * i);                                                          <* 
+    *>    glPushMatrix(); {                                                           <* 
+    *>       glTranslatef( 293.0, y,  20.0);                                          <* 
+    *>       glBegin(GL_POLYGON); {                                                   <* 
+    *>          glVertex3f(   -3.0,    0.0,    0.0);                                  <* 
+    *>          glVertex3f(    0.0,    3.0,    0.0);                                  <* 
+    *>          glVertex3f(    3.0,    0.0,    0.0);                                  <* 
+    *>          glVertex3f(    0.0,   -3.0,    0.0);                                  <* 
+    *>       } glEnd();                                                               <* 
+    *>    } glPopMatrix();                                                            <* 
+    *> }                                                                              <*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+OPENGL__age    (int  a_value, int z)
+{
+   int         x_age       =    0;
+   char        x_unit      =  '-';
+   char        t           [LEN_TERSE] = "";
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   if (a_value == 0)  {
+      strcpy (t, "??");
+   } else {
+      x_age = 0;
+      x_age = my.runtime - a_value;
+      x_unit = 's';
+      if (x_age >= 60) {
+         x_age /= 60; x_unit = 'm';
+         if (x_age >= 60) {
+            x_age /= 60; x_unit = 'h';
+            if (x_age >= 24) {
+               x_age /= 24; x_unit = 'd';
+               if (x_age > 30) {
+                  x_age /= 30; x_unit = 'm';
+                  if (x_age >= 12) {
+                     x_age /= 12; x_unit = 'y';
+                     if (x_age > 99) { x_age  = 99; x_unit = '!'; }
+                  }
+               }
+            }
+         }
+      }
+      sprintf (t, "%2d%c", x_age, x_unit);
+   }
+   glColor4f (0.0, 0.0, 0.0, 1.0);
+   glPushMatrix(); {
+      glTranslatef( 282.0, -35.0, 80.0);
+      yFONT_print (my.pretty,  6, YF_BASRIG, t);
+   } glPopMatrix();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -554,7 +661,7 @@ OPENGL__text            (int a_index, char *a_major, char *a_minor, char *a_text
    glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      glTranslatef (  53.0,  -8.0,  40.0);
+      glTranslatef (  53.0,  -9.0,  40.0);
       glTranslatef (   0.0, txf_off,   0.0);
       if (a_index >= 0) {
          snprintf (temp, 10, "%d", a_index + 1);
@@ -564,10 +671,11 @@ OPENGL__text            (int a_index, char *a_major, char *a_minor, char *a_text
       yFONT_print  (my.pretty,  8, YF_MIDCEN, a_major);
       glTranslatef ( 105.0,   0,   0);
       yFONT_print  (my.pretty,  8, YF_MIDCEN, a_minor);
-      glTranslatef (-160.0, -10.0,   0.0);
+      /*> glTranslatef (-160.0, -10.0,   0.0);                                        <*/
+      glTranslatef (-160.0, -18.0,   0.0);
       glTranslatef (   0.0, txf_off - 1.0,   0.0);
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      yFONT_printw (my.pretty,  8, YF_TOPLEF, a_text, 205, 35, txf_space);
+      yFONT_printw (my.pretty,  8, YF_TOPLEF, a_text, 195, 35, txf_space);
    } glPopMatrix();
    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    return 0;
@@ -580,7 +688,7 @@ OPENGL__cats            (char a_urg, char a_imp, char a_est, char a_prg)
    glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      glTranslatef(  21.0, -15.0,  40.0);
+      glTranslatef(  21.0,  -6.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
       snprintf (temp, 4, "%c", a_urg);
       yFONT_print (my.pretty,  9, YF_BASCEN, temp);
@@ -590,9 +698,10 @@ OPENGL__cats            (char a_urg, char a_imp, char a_est, char a_prg)
       glTranslatef(  12.0, -12.0,   0.0);
       snprintf (temp, 4, "%c", a_est);
       yFONT_print (my.pretty,  9, YF_BASCEN, temp);
-      glTranslatef( 247.0,   2.0,   0.0);
-      snprintf (temp, 4, "%c", a_prg);
-      yFONT_print (my.pretty,  8, YF_MIDCEN, temp);
+      /*> glTranslatef( 247.0,   0.0,   0.0);                                         <* 
+       *> snprintf (temp, 4, "%c", a_prg);                                            <* 
+       *> snprintf (temp, 4, "%c", 'X');                                              <* 
+       *> yFONT_print (my.pretty,  9, YF_BASCEN, temp);                               <*/
    } glPopMatrix();
    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    return 0;
@@ -725,10 +834,12 @@ OPENGL__card     (int a_index)
       return rce;
    }
    /*> printf("draw = %2d\n", a_index);                                               <*/
-   OPENGL__base    (g_tasks [a_index].prg);
-   OPENGL__urg     (g_tasks [a_index].urg);
-   OPENGL__est     (g_tasks [a_index].est);
-   OPENGL__imp     (g_tasks [a_index].imp);
+   OPENGL__base    (g_tasks [a_index].urg);
+   OPENGL__urg     (g_tasks [a_index].urg,  0);
+   OPENGL__est     (g_tasks [a_index].est, 10);
+   OPENGL__imp     (g_tasks [a_index].imp, 20);
+   OPENGL__prg     (g_tasks [a_index].prg, 20);
+   OPENGL__age     (g_tasks [a_index].beg, 20);
    OPENGL__bullets ();
    OPENGL__text    (a_index, g_tasks [a_index].one, g_tasks [a_index].two, g_tasks [a_index].txt);
    OPENGL__cats    (g_tasks [a_index].urg, g_tasks [a_index].imp, g_tasks [a_index].est, g_tasks [a_index].prg);
@@ -841,26 +952,26 @@ OPENGL_normal      (void)
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(debugging)----------------------*/
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
-   DEBUG_GRAF   yLOG_value    ("my.tcols"  , my.tcols);
-   DEBUG_GRAF   yLOG_value    ("my.trows"  , my.trows);
+   DEBUG_GRAF   yLOG_value    ("TCOLS"  , TCOLS);
+   DEBUG_GRAF   yLOG_value    ("TROWS"  , TROWS);
    /*---(draw)---------------------------*/
    switch (my.format) {
    case FORMAT_TICKER   : case FORMAT_BASELINE :
-      OPENGL__colrow (my.tcols, my.c_offset,   0.0);
+      OPENGL__colrow (TCOLS, my.c_offset,   0.0);
       break;
    case FORMAT_RSHORT   : case FORMAT_LSHORT   :
    case FORMAT_RLONG    : case FORMAT_LLONG    :
    case FORMAT_STREAMER :
-      OPENGL__colrow (my.trows,   0.0, -my.r_offset);
+      OPENGL__colrow (TROWS,   0.0, -my.r_offset);
       break;
    case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
       glPushMatrix(); {
-         for (j = 0; j < my.wcols; ++j) {
+         for (j = 0; j < WCOLS; ++j) {
             glPushMatrix(); {
-               for (i = 0; i < my.wrows; ++i) {
-                  n = format_check (my.ccol + j + 1, i + 1);
+               for (i = 0; i < WROWS; ++i) {
+                  n = format_check (CCOL + j + 1, i + 1);
                   if (n < 0)  continue;
-                  g_tasks [n].pos = j * my.wrows + i;
+                  g_tasks [n].pos = j * WROWS + i;
                   g_tasks [n].x   = x_pos;
                   g_tasks [n].y   = y_pos;
                   g_tasks [n].col = j;
@@ -921,12 +1032,12 @@ OPENGL_help_one         (char a_type, int a_col)
          sprintf (x_text, "%s, %s", x_label, x_desc);
          if (a_type == 'p')   OPENGL__base    (x_abbr);
          else                 OPENGL__base    (0);
-         if (a_type == 'u')   OPENGL__urg     (x_abbr);
-         else                 OPENGL__urg     (0);
-         if (a_type == 'i')   OPENGL__imp     (x_abbr);
-         else                 OPENGL__imp     (0);
-         if (a_type == 'e')   OPENGL__est     (x_abbr);
-         else                 OPENGL__est     (0);
+         if (a_type == 'u')   OPENGL__urg     (x_abbr,  0);
+         else                 OPENGL__urg     (0     ,  0);
+         if (a_type == 'e')   OPENGL__est     (x_abbr, 10);
+         else                 OPENGL__est     (0     , 10);
+         if (a_type == 'i')   OPENGL__imp     (x_abbr, 20);
+         else                 OPENGL__imp     (0     , 20);
          OPENGL__bullets ();
          OPENGL__text    (-1, x_major, x_label, x_text);
          switch (a_type) {
@@ -982,7 +1093,8 @@ OPENGL_draw        (void)
       break;
    }
    /*---(mipmaps)------------------------*/
-   yGLTEX_done (my.g_tex);
+   /*> yGLTEX_tex2png ("/tmp/metis.png", my.t_wide, my.t_tall);                       <*/
+   yGLTEX_done    (my.g_tex);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -1022,8 +1134,8 @@ OPENGL_mask             (void)
    DEBUG_GRAF   yLOG_char     ("g_major"   , g_major);
    DEBUG_GRAF   yLOG_char     ("g_minor"   , g_minor);
    DEBUG_GRAF   yLOG_char     ("my.format" , my.format);
-   DEBUG_GRAF   yLOG_value    ("my.wcols"  , my.wcols);
-   DEBUG_GRAF   yLOG_value    ("my.wrows"  , my.wrows);
+   DEBUG_GRAF   yLOG_value    ("WCOLS"  , WCOLS);
+   DEBUG_GRAF   yLOG_value    ("WROWS"  , WROWS);
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
    /*> x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);   <*/
    DEBUG_GRAF   yLOG_char     ("x_status"  , x_status);
@@ -1062,12 +1174,12 @@ OPENGL_mask             (void)
    else {
       switch (my.format) {
       case FORMAT_TICKER   : case FORMAT_BASELINE :
-         x_max = my.wcols + my.c_over;
+         x_max = WCOLS + my.c_over;
          if (x_max >= my.nact)  x_max = my.nact;
          for (i = 0; i < x_max; ++i)  XFillRectangle (YX_DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
          break;
       case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
-         x_max = my.wrows;
+         x_max = WROWS;
          if (x_max >= my.nact)  x_max = my.nact;
          DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
          for (i = 0; i < x_max; ++i) {
@@ -1075,7 +1187,7 @@ OPENGL_mask             (void)
          }
          break;
       case FORMAT_STREAMER :
-         x_max = my.wrows + my.r_over;
+         x_max = WROWS + my.r_over;
          if (x_max >= my.nact)  x_max = my.nact;
          DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
          for (i = 0; i < x_max; ++i) {
@@ -1083,9 +1195,9 @@ OPENGL_mask             (void)
          }
          break;
       case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
-         for (j = 0; j < (my.wcols + my.c_over); ++j) {
-            for (i = 0; i < (my.wrows + my.r_over); ++i) {
-               if (format_check (my.bcol + j + 1, i + 1) < 0)  continue;
+         for (j = 0; j < (WCOLS + my.c_over); ++j) {
+            for (i = 0; i < (WROWS + my.r_over); ++i) {
+               if (format_check (BCOL + j + 1, i + 1) < 0)  continue;
                XFillRectangle(YX_DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
             }
          }
@@ -1098,9 +1210,9 @@ OPENGL_mask             (void)
       XFillRectangle (YX_DISP, bounds, gc, my.w_wide / 2 - 140, 40, 280, 200);
    }
    /*---(check for status bar)-----------*/
-   /*> if (yVIKEYS_view_showing (YVIKEYS_STATUS)) {                                    <* 
-    *>    XFillRectangle (YX_DISP, bounds, gc, 0.0, my.w_ftall - 15, my.w_wide, 15);   <* 
-    *> }                                                                               <*/
+   if (yVIEW_showing (YVIEW_STATUS)) {
+      XFillRectangle (YX_DISP, bounds, gc, 0.0, my.w_ftall - 15, my.w_wide, 15);
+   }
    /*---(set mask)-----------------------*/
    XShapeCombineMask (YX_DISP, YX_BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/
@@ -1132,7 +1244,7 @@ OPENGL__unit       (char *a_question, int a_num)
       snprintf (unit_answer, LEN_FULL, "OPENGL pos  (%2d) : %c %4dp %4dx %4dy %4dc %4dr", a_num, g_tasks [a_num].act, g_tasks [a_num].pos, g_tasks [a_num].x, g_tasks [a_num].y, g_tasks [a_num].col, g_tasks [a_num].row);
    }
    else if (strcmp (a_question, "current"       ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "OPENGL curr      : row %3db %3dc %3de, col %3db %3dc %3de", my.brow, my.crow, my.erow, my.bcol, my.ccol, my.ecol);
+      snprintf (unit_answer, LEN_FULL, "OPENGL curr      : row %3db %3dc %3de, col %3db %3dc %3de", BROW, CROW, EROW, BCOL, CCOL, ECOL);
    }
    /*---(complete)-----------------------*/
    return unit_answer;

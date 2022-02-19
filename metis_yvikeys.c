@@ -1,12 +1,9 @@
 #include   "metis.h"
 
 
-/*===[[ METIS BACKLOG ]]======================================================*/
-
 /*
- * metis  dw4·  create a x_mapper for columnar formats and movement
- * metis  dw4·  create a x_mapper for columnar formats and movement
- *
+ * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
+ * metis § dn2#Ï § get positioning working with wmctrl again                                § 1645047883 § 1645055000 §
  */
 
 
@@ -25,15 +22,14 @@ api_yvikeys__resize     (char a_startup)
       DEBUG_GRAF   yLOG_complex ("screen"    , "%4dw, %4dt", my.s_wide, my.s_tall);
       sleep (1);
    } else {
-      /*> yVIKEYS_view_resize   (my.w_wide, my.w_tall, 0);                            <*/
+      yVIEW_resize   (my.w_wide, my.w_tall, 0);
    }
    /*---(size parts)---------------------*/
-   yVIEW_full (YVIEW_MAIN , YVIEW_FLAT, YVIEW_TOPLEF,  1, 0, OPENGL_show);
    /*> yVIKEYS_view_setup    (YVIKEYS_FLOAT, YVIKEYS_FLAT, YVIKEYS_TOPCEN,  10, 280      , -35.0 - my.m_offset, 20       , 0, 0, 0, NULL);   <*/
    /*> yVIKEYS_view_setup    (YVIKEYS_MENUS, YVIKEYS_FLAT, YVIKEYS_TOPCEN,   0,   0      , 0                  , 0        , 0, 0, 0, NULL);   <*/
    /*---(call placement)-----------------*/
    DEBUG_GRAF   yLOG_complex ("placement" , "%4dl, %4dt", my.w_left, my.w_topp);
-   sprintf (x_cmd, "wmctrl -r 'metis_tasklist' -e 0,%d,%d,-1,-1", my.w_left, my.w_topp);
+   sprintf (x_cmd, "wmctrl -r 'metis-okeanides' -e 0,%d,%d,-1,-1", my.w_left, my.w_topp);
    system  (x_cmd);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
@@ -51,29 +47,29 @@ api_yvikeys_init        (void)
    DEBUG_GRAF   yLOG_enter   (__FUNCTION__);
    /*---(window)-------------------------*/
    api_yvikeys__resize   ('y');
-   /*> yVIKEYS_cmds_direct   (":layout min");                                                                    <* 
-    *> yVIKEYS_cmds_direct   (":status show");                                                                   <* 
-    *> yVIKEYS_cmds_direct   (":modes show");                                                                    <* 
-    *> yVIKEYS_cmds_direct   (":title disable");                                                                 <* 
-    *> yVIKEYS_cmds_direct   (":version disable");                                                               <* 
-    *> yVIKEYS_cmds_direct   (":buffer disable");                                                                <* 
-    *> yVIKEYS_cmds_direct   (":formula disable");                                                               <* 
-    *> yVIKEYS_cmds_direct   (":nav disable");                                                                   <* 
-    *> yVIKEYS_cmds_direct   (":alt disable");                                                                   <* 
-    *> yVIKEYS_cmds_direct   (":progress disable");                                                              <* 
-    *> yVIKEYS_cmds_direct   (":keys disable");                                                                  <* 
-    *> yVIKEYS_cmds_direct   (":command disable");                                                               <* 
-    *> yVIKEYS_cmds_direct   (":details disable");                                                               <* 
-    *> yVIKEYS_cmds_direct   (":ribbon disable");                                                                <* 
-    *> yVIKEYS_cmds_direct   (":grid disable");                                                                  <* 
-    *> yVIKEYS_cmds_direct   (":cursor disable");                                                                <* 
-    *> yVIKEYS_cmds_direct   (":layers disable");                                                                <* 
-    *> yVIKEYS_cmds_direct   (":xaxis disable");                                                                 <* 
-    *> yVIKEYS_cmds_direct   (":yaxis disable");                                                                 <* 
-    *> yVIKEYS_view_font     (my.fixed);                                                                         <* 
-    *> yVIKEYS_map_config    (YVIKEYS_OFFICE, api_yvikeys_mapper, api_yvikeys_locator, api_yvikeys_addressor);   <* 
-    *> yVIKEYS_cmds_direct   (":palette 100 rcomp pale earthy");                                                 <* 
-    *> yVIKEYS_view_colors   (YCOLOR_POS, YCOLOR_BAS, YCOLOR_NEG, YCOLOR_POS);                                   <*/
+   /*> yVIKEYS_cmds_direct   (":layout min");                                         <* 
+    *> yVIKEYS_cmds_direct   (":status show");                                        <* 
+    *> yVIKEYS_cmds_direct   (":modes show");                                         <* 
+    *> yVIKEYS_cmds_direct   (":title disable");                                      <* 
+    *> yVIKEYS_cmds_direct   (":version disable");                                    <* 
+    *> yVIKEYS_cmds_direct   (":buffer disable");                                     <* 
+    *> yVIKEYS_cmds_direct   (":formula disable");                                    <* 
+    *> yVIKEYS_cmds_direct   (":nav disable");                                        <* 
+    *> yVIKEYS_cmds_direct   (":alt disable");                                        <* 
+    *> yVIKEYS_cmds_direct   (":progress disable");                                   <* 
+    *> yVIKEYS_cmds_direct   (":keys disable");                                       <* 
+    *> yVIKEYS_cmds_direct   (":command disable");                                    <* 
+    *> yVIKEYS_cmds_direct   (":details disable");                                    <* 
+    *> yVIKEYS_cmds_direct   (":ribbon disable");                                     <* 
+    *> yVIKEYS_cmds_direct   (":grid disable");                                       <* 
+    *> yVIKEYS_cmds_direct   (":cursor disable");                                     <* 
+    *> yVIKEYS_cmds_direct   (":layers disable");                                     <* 
+    *> yVIKEYS_cmds_direct   (":xaxis disable");                                      <* 
+    *> yVIKEYS_cmds_direct   (":yaxis disable");                                      <* 
+    *> yVIKEYS_view_font     (my.fixed);                                              <*/
+   yMAP_config    (YMAP_OFFICE, api_ymap_locator, api_ymap_addressor, api_ymap_sizer, api_ymap_entry, api_ymap_placer, api_ymap_done);
+   /*> yVIKEYS_cmds_direct   (":palette 100 rcomp pale earthy");                      <*/
+   /*> yVIKEYS_view_colors   (YCOLOR_POS, YCOLOR_BAS, YCOLOR_NEG, YCOLOR_POS);        <*/
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -181,45 +177,33 @@ static void  o___MAPPING_________o () { return; }
  *>    return  0;                                                                                         <* 
  *> }                                                                                                     <*/
 
-/*> char                                                                                                 <* 
- *> api_yvikeys_mapper      (char a_req)                                                                 <* 
- *> {                                                                                                    <* 
- *>    /+---(header)-------------------------+/                                                          <* 
- *>    DEBUG_MAP    yLOG_enter   (__FUNCTION__);                                                         <* 
- *>    /+> yVIKEYS_view_size     (YVIKEYS_MAIN, NULL, &g_xmap.avail, NULL, &g_ymap.avail, NULL);   <+/   <* 
- *>    my.bcol = g_xmap.ubeg;                                                                            <* 
- *>    my.ccol = g_xmap.ucur;                                                                            <* 
- *>    my.ecol = g_xmap.uend;                                                                            <* 
- *>    my.brow = g_ymap.ubeg;                                                                            <* 
- *>    my.crow = g_ymap.ucur;                                                                            <* 
- *>    my.erow = g_ymap.uend;                                                                            <* 
- *>    api_yvikeys__unmap (&g_bmap);                                                                     <* 
- *>    if (strchr (FORMAT_TICKERS, my.format) != NULL) {                                                 <* 
- *>       api_yvikeys__linear (a_req, &g_xmap, my.ncols, my.wcols);                                      <* 
- *>       api_yvikeys__unmap  (&g_ymap);                                                                 <* 
- *>    } else if (strchr (FORMAT_COLUMNS, my.format) != NULL) {                                          <* 
- *>       api_yvikeys__unmap  (&g_xmap);                                                                 <* 
- *>       api_yvikeys__linear (a_req, &g_ymap, my.nrows, my.wrows);                                      <* 
- *>    } else {                                                                                          <* 
- *>       api_yvikeys__linear (a_req, &g_xmap, my.ncols, my.wcols);                                      <* 
- *>       api_yvikeys__linear (a_req, &g_ymap, my.nrows, my.wrows);                                      <* 
- *>    }                                                                                                 <* 
- *>    api_yvikeys__unmap (&g_zmap);                                                                     <* 
- *>    /+---(complete)-----------------------+/                                                          <* 
- *>    DEBUG_MAP    yLOG_exit    (__FUNCTION__);                                                         <* 
- *>    return 0;                                                                                         <* 
- *> }                                                                                                    <*/
-
-char         /*-> break label into coordinates -------[ ------ [gc.722.112.13]*/ /*-[01.0000.304.#]-*/ /*-[--.---.---.--]-*/
-api_yvikeys_locator     (char *a_label, int *a_buf, int *a_x, int *a_y, int *a_z)
+char
+api_yvikeys_mapper      (char a_req)
 {
-   return -1;  /* -1 means not recognized as an address */
-}
-
-char         /*-> return address for coordinates -----[ ------ [gc.722.112.13]*/ /*-[01.0000.304.#]-*/ /*-[--.---.---.--]-*/
-api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z)
-{
-   return -1;  /* -1 means not recognized as an address */
+   /*---(header)-------------------------*/
+   DEBUG_MAP    yLOG_enter   (__FUNCTION__);
+   /*> yVIKEYS_view_size     (YVIKEYS_MAIN, NULL, &g_xmap.avail, NULL, &g_ymap.avail, NULL);   <*/
+   /*> BCOL = g_xmap.ubeg;                                                         <* 
+    *> CCOL = g_xmap.ucur;                                                         <* 
+    *> ECOL = g_xmap.uend;                                                         <* 
+    *> BROW = g_ymap.ubeg;                                                         <* 
+    *> CROW = g_ymap.ucur;                                                         <* 
+    *> EROW = g_ymap.uend;                                                         <* 
+    *> api_yvikeys__unmap (&g_bmap);                                                  <* 
+    *> if (strchr (FORMAT_TICKERS, my.format) != NULL) {                              <* 
+    *>    api_yvikeys__linear (a_req, &g_xmap, NCOLS, WCOLS);                   <* 
+    *>    api_yvikeys__unmap  (&g_ymap);                                              <* 
+    *> } else if (strchr (FORMAT_COLUMNS, my.format) != NULL) {                       <* 
+    *>    api_yvikeys__unmap  (&g_xmap);                                              <* 
+    *>    api_yvikeys__linear (a_req, &g_ymap, NROWS, WROWS);                   <* 
+    *> } else {                                                                       <* 
+    *>    api_yvikeys__linear (a_req, &g_xmap, NCOLS, WCOLS);                   <* 
+    *>    api_yvikeys__linear (a_req, &g_ymap, NROWS, WROWS);                   <* 
+    *> }                                                                              <* 
+    *> api_yvikeys__unmap (&g_zmap);                                                  <*/
+   /*---(complete)-----------------------*/
+   DEBUG_MAP    yLOG_exit    (__FUNCTION__);
+   return 0;
 }
 
 
@@ -248,7 +232,7 @@ api_yvikeys_sort        (char *a_how)
    /*> FILTER_refresh ();                                                             <*/
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
    OPENGL_draw ();
-   OPENGL_mask();
+   /*> OPENGL_mask();                                                                 <*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -273,7 +257,7 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    FILTER_refresh ();
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
    OPENGL_draw ();
-   OPENGL_mask();
+   /*> OPENGL_mask();                                                                 <*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -313,11 +297,11 @@ api_yvikeys_window      (char *a_format)
    FILTER_refresh ();
    x_save = my.format;
    FORMAT_refresh ();
-   api_yvikeys__resize   ('-');
+   api_yvikeys__resize ('-');
    /*> yVIKEYS_map_refresh ();                                                        <*/
    /*> api_yvikeys_mapper  (YVIKEYS_INIT);                                            <*/
    OPENGL_draw ();
-   OPENGL_mask();
+   /*> OPENGL_mask();                                                                 <*/
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -326,13 +310,16 @@ api_yvikeys_window      (char *a_format)
 char
 api_yvikeys_refresh     (void)
 {
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    DATA_refresh   ();
    SORT_refresh   ();
    FILTER_refresh ();
    FORMAT_refresh ();
+   api_yvikeys__resize ('-');
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
    OPENGL_draw    ();
-   OPENGL_mask    ();
+   /*> OPENGL_mask    ();                                                             <*/
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 

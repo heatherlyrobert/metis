@@ -69,7 +69,6 @@ metis_rptg__header      (void)
    return 0;
 }
 
-
 char
 metis_inventory         (void)
 {
@@ -77,13 +76,13 @@ metis_inventory         (void)
    if (s_opt == METIS_REPORT) {
       metis_rptg__header ();
       printf ("#@ x-parse   åÏ--·Ï-------------------·Ï-------------------·Ï·Ï·Ï·Ï·Ï-----------------------------------------------------------·Ï-------------------·Ï---æ\n");
-      printf ("#@ titles    åseq·category_one·········category_two·········u·i·e·p·detail·······················································source···············lineæ\n");
+      printf ("#@ titles    åseq·category·one·········category·two·········u·i·e·p·task·detail··················································source···············lineæ\n");
       printf ("\n");
    }
    for (i = 0; i < g_ntask; ++i) {
       if (s_opt != METIS_DUMP) {
          if (i %  5 == 0 && i != 0)  printf ("\n");
-         if (i % 25 == 0)  printf ("#eq·category_one·········category_two·········u·i·e·p·detail·······················································source···············line\n\n");
+         if (i % 25 == 0)  printf ("#eq·category·one·········category·two·········u·i·e·p·task·detail··················································source···············line\n\n");
       }
       printf ("%3d %-20.20s %-20.20s %c %c %c %c %-60.60s %-20.20s %4d\n",
             g_tasks [i].seq, g_tasks [i].one, g_tasks [i].two,

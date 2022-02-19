@@ -3,8 +3,15 @@
 
 
 
-/*===[[ METIS BACKLOG ]]======================================================*
- * metis  dw2··  add data refresh command and menu item
+/*
+ * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
+ *
+ * metis § dw2#Ï § add data refresh command and check                                       § 1645047879 § 1645055000 §
+ * metis § dw2·· § add data refresh to menus                                                § 1645047880 § ·········· §
+ * metis § ww4-· § add mark to tasks so that they can be selected to a short list           § 1645047881 § ·········· §
+ * metis § ww4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y         § 1645047882 § ·········· §
+ * metis § ww4-· § add sharing flag to control database usage and marking                   § 1645047883 § ·········· §
+ * metis § wl4-· § switch beg and end dates to pseudo-mongo (6 chars)                       § 1645162236 § ·········· §
  *
  */
 
@@ -24,18 +31,16 @@ struct cDECODE {
 };
 const tDECODE g_decode   [] = {
    /*---(urgency)------------------------*/
-   { 'u', '*', "scheduled"   , "operates on a schedule or specifically called"                },
    { 'u', '!', "now-now"     , "drop everything and get it done before anything else"         },
-   { 'u', 'T', "today"       , "need it by end-of-day, or worst before work starts tomorrow"  },
-   { 'u', 'S', "soonest"     , "do your best to get it done soon, don't get distracted"       },
-   { 'u', 'D', "days"        , "complete in a couple of days, or at least this week"          },
+   { 'u', 't', "today"       , "need it by end-of-day, or worst before work starts tomorrow"  },
+   { 'u', 's', "soonest"     , "do your best to get it done soon, don't get distracted"       },
+   { 'u', 'd', "days"        , "complete in a couple of days, or at least this week"          },
    { 'u', 'w', "weeks"       , "complete in a couple weeks, or at least this month"           },
-   { 'u', 'm', "months"      , "complete in a couple months, or at least under a yaer"        },
+   { 'u', 'm', "months"      , "complete in a couple months, or at least under a year"        },
    { 'u', 'y', "years"       , "this task is long-term and is expected to by over a year"     },
    { 'u', '-', "backlog"     , "not been assigned an urgency"                                 },
-   { 'u', '·', "undefined"   , "not been assigned an urgency"                                 },
+   { 'u', '*', "scheduled"   , "operates on a schedule or specifically called"                },
    /*---(importance)---------------------*/
-   { 'i', '!', "now-now"     , "drop everything as this takes priority over anything else"    },
    { 'i', 'a', "absolute"    , "this is a true life or death for project, app, or me"         },
    { 'i', 'n', "need"        , "must be completed, fact it is required to meeet objective"    },
    { 'i', 'v', "value"       , "adds solid, logic additional value to the objective"          },
@@ -43,8 +48,7 @@ const tDECODE g_decode   [] = {
    { 'i', 'w', "want"        , "desired, but not absolutely needed, in the final product"     },
    { 'i', 'l', "like"        , "nice to have, but only if it comes unforced/naturally"        },
    { 'i', 'm', "might"       , "plausable, could be done, but there is no real push"          },
-   { 'i', '-', "backlog"     , "not been assigned an importance"                              },
-   { 'i', '·', "undefined"   , "not been assigned an importance"                              },
+   { 'i', '-', "unset"       , "not been assigned an importance"                              },
    /*---(estimate)-----------------------*/
    { 'e', '*', "huge"        , "longer than a full day of work"                               },
    { 'e', '8', "480m"        , "full day of work, or possibly until start of the next day"    },
@@ -55,15 +59,19 @@ const tDECODE g_decode   [] = {
    { 'e', 'q', "15m"         , "quick task that likely takes a little thought and prep"       },
    { 'e', '!', "5m"          , "very fast task to complete, likely without support or prep"   },
    { 'e', '-', "backlog"     , "not been assigned an estimate yet"                            },
-   { 'e', '·', "undefined"   , "not been assigned an estimate yet"                            },
    /*---(progress)-----------------------*/
-   { 'p', '·', "undefined"   , "work that has not been prepared or acted upon yet"            },
    { 'p', '-', "backlog"     , "work that has not been prepared or acted upon yet"            },
    { 'p', '<', "starting"    , "on longer tasks, indicates pre-work complete and task ready"  },
    { 'p', 'o', "active"      , "selected for today and/or working it right now"               },
    { 'p', '>', "checking"    , "on longer tasks, indicates post-work confirmation required"   },
    { 'p', '#', "done"        , "successfully completed and any checking done"                 },
    { 'p', 'x', "cancelled"   , "detiremened this effort is no longer necessary"               },
+   { 'p', 'd', "duplicate"   , "covered by another task, but maybe additional detail"         },
+   /*---(share)--------------------------*/
+   { 's', 'p', "primary"     , "keep on primary task list"                                    },
+   { 's', 'h', "private"     , "do not allow into shared database"                            },
+   { 's', '-', "shared"      , "allow to be picked up by shared database"                     },
+   { 's', 'Ï', "archived"    , "final check before deleting in source"                        },
    /*---(done)---------------------------*/
    {  0 ,  0 , ""            , ""                                                             },
 };
@@ -117,7 +125,10 @@ DATA__clear        (int a_num)
    g_tasks [a_num].imp      = '-';
    g_tasks [a_num].est      = '-';
    g_tasks [a_num].prg      = '-';
+   g_tasks [a_num].shr      = '-';
    g_tasks [a_num].txt [0]  = '\0';
+   /*> g_tasks [a_num].beg      =   0;                                                <*/
+   /*> g_tasks [a_num].end      =   0;                                                <*/
    /*---(source data)-----------------*/
    g_tasks [a_num].line     =  -1;
    g_tasks [a_num].seq      =  -1;
@@ -139,11 +150,12 @@ DATA_init               (void)
    char        i           =    0;
    char        t           [LEN_LABEL];
    /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    strlcpy (my.urgs, "", LEN_LABEL);
    strlcpy (my.imps, "", LEN_LABEL);
    strlcpy (my.ests, "", LEN_LABEL);
    strlcpy (my.prgs, "", LEN_LABEL);
+   strlcpy (my.shrs, "", LEN_LABEL);
    for (i = 0; i < MAX_DECODE; ++i) {
       if (g_decode [i].type == 0)                   break;
       sprintf (t, "%c", g_decode [i].abbr);
@@ -152,20 +164,22 @@ DATA_init               (void)
       case 'i' : strlcat (my.imps, t, LEN_LABEL);   break;
       case 'e' : strlcat (my.ests, t, LEN_LABEL);   break;
       case 'p' : strlcat (my.prgs, t, LEN_LABEL);   break;
+      case 's' : strlcat (my.shrs, t, LEN_LABEL);   break;
       }
    }
-   DEBUG_DATA   yLOG_info     ("my.urgs"   , my.urgs);
-   DEBUG_DATA   yLOG_info     ("my.imps"   , my.imps);
-   DEBUG_DATA   yLOG_info     ("my.ests"   , my.ests);
-   DEBUG_DATA   yLOG_info     ("my.prgs"   , my.prgs);
+   DEBUG_INPT   yLOG_info     ("my.urgs"   , my.urgs);
+   DEBUG_INPT   yLOG_info     ("my.imps"   , my.imps);
+   DEBUG_INPT   yLOG_info     ("my.ests"   , my.ests);
+   DEBUG_INPT   yLOG_info     ("my.prgs"   , my.prgs);
+   DEBUG_INPT   yLOG_info     ("my.shrs"   , my.shrs);
    for (i = 0; i < 100; ++i) {
       DATA__clear (i);
    }
    g_ntask  = 0;
    my.nact  = 0;
-   /*> yVIKEYS_cmds_add (YVIKEYS_M_FILE   , "refresh"     , ""    , ""     , api_yvikeys_refresh , ""                   );   <*/
+   yCMD_add (YCMD_M_FILE   , "refresh"     , "r"   , ""     , api_yvikeys_refresh , ""                   );
    /*> yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "dump"        , ""    , ""     , task_dump           , ""                   );   <*/
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -200,49 +214,65 @@ DATA__stats        (char *a_stats)
    char        rc          =    0;
    int         x_len       =    0;
    /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
-   DEBUG_DATA   yLOG_point    ("a_stats"   , a_stats);
+   DEBUG_INPT   yLOG_enter    (__FUNCTION__);
+   DEBUG_INPT   yLOG_point    ("a_stats"   , a_stats);
    --rce;  if (a_stats == NULL) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
    x_len = strlen (a_stats);
-   DEBUG_DATA   yLOG_value    ("x_len"     , x_len);
+   DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
    --rce;  if (x_len < 4 || x_len > 5) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
    /*---(urgency)-------------------------*/
    --rce;
-   if (strchr (my.urgs, a_stats [0]) != NULL)  g_tasks [g_ntask].urg = a_stats [0];
+   if      (a_stats [0] == '·')                     g_tasks [g_ntask].urg = '-';
+   else if (strchr (my.urgs, a_stats [0]) != NULL)  g_tasks [g_ntask].urg = a_stats [0];
    else  {
       g_tasks [g_ntask].urg = '?';
       rc = -rce;
    }
    /*---(importance)----------------------*/
    --rce;
-   if (strchr (my.imps, a_stats [1]) != NULL)  g_tasks [g_ntask].imp = a_stats [1];
+   if      (a_stats [1] == '·')                     g_tasks [g_ntask].imp = '-';
+   else if (strchr (my.imps, a_stats [1]) != NULL)  g_tasks [g_ntask].imp = a_stats [1];
    else  {
       g_tasks [g_ntask].imp = '?';
       rc = -rce;
    }
    /*---(progress)------------------------*/
    --rce;
-   if (strchr (my.ests, a_stats [2]) != NULL)  g_tasks [g_ntask].est = a_stats [2];
+   if      (a_stats [2] == '·')                     g_tasks [g_ntask].est = '-';
+   else if (strchr (my.ests, a_stats [2]) != NULL)  g_tasks [g_ntask].est = a_stats [2];
    else  {
       g_tasks [g_ntask].est = '?';
       rc = -rce;
    }
    /*---(tick/flag)-----------------------*/
    --rce;
-   if (strchr (my.prgs, a_stats [3]) != NULL)  g_tasks [g_ntask].prg = a_stats [3];
+   if      (a_stats [3] == '·')                     g_tasks [g_ntask].prg = '-';
+   else if (strchr (my.prgs, a_stats [3]) != NULL)  g_tasks [g_ntask].prg = a_stats [3];
    else  {
       g_tasks [g_ntask].prg = '?';
       rc = -rce;
    }
+   /*---(shares)--------------------------*/
+   --rce;
+   if      (a_stats [4] == '·')                     g_tasks [g_ntask].shr = '-';
+   else if (a_stats [4] == 'Ï') {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
+   else if (strchr (my.shrs, a_stats [4]) != NULL)  g_tasks [g_ntask].shr = a_stats [3];
+   else  {
+      g_tasks [g_ntask].shr = '?';
+      rc = -rce;
+   }
    /*---(complete)-----------------------*/
-   DEBUG_DATA   yLOG_value    ("rc"        , rc);
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   DEBUG_INPT   yLOG_value    ("rc"        , rc);
+   DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return rc;
 }
 
@@ -286,45 +316,69 @@ DATA__detail       (char *a_source, int a_line, char *a_recd)
    char        x_recd      [LEN_RECD];
    int         x_len       =    0;
    char       *p           = NULL;
-   char       *q           = "";
+   char       *q           = "§";
    /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
-   DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
-   DEBUG_DATA   yLOG_info     ("a_recd"    , a_recd);
+   DEBUG_INPT   yLOG_enter    (__FUNCTION__);
+   DEBUG_INPT   yLOG_value    ("g_ntask"   , g_ntask);
+   DEBUG_INPT   yLOG_info     ("a_recd"    , a_recd);
    /*---(cleanse)-----------------------*/
    DATA__clear  (g_ntask);
    /*---(defenses)----------------------*/
    --rce;  if (a_recd     == NULL) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    strlcpy (x_recd, a_recd, LEN_RECD);
    x_len = strlen (x_recd);
-   DEBUG_DATA   yLOG_value    ("x_len"     , x_len);
+   DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
    --rce;  if (x_len <  10) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
-   /*---(task prefix)-------------------*/
+   /*---(cut front off)-----------------*/
    p = strtok  (x_recd, q);
    --rce;  if (p == NULL) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
+   /*---(statistics)--------------------*/
+   p = strtok  (NULL, q);
+   --rce;  if (p == NULL) {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    strltrim (p, ySTR_BOTH, LEN_LABEL);
    rc = DATA__stats (p);
    --rce;  if (rc < 0) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    /*---(text)--------------------------*/
    p = strtok  (NULL, q);
    if (p == NULL) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    strltrim (p, ySTR_BOTH, LEN_HUND);
+   if (strlen (p) <= 0) {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
    strlcpy  (g_tasks [g_ntask].txt, p, LEN_HUND);
+   /*---(unique/start)------------------*/
+   p = strtok  (NULL, q);
+   if (p != NULL) {
+      strltrim (p, ySTR_BOTH, LEN_LABEL);
+      g_tasks [g_ntask].beg = atoi (p);
+   }
+   /*---(unique/end)--------------------*/
+   if (p != NULL) {
+      p = strtok  (NULL, q);
+      if (p != NULL) {
+         strltrim (p, ySTR_BOTH, LEN_LABEL);
+         g_tasks [g_ntask].end = atoi (p);
+      }
+   }
    /*---(categories)--------------------*/
    strlcpy  (g_tasks [g_ntask].one, s_one, LEN_LABEL);
    strlcpy  (g_tasks [g_ntask].two, s_two, LEN_LABEL);
@@ -332,9 +386,9 @@ DATA__detail       (char *a_source, int a_line, char *a_recd)
    g_tasks [g_ntask].line  = a_line;
    g_tasks [g_ntask].seq   = g_ntask;
    ++g_ntask;
-   DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
+   DEBUG_INPT   yLOG_value    ("g_ntask"   , g_ntask);
    /*---(complete)-----------------------*/
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -355,12 +409,13 @@ DATA__file         (char *a_source)
    char        x_recd      [LEN_RECD];
    int         x_len       =    0;
    int         a           =    0;
+   int         x_off       =    0;
    /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(open)---------------------------*/
    f = fopen (a_source, "r");
    --rce;  if (f == NULL) {
-      DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
    strlcpy (x_proj, a_source, LEN_LABEL);
@@ -372,47 +427,73 @@ DATA__file         (char *a_source)
       /*---(read)------------------------*/
       fgets (x_recd, LEN_RECD, f);
       ++a;
-      DEBUG_DATA   yLOG_value    ("a"         , a);
+      DEBUG_INPT   yLOG_value    ("a"         , a);
       if (feof (f))  {
-         DEBUG_DATA   yLOG_exitr    (__FUNCTION__, rce);
+         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
          return rce;
       }
       /*---(filter)----------------------*/
+      strldchg (x_recd, '', '§', LEN_RECD);
+      strltrim (x_recd, ySTR_SINGLE, LEN_RECD);
       x_len = strlen (x_recd);
-      DEBUG_DATA   yLOG_value    ("x_len"     , x_len);
+      DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
       if (x_len < 10)    continue;
       /*---(remove newline)--------------*/
       if (x_recd [x_len - 1] == '\n')  x_recd [--x_len] = '\0';
-      DEBUG_DATA   yLOG_info     ("x_recd"    , x_recd);
-      /*---(read)------------------------*/
-      if      (strncmp (x_recd, "/* metis ", 10) == 0) {
-         DEBUG_DATA   yLOG_note     ("FOUND, single-line or open comment (1)");
-         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (a_source, a, x_recd + 10);
-      }
-      else if (strncmp (x_recd, "   /* metis ", 13) == 0) {
-         DEBUG_DATA   yLOG_note     ("FOUND, single-line or open comment (2)");
-         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (a_source, a, x_recd + 13);
-      }
-      else if (strncmp (x_recd, " * metis " , 10) == 0) {
-         DEBUG_DATA   yLOG_note     ("FOUND, continuing comment (1)");
-         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (a_source, a, x_recd + 10);
-      }
-      else if (strncmp (x_recd, "    * metis " , 13) == 0) {
-         DEBUG_DATA   yLOG_note     ("FOUND, continuing comment (2)");
-         if (strncmp (x_recd + x_len - 3, "*/", 2) == 0)  x_recd [x_len - 3] = '\0';
-         DATA__detail (a_source, a, x_recd + 13);
-      }
-      else if (strncmp (x_recd, "# metis " ,  9) == 0) {
-         DEBUG_DATA   yLOG_note     ("FOUND, unit test comment");
-         DATA__detail (a_source, a, x_recd +  9);
-      }
+      DEBUG_INPT   yLOG_info     ("x_recd"    , x_recd);
+      /*---(check prefix)----------------*/
+      if        (strncmp (x_recd, "/* metis "   ,  9) == 0) {
+         if (strncmp (x_recd + 9, "§ ", 2) == 0) {
+            DEBUG_INPT   yLOG_note     ("FOUND single-line or open comment (1) version");
+         } else {
+            DEBUG_INPT   yLOG_note     ("prefixed as single-line or open comment, but no field separator");
+            continue;
+         }
+      } else if (strncmp (x_recd, "* metis "    ,  8) == 0) {
+         if (strncmp (x_recd + 8, "§ ", 2) == 0) {
+            DEBUG_INPT   yLOG_note     ("FOUND continuing comment (2) version");
+         } else {
+            DEBUG_INPT   yLOG_note     ("prefixed as continuing comment, but no field separator");
+            continue;
+         }
+      } else if (strncmp (x_recd, "#> metis "   ,  9) == 0) {
+         if (strncmp (x_recd + 9, "§ ", 2) == 0) {
+            DEBUG_INPT   yLOG_note     ("FOUND traditional non-code comment (3) version");
+         } else {
+            DEBUG_INPT   yLOG_note     ("prefixed as traditional non-code comment, but no field separator");
+            continue;
+         }
+      } else continue;
+      /*---(check metis tag)-------------*/
+      DATA__detail (a_source, a, x_recd);
+      /*> if      (strncmp (x_recd, "/+ metis ", 10) == 0) {                              <* 
+       *>    DEBUG_INPT   yLOG_note     ("FOUND, single-line or open comment (1)");        <* 
+       *>    if (strncmp (x_recd + x_len - 3, "+/", 2) == 0)  x_recd [x_len - 3] = '\0';   <* 
+       *>    DATA__detail (a_source, a, x_recd + 10);                                      <* 
+       *> }                                                                                <* 
+       *> else if (strncmp (x_recd, "   /+ metis ", 13) == 0) {                           <* 
+       *>    DEBUG_INPT   yLOG_note     ("FOUND, single-line or open comment (2)");        <* 
+       *>    if (strncmp (x_recd + x_len - 3, "+/", 2) == 0)  x_recd [x_len - 3] = '\0';   <* 
+       *>    DATA__detail (a_source, a, x_recd + 13);                                      <* 
+       *> }                                                                                <* 
+       *> else if (strncmp (x_recd, " * metis " , 10) == 0) {                             <* 
+       *>    DEBUG_INPT   yLOG_note     ("FOUND, continuing comment (1)");                 <* 
+       *>    if (strncmp (x_recd + x_len - 3, "+/", 2) == 0)  x_recd [x_len - 3] = '\0';   <* 
+       *>    DATA__detail (a_source, a, x_recd + 10);                                      <* 
+       *> }                                                                                <* 
+       *> else if (strncmp (x_recd, "    * metis " , 13) == 0) {                          <* 
+       *>    DEBUG_INPT   yLOG_note     ("FOUND, continuing comment (2)");                 <* 
+       *>    if (strncmp (x_recd + x_len - 3, "+/", 2) == 0)  x_recd [x_len - 3] = '\0';   <* 
+       *>    DATA__detail (a_source, a, x_recd + 13);                                      <* 
+       *> }                                                                                <* 
+       *> else if (strncmp (x_recd, "# metis " ,  8) == 0) {                               <* 
+       *>    DEBUG_INPT   yLOG_note     ("FOUND, unit test comment");                      <* 
+       *>    DATA__detail (a_source, a, x_recd +  9);                                      <* 
+       *> }                                                                                <*/
    }
    fclose(f);
    /*---(complete)-----------------------*/
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -670,8 +751,8 @@ DATA_cursor             (char a_type)
    DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
    /*---(adjust max)---------------------*/
    switch (a_type) {
-   case '[' :  x_beg = 0;              break;
-   case '>' :  x_beg = s_cursor + 1;   break;
+   case YDLST_HEAD :  x_beg = 0;              break;
+   case YDLST_NEXT :  x_beg = s_cursor + 1;   break;
    }
    /*---(findst max)---------------------*/
    for (i = x_beg; i <= g_ntask; ++i) {

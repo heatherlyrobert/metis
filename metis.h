@@ -32,20 +32,21 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5a"
-#define     P_VERTXT    "put yJOBS in and now can do one basic inventory report"
+#define     P_VERNUM    "1.5b"
+#define     P_VERTXT    "major and minor now build using btrees and unit tested"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
 #define     P_REMINDER  "there are many better options, but i *own* every byte of this one"
 
 
-
-/*===[[ METIS BACKLOG ]]======================================================*
- *  metis  -----  tbd
+/*
+ * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
+ * metis § wv8·· § write interactive-use manual for metis                                   § 1645134601 § ·········· §
  *
  */
 
+/*  ,x··0D··:put =strftime('%s')¦···0kdd··i * metis § ····· § tbd                                                                                  § ¥··$a § ·········· §¥··,y         */
 
 /*
  * few people regularly (except under duress) keep task lists
@@ -168,6 +169,7 @@
 
 #include    <yJOBS.h>             /* heatherly job execution and control      */
 #include    <yREGEX.h>       /* CUSTOM  heatherly regular expressions         */
+#include    <ySORT.h>        /* CUSTOM  heatherly sort and search             */
 
 
 #include    <ySTR.h>         /* CUSTOM : heatherly string handling            */
@@ -175,6 +177,8 @@
 #include    <yFONT.h>        /* heatherly text display for opengl   */
 #include    <yGLTEX.h>       /* heatherly opengl texture support              */
 #include    <yCOLOR.h>       /* heatherly opengl color support                */
+
+#include    <yDLST_solo.h>   /* heatherly                                     */
 
 #include   <stdio.h>
 #include   <stdlib.h>                  /* getenv()                            */
@@ -203,6 +207,89 @@ extern      char          unit_answer [LEN_FULL];
 
 
 
+extern     char      g_print     [LEN_RECD];
+
+
+
+#define    B_MAJOR   'M'
+#define    B_MINOR   'm'
+#define    B_SOURCE  's'
+#define    B_TASK    't'
+
+typedef     struct   cMAJOR   tMAJOR;
+typedef     struct   cMINOR   tMINOR;
+typedef     struct   cTASK    tTASK;
+typedef     struct   cSOURCE  tSOURCE;
+
+struct      cMAJOR {
+   /*---(master data)-------*/
+   uchar       name        [LEN_LABEL];     /* major category                 */
+   /*---(children)----------*/
+   tMINOR     *head;
+   tMINOR     *tail;
+   ushort      count;
+   /*---(btree)-------------*/
+   tSORT      *ysort;
+   /*---(done)--------------*/
+};
+
+struct      cMINOR {
+   /*---(parent)------------*/
+   tMAJOR     *major;
+   /*---(master data)-------*/
+   uchar       name        [LEN_TITLE];     /* minor category                 */
+   /*---(in major)----------*/
+   tMINOR     *prev;
+   tMINOR     *next;
+   /*---(children)----------*/
+   tTASK      *head;
+   tTASK      *tail;
+   ushort      count;
+   /*---(btree)-------------*/
+   tSORT      *ysort;
+   /*---(done)--------------*/
+};
+
+struct      cSOURCE {
+   /*---(parent)------------*/
+   tMAJOR     *major;
+   /*---(master data)-------*/
+   uchar       name        [LEN_HUND];      /* data source                    */
+   /*---(children)----------*/
+   tTASK      *head;
+   tTASK      *tail;
+   ushort      count;
+   /*---(btree)-------------*/
+   tSORT      *ysort;
+   /*---(done)--------------*/
+};
+
+struct      cTASK  {
+   /*---(parent)------------*/
+   tMINOR     *minor;
+   /*---(master data)-------*/
+   char        urg;                         /* urgency code                        */
+   char        imp;                         /* importance code                     */
+   char        est;                         /* estimated work                      */
+   char        prg;                         /* progress flag                       */
+   char        shr;                         /* sharing flag                        */
+   char        txt         [LEN_HUND];      /* text of task                        */
+   int         beg;                         /* created on epoch                    */
+   int         end;                         /* completed on epoch                  */
+   /*---(in minor)----------*/
+   tMINOR     *prev;
+   tMINOR     *next;
+   /*---(source)------------*/
+   tSOURCE    *source;
+   short       seq;                         /* original order (to unsort)          */
+   short       line;                        /* source line in file                 */
+   /*---(btree)-------------*/
+   tSORT      *ysort;
+   /*---(done)--------------*/
+};
+
+
+
 
 /*---(task data structure)------------*/
 typedef     struct cCARD   tCARD;
@@ -210,19 +297,24 @@ typedef     struct cCARD   tCARD;
 struct      cCARD
 {
    /*---(master data)--------------------*/
-   char        one         [LEN_LABEL];/* major category                      */
-   char        two         [LEN_LABEL];/* minor category                      */
-   char        urg;                    /* urgency code                        */
-   char        imp;                    /* importance code                     */
-   char        est;                    /* estimated work                      */
-   char        prg;                    /* progress flag                       */
-   char        txt         [LEN_HUND]; /* text of task                        */
+   char        one         [LEN_LABEL];     /* major category                      */
+   char        two         [LEN_LABEL];     /* minor category                      */
+   char        urg;                         /* urgency code                        */
+   char        imp;                         /* importance code                     */
+   char        est;                         /* estimated work                      */
+   char        prg;                         /* progress flag                       */
+   char        shr;                         /* sharing flag                        */
+   char        txt         [LEN_HUND];      /* text of task                        */
+   int         beg;                         /* created on epoch                    */
+   int         end;                         /* completed on epoch                  */
+   /*> char        beg         [LEN_TERSE];     /+ created on epoch                    +/   <* 
+    *> char        end         [LEN_TERSE];     /+ completed on epoch                  +/   <*/
    /*---(source data)--------------------*/
-   short       seq;                    /* original order (to unsort)          */
-   char        source      [LEN_HUND]; /* text of task                        */
-   short       line;                   /* source line in file                 */
+   short       seq;                         /* original order (to unsort)          */
+   char        source      [LEN_HUND];      /* text of task                        */
+   short       line;                        /* source line in file                 */
    /*---(filtering)----------------------*/
-   char        act;                    /* active (y/n)                        */
+   char        act;                         /* active (y/n)                        */
    char        key         [LEN_RECD];
    /*---(visualization)------------------*/
    short       pos;
@@ -260,6 +352,10 @@ struct cMY {
    char        run_file    [LEN_PATH];      /* file to act on                 */
    int         run_uid;                     /* uid of person who launched     */
    long        runtime;
+   /*---(counts)-------------------------*/
+   short       nmajor;
+   short       nminor;
+   short       ntask;
    /*---(program wide)-------------------*/
    char        daemon;                      /* daemon vs foreground mode      */
    char        quit;                        /* stop the program               */
@@ -277,6 +373,7 @@ struct cMY {
    char        imps        [LEN_LABEL];     /* all valid importance codes     */
    char        ests        [LEN_LABEL];     /* all valid estimate codes       */
    char        prgs        [LEN_LABEL];     /* all valid status flags         */
+   char        shrs        [LEN_LABEL];     /* all valid status flags         */
    /*---(filtering)----------------------*/
    int         nact;                        /* number of active tasks         */
    char        curg;                        /* current urgency filter         */
@@ -292,22 +389,23 @@ struct cMY {
    char        format;                   /* display style                     */
    char        sighup;                   /* force a refresh/redraw            */
    char        sigusr2;                  /* cause a font jumble               */
+   /*---(univ/tabs)----------------------*/
+   ushort      ntabs;                    /* number of tabs                    */
+   ushort      ctab;                     /* number of tabs                    */
    /*---(xpos/cols)----------------------*/
-   int         wcols;                    /* number of cols in window          */
-   int         tcols;                    /* number of cols on texture         */
-   int         ncols;                    /* number of cols                    */
-   int         bcol;                     /* beginning of screen               */
-   int         ccol;                     /* current col                       */
-   int         pcol;                     /* previous current col              */
-   int         ecol;                     /* ending of screen                  */
+   ushort      wcols;                    /* number of cols in window          */
+   ushort      tcols;                    /* number of cols on texture         */
+   ushort      ncols;                    /* number of cols                    */
+   ushort      bcol;                     /* beginning of screen               */
+   ushort      ccol;                     /* current col                       */
+   ushort      ecol;                     /* ending of screen                  */
    /*---(ypos/rows)----------------------*/
-   int         nrows;                    /* number of rows of data            */
-   int         wrows;                    /* number of rows in window          */
-   int         trows;                    /* number of rows on texture         */
-   int         brow;                     /* beginning of screen               */
-   int         crow;                     /* current row                       */
-   int         prow;                     /* previous current row              */
-   int         erow;                     /* ending of screen                  */
+   ushort      nrows;                    /* number of rows of data            */
+   ushort      wrows;                    /* number of rows in window          */
+   ushort      trows;                    /* number of rows on texture         */
+   ushort      brow;                     /* beginning of screen               */
+   ushort      crow;                     /* current row                       */
+   ushort      erow;                     /* ending of screen                  */
    /*---(movement)-----------------------*/
    char        action;                   /* moving (0 = no, 1 = yes)          */
    char        update;                   /* xevent (0 = no, 1 = yes)          */
@@ -341,6 +439,25 @@ struct cMY {
    /*---(done)---------------------------*/
 };
 extern tMY   my;
+
+
+/*---(tabs)---------------------------*/
+#define     NTABS       my.ntabs
+#define     CTAB        my.ctab
+/*---(columns)------------------------*/
+#define     WCOLS       my.wcols
+#define     TCOLS       my.tcols
+#define     NCOLS       my.ncols
+#define     BCOL        my.bcol
+#define     CCOL        my.ccol
+#define     ECOL        my.ecol
+/*---(rows)---------------------------*/
+#define     WROWS       my.wrows
+#define     TROWS       my.trows
+#define     NROWS       my.nrows
+#define     BROW        my.brow
+#define     CROW        my.crow
+#define     EROW        my.erow
 
 
 /*---(debugging)-------------------------*/
@@ -470,10 +587,26 @@ char        SORT_refresh            (void);
 
 char*       FORMAT__unit            (char *a_question, int a_num);
 
+
+
+/*===[[ METIS_YMAP.C ]]=======================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(label)----------------*/
+char        api_ymap_locator        (char a_strict, char *a_label, ushort *u, ushort *x, ushort *y, ushort *z);
+char        api_ymap_addressor      (char a_strict, char *a_label, ushort u, ushort x, ushort y, ushort z);
+/*---(load)-----------------*/
+char        api_ymap_sizer          (char a_axis, ushort *n, ushort *a, ushort *b, ushort *c, ushort *e, ushort *m, ushort *x);
+char        api_ymap_entry          (char a_axis, ushort a_pos, short *r_ref, uchar *r_wide, uchar *r_used);
+/*---(update)---------------*/
+char        api_ymap_placer         (char a_axis, ushort b, ushort c, ushort e);
+char        api_ymap_done           (void);
+/*---(done)-----------------*/
+
+
+
+/*===[[ METIS_YVIKEYS.C ]]====================================================*/
 char        api_yvikeys_init        (void);
 char        api_yvikeys_mapper      (char a_req);
-char        api_yvikeys_locator     (char *a_label, int *a_buf, int *a_x, int *a_y, int *a_z);
-char        api_yvikeys_addressor   (char *a_label, int a_buf, int a_x, int a_y, int a_z);
 char        api_yvikeys_sort        (char *a_how);
 char        api_yvikeys_filter      (char *a_which, char *a_string);
 char        api_yvikeys_window      (char *a_format);
@@ -481,5 +614,66 @@ char        api_yvikeys_refresh     (void);
 
 
 char        metis_reporter          (void);
+
+
+
+
+
+
+/*===[[ metis_shared.c ]]=====================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(memory)---------------*/
+char        metis_shared_new        (char a_abbr, void **r_new, char a_force, char *a_wiper (void *));
+char        metis_shared_free       (char a_abbr, void **a_old);;
+
+
+
+/*===[[ metis_major.c ]]======================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(support)--------------*/
+char        metis_major_wipe        (tMAJOR *a_dst);
+/*---(memory)---------------*/
+char        metis_major_new         (char *a_name, char a_force, tMAJOR **r_new);
+char        metis_major_free        (tMAJOR **r_old);;
+/*---(hooking)--------------*/
+char        metis_major_hook        (tMAJOR *a_major, tMINOR *a_minor);
+char        metis_major_unhook      (tMINOR *a_minor);
+/*---(search)---------------*/
+int         metis_major_count       (void);
+char        metis_major_by_name     (uchar *a_name, tMAJOR **r_major);
+char        metis_major_by_index    (int n, tMAJOR **r_major);
+char        metis_major_by_cursor   (char a_dir, tMAJOR **r_major);
+char*       metis_major_entry       (int n);
+/*---(program)--------------*/
+char        metis_major_init        (void);
+char        metis_major_wrap        (void);
+/*---(done)-----------------*/
+
+
+
+/*===[[ metis_minor.c ]]======================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(support)--------------*/
+char        metis_minor_wipe        (tMINOR *a_dst);
+/*---(memory)---------------*/
+char        metis_minor_new         (tMAJOR *a_major, char *a_name, char a_force, tMINOR **r_new);
+char        metis_minor_free        (tMINOR **r_old);;
+/*---(search)---------------*/
+int         metis_minor_count       (void);
+char        metis_minor_by_name     (uchar *a_name, tMINOR **r_minor);
+char        metis_minor_by_index    (int n, tMINOR **r_minor);
+char        metis_minor_by_cursor   (char a_dir, tMINOR **r_minor);
+char*       metis_minor_entry       (int n);
+/*---(program)--------------*/
+char        metis_minor_init        (void);
+char        metis_minor_wrap        (void);
+/*---(done)-----------------*/
+
+
+
+/*---(hooking)--------------*/
+/*> char        metis_major_hook        (tMAJOR *a_major, tMINOR *a_minor);           <*/
+/*> char        metis_major_unhook      (tMINOR *a_minor);                            <*/
+
 
 /*============================----end-of-source---============================*/

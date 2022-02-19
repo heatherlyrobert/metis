@@ -13,7 +13,6 @@
 /*============================================================================*/
 
 /*===[[ METIS BACKLOG ]]======================================================*
- *  metis  -----  tbd
  *
  */
 
@@ -78,7 +77,7 @@ FILTER_refresh          (void)
       DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", i, g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
       /*---(default)---------------------*/
       g_tasks [i].act  = '-';
-      /*> if (my.nact > my.nrows)  continue;                                         <*/
+      /*> if (my.nact > NROWS)  continue;                                         <*/
       /*---(urgency)---------------------*/
       if ((my.curg != ' ' && g_tasks [i].urg != my.curg)) {
          DEBUG_DATA   yLOG_note     ("skip as urgent does not match filter");

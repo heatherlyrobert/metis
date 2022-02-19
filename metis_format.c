@@ -1,9 +1,11 @@
 #include   "metis.h"
 
 
-/*===[[ METIS BACKLOG ]]======================================================*
- *  metis  -----  tbd
- *
+/*
+ * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
+ * metis § ww4-· § add --lstreamer (two screen) vs -streamer (one screen)                   § 1645047884 § ·········· §
+ * metis § ww4-· § bring back menu items and commands for formatting                        § 1645047885 § ·········· §
+ * metis § dn2·· § data refresh needs to update card count and format                       § 1645162543 § ·········· §
  */
 
 
@@ -20,19 +22,19 @@ static void      o___POLYMORPH_______________o (void) {;}
 char
 FORMAT_init        (void)
 {
-   /*> yVIKEYS_cmds_add (YVIKEYS_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );   <* 
-    *> yVIKEYS_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");                                                                       <* 
-    *> yVIKEYS_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");                                                                      <* 
-    *> yVIKEYS_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");                                                                       <* 
-    *> yVIKEYS_menu_add ("µvwL", "long/lef"  , ":window long_lef¦");                                                                      <* 
-    *> yVIKEYS_menu_add ("µvwS", "streamer"  , ":window streamer¦");                                                                      <* 
-    *> yVIKEYS_menu_add ("µvwt", "ticker"    , ":window ticker¦");                                                                        <* 
-    *> yVIKEYS_menu_add ("µvwb", "baseline"  , ":window baseline¦");                                                                      <* 
-    *> yVIKEYS_menu_add ("µvwp", "project"   , ":window project¦");                                                                       <* 
-    *> yVIKEYS_menu_add ("µvww", "wideview"  , ":window wide¦");                                                                          <* 
-    *> yVIKEYS_menu_add ("µvwx", "extra"     , ":window extra¦");                                                                         <* 
-    *> yVIKEYS_menu_add ("µvws", "sticky"    , ":window sticky¦");                                                                        <* 
-    *> yVIKEYS_menu_add ("µvwn", "nonstick"  , ":window nonstick¦");                                                                      <*/
+   yCMD_add (YCMD_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );
+   /*> yVIKEYS_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");                   <* 
+    *> yVIKEYS_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");                  <* 
+    *> yVIKEYS_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");                   <* 
+    *> yVIKEYS_menu_add ("µvwL", "long/lef"  , ":window long_lef¦");                  <* 
+    *> yVIKEYS_menu_add ("µvwS", "streamer"  , ":window streamer¦");                  <* 
+    *> yVIKEYS_menu_add ("µvwt", "ticker"    , ":window ticker¦");                    <* 
+    *> yVIKEYS_menu_add ("µvwb", "baseline"  , ":window baseline¦");                  <* 
+    *> yVIKEYS_menu_add ("µvwp", "project"   , ":window project¦");                   <* 
+    *> yVIKEYS_menu_add ("µvww", "wideview"  , ":window wide¦");                      <* 
+    *> yVIKEYS_menu_add ("µvwx", "extra"     , ":window extra¦");                     <* 
+    *> yVIKEYS_menu_add ("µvws", "sticky"    , ":window sticky¦");                    <* 
+    *> yVIKEYS_menu_add ("µvwn", "nonstick"  , ":window nonstick¦");                  <*/
 }
 
 char
@@ -44,7 +46,7 @@ format__clear      (void)
          s_map [x_col][x_row] = -1;
       }
    }
-   my.ncols = my.nrows = 0;
+   NCOLS = NROWS = 0;
    return 0;
 }
 
@@ -55,27 +57,40 @@ format__assign     (void)
    int         x_col, x_row;
    int         n           =    0;
    int         c           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    /*---(prepare)------------------------*/
    format__clear ();
-   n = DATA_cursor ('[');
-   if (n < 0)  return c;
+   n = DATA_cursor (YDLST_HEAD);
+   if (n < 0) {
+      DEBUG_DATA   yLOG_note     ("no data available");
+      DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+      return 0;
+   }
    /*---(walk tasks)---------------------*/
-   for (x_col = 1; x_col <= my.tcols; ++x_col) {
-      for (x_row = 1; x_row <= my.trows; ++x_row) {
+   for (x_col = 1; x_col <= TCOLS; ++x_col) {
+      for (x_row = 1; x_row <= TROWS; ++x_row) {
          /*---(process)--------*/
          ++c;
          s_map [x_col][x_row] = n;
          s_map [x_col][0    ] = x_row;
          /*---(check maxes)----*/
-         if (my.ncols < x_col)  my.ncols = x_col;
-         if (my.nrows < x_row)  my.nrows = x_row;
+         if (NCOLS < x_col)  NCOLS = x_col;
+         if (NROWS < x_row)  NROWS = x_row;
+         /*---(output)---------*/
+         DEBUG_DATA   yLOG_complex  ("place"     , "%2dx ,%2dy, %2dc, %2d ncols, %2d nrows", x_col, x_row, c, NCOLS, NROWS);
          /*---(next)-----------*/
-         n = DATA_cursor ('>');
-         if (n < 0)     return c;
+         n = DATA_cursor (YDLST_NEXT);
+         if (n < 0) {
+            DEBUG_DATA   yLOG_note     ("done with existing data");
+            DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+            return c;
+         }
          /*---(done)-----------*/
       }
    }
    /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return c;
 }
 
@@ -85,14 +100,14 @@ format__show       (void)
    int         x_col, x_row;
    printf ("\n");
    printf ("col  tot ", x_col);
-   for (x_row = 1; x_row <= my.trows; ++x_row) {
+   for (x_row = 1; x_row <= TROWS; ++x_row) {
       printf (" %3d", x_row);
    }
    printf ("\n");
-   for (x_col = 1; x_col <= my.tcols; ++x_col) {
+   for (x_col = 1; x_col <= TCOLS; ++x_col) {
       if (s_map [x_col][0] <= 0) break;
       printf ("%3d (%3d)", x_col, s_map [x_col][0]);
-      for (x_row = 1; x_row <= my.trows; ++x_row) {
+      for (x_row = 1; x_row <= TROWS; ++x_row) {
          if (s_map [x_col][x_row] <= 0)  break;
          printf (" %3d", s_map [x_col][x_row]);
       }
@@ -110,12 +125,12 @@ char
 format__wintex     (void)
 {
    /*---(window)-------------------------*/
-   my.w_wide   = (my.wcols + my.c_over) * my.c_offset;
-   my.w_tall   = (my.wrows + my.r_over) * my.r_offset + my.m_offset;
+   my.w_wide   = (WCOLS + my.c_over) * my.c_offset;
+   my.w_tall   = (WROWS + my.r_over) * my.r_offset + my.m_offset;
    my.w_ftall  = my.w_tall + 15.0;
    /*---(texture)------------------------*/
-   my.t_wide   = my.tcols * my.c_offset;
-   my.t_tall   = my.trows * my.r_offset;
+   my.t_wide   = TCOLS * my.c_offset;
+   my.t_tall   = TROWS * my.r_offset;
    /*---(playing)------------------------*/
    my.action   =   0;
    my.incr     = STOP;
@@ -129,8 +144,8 @@ format__fulldebug  (void)
 {
    /*---(prework)------------------------*/
    DEBUG_USER   yLOG_snote    ("cr");
-   DEBUG_USER   yLOG_sint     (my.wcols);
-   DEBUG_USER   yLOG_sint     (my.wrows);
+   DEBUG_USER   yLOG_sint     (WCOLS);
+   DEBUG_USER   yLOG_sint     (WROWS);
    DEBUG_USER   yLOG_snote    ("win");
    DEBUG_USER   yLOG_sint     (my.w_wide);
    DEBUG_USER   yLOG_sint     (my.w_tall);
@@ -151,12 +166,12 @@ format_streamer    (void)
    DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 300;
-   my.wcols    =   1;
-   my.tcols    =   1;
+   WCOLS    =   1;
+   TCOLS    =   1;
    /*---(rows)---------------------------*/
    my.r_offset =  44;
-   my.wrows    =  my.s_tall / my.r_offset;
-   my.trows    =  60;
+   WROWS    =  my.s_tall / my.r_offset;
+   TROWS    =  60;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -176,14 +191,14 @@ format_ticker           (void)
    DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(rows)---------------------------*/
    my.r_offset =  45;
-   my.wrows    =   1;
-   my.trows    =   1;
+   WROWS    =   1;
+   TROWS    =   1;
    /*---(columns)------------------------*/
    my.c_offset = 300;
    if (my.format != FORMAT_TICKER)  my.c_offset = 325;
-   my.wcols    =   4;
+   WCOLS    =   4;
    my.c_over   =   1;
-   my.tcols    =  12;
+   TCOLS    =  12;
    /*---(menu spacing)-------------------*/
    my.m_offset = 195;
    /*---(win/tex)------------------------*/
@@ -204,14 +219,14 @@ format_column      (void)
    /*---(rows)---------------------------*/
    my.r_offset =  60;
    if (strchr (FORMAT_LONGS , my.format) != NULL)
-      my.wrows  =  25;
+      WROWS  =  25;
    else
-      my.wrows  =  12;
-   my.trows    =  60;
+      WROWS  =  12;
+   TROWS    =  60;
    /*---(columns)------------------------*/
    my.c_offset = 300;
-   my.wcols    =   1;
-   my.tcols    =   1;
+   WCOLS    =   1;
+   TCOLS    =   1;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -237,12 +252,12 @@ format_wideview    (void)
    DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 320;
-   my.wcols    =   4;
-   my.tcols    =  12;
+   WCOLS    =   4;
+   TCOLS    =  12;
    /*---(rows)---------------------------*/
    my.r_offset =  60;
-   my.wrows    =  12;
-   my.trows    =  12;
+   WROWS    =  12;
+   TROWS    =  12;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -262,12 +277,12 @@ format_projects    (void)
    DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 320;
-   my.wcols    =   4;
-   my.tcols    =  12;
+   WCOLS    =   4;
+   TCOLS    =  12;
    /*---(rows)---------------------------*/
    my.r_offset =  60;
-   my.wrows    =  25;
-   my.trows    =  25;
+   WROWS    =  25;
+   TROWS    =  25;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -287,12 +302,12 @@ format_extra       (void)
    DEBUG_USER   yLOG_senter   (__FUNCTION__);
    /*---(columns)------------------------*/
    my.c_offset = 320;
-   my.wcols    =   4;
-   my.tcols    =  12;
+   WCOLS    =   4;
+   TCOLS    =  12;
    /*---(rows)---------------------------*/
    my.r_offset =  44;
-   my.wrows    =  my.s_tall / my.r_offset;
-   my.trows    =  my.wrows + my.r_over;
+   WROWS    =  my.s_tall / my.r_offset;
+   TROWS    =  WROWS + my.r_over;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -308,8 +323,9 @@ format_extra       (void)
 char
 FORMAT_refresh          (void)
 {
+   char        rc          =    0;
    /*---(header)-------------------------*/
-   DEBUG_USER   yLOG_enter    (__FUNCTION__);
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    /*---(globals)------------------------*/
    my.c_wide  =  300;
    my.c_over  =    0;
@@ -318,33 +334,47 @@ FORMAT_refresh          (void)
    /*---(specifics)----------------------*/
    switch (my.format) {
    case FORMAT_TICKER  : case FORMAT_BASELINE :
-      format_ticker   ();
+      DEBUG_DATA   yLOG_note     ("ticker/baseline type");
+      rc = format_ticker   ();
       break;
    case FORMAT_RSHORT  : case FORMAT_RLONG  : case FORMAT_LSHORT : case FORMAT_LLONG  :
-      format_column   ();
+      DEBUG_DATA   yLOG_note     ("column type");
+      rc = format_column   ();
       break;
    case FORMAT_STREAMER:
-      format_streamer ();
+      DEBUG_DATA   yLOG_note     ("streamer type");
+      rc = format_streamer ();
       break;
    case FORMAT_WIDE    :
-      format_wideview ();
+      DEBUG_DATA   yLOG_note     ("wide type");
+      rc = format_wideview ();
       break;
    case FORMAT_PROJECT :
-      format_projects ();
+      DEBUG_DATA   yLOG_note     ("project type");
+      rc = format_projects ();
       break;
    case FORMAT_EXTRA   :
-      format_extra    ();
+      DEBUG_DATA   yLOG_note     ("extra type");
+      rc = format_extra    ();
       break;
    default  :
+      DEBUG_DATA   yLOG_note     ("defaulting column type");
       my.format = FORMAT_RSHORT;
-      format_column   ();
+      rc = format_column   ();
       break;
    }
-   format__clear  ();
-   format__assign ();
+   DEBUG_DATA   yLOG_value    ("WCOLS"     , WCOLS);
+   yMAP_axis_avail (YMAP_XAXIS, WCOLS);
+   DEBUG_DATA   yLOG_value    ("WROWS"     , WROWS);
+   yMAP_axis_avail (YMAP_YAXIS, WROWS);
+   DEBUG_DATA   yLOG_value    ("format"    , rc);
+   rc = format__clear  ();
+   DEBUG_DATA   yLOG_value    ("clear"     , rc);
+   rc = format__assign ();
+   DEBUG_DATA   yLOG_value    ("assign"    , rc);
    /*> format__show   ();                                                             <*/
    /*---(complete)------------------------------*/
-   DEBUG_USER   yLOG_exit     (__FUNCTION__);
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -369,7 +399,7 @@ FORMAT__unit       (char *a_question, int a_num)
       snprintf (unit_answer, LEN_FULL, "DATA count       : %d", g_ntask);
    }
    else if (strcmp (a_question, "units"         ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "FORMAT unit  (%c) : wide %4dt %4dw %4do %4dn     - tall %4dt %4dw %4do %4dn     -", my.format, my.tcols, my.wcols, my.c_over, my.ncols, my.trows, my.wrows, my.r_over, my.nrows);
+      snprintf (unit_answer, LEN_FULL, "FORMAT unit  (%c) : wide %4dt %4dw %4do %4dn     - tall %4dt %4dw %4do %4dn     -", my.format, TCOLS, WCOLS, my.c_over, NCOLS, TROWS, WROWS, my.r_over, NROWS);
    }
    else if (strcmp (a_question, "window"        ) == 0) {
       snprintf (unit_answer, LEN_FULL, "FORMAT win   (%c) : wide %4ds %4dc %4do %4dl %4dw tall %4ds %4dr %4do %4dt %4dt %4df", my.format, my.s_wide, my.c_wide, my.c_offset, my.w_left, my.w_wide, my.s_tall, my.r_tall, my.r_offset, my.w_topp, my.w_tall, my.w_ftall);

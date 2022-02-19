@@ -1,13 +1,24 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
-/*===[[ METIS BACKLOG ]]======================================================*
+/*
+ * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
+ * metis § tn4#Ï § metis is not terminating properly leaving zombie processes               § 1645047883 § 1645055000 §
+ * metis § tn2dÏ § put back data refresh feature to avoid kill/init cycle                   § 1645047883 § 1645055000 §
+ * metis § tn2·· § bring the opengl command bar in as a float                               § 1645162237 § ·········· §
+ * metis § tv2·· § update the opengl menu and get it to work                                § 1645162238 § ·········· § T2FP91 § 200217231001 § 20.02.17.23.10.01.2.07.041 §
+ *
+ * 0·········1·········2·········3·········4·········5·········6
+ * 123456789-123456789-123456789-123456789-123456789-123456789-123456789-
+ *
+ * 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
  *
  */
 
 
 
 tMY         my;
+char        g_print     [LEN_RECD] = "";
 
 int         max_disp   = 16;
 
@@ -109,8 +120,8 @@ PROG__init              (void)
    my.lines   = '-';
    my.sort    = '-';
    my.order   = 'a';
-   my.ncols   = 0;
-   my.nrows   = 0;
+   NCOLS      = 0;
+   NROWS      = 0;
    my.s_wide  = 1366;  /* temp default for my iconia */
    my.s_tall  = 1536;  /* temp default for my iconia */
    my.c_wide  =  300;
@@ -121,6 +132,9 @@ PROG__init              (void)
    my.quit    = '-';
    my.trouble = '-';
    strlcpy (my.win_title, "metis_tasklist", LEN_DESC);
+   /*---(elements)-----------------------*/
+   metis_major_init ();
+   metis_minor_init ();
    /*---(yvikeys config)-----------------*/
    DATA_init ();
    FILTER_init ();
@@ -187,10 +201,10 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strcmp  (a, "--lines"         ) == 0)  my.lines  = 'y';
       else if (strcmp  (a, "--foreground"    ) == 0)  my.daemon = '-';
       /*---(file)------------------------*/
-      /*> else if (strncmp (a, "-"           ,  1) != 0)  {                           <* 
-       *>    strncpy (my.file, a, LEN_RECD);                                          <* 
-       *>    my.source = DATA_CUSTOM;                                                 <* 
-       *> }                                                                           <*/
+      else if (strncmp (a, "-"           ,  1) != 0)  {
+         strncpy (my.file, a, LEN_RECD);
+         my.source = DATA_CUSTOM;
+      }
       /*---(unknown)---------------------*/
       else {
          rc = yJOBS_args_handle (&(my.run_as), &(my.run_mode), my.run_file, &i, a, b);
@@ -217,16 +231,21 @@ PROG__begin             (void)
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(process data)-------------------*/
    rc = DATA_refresh   ();
+   DEBUG_PROG   yLOG_value    ("data"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
-   SORT_refresh   ();
-   FILTER_refresh ();
-   if (g_ntask <= 0) {
-      printf ("no data found\n");
-      return -1;
+   rc = SORT_refresh   ();
+   DEBUG_PROG   yLOG_value    ("sort"      , rc);
+   rc = FILTER_refresh ();
+   DEBUG_PROG   yLOG_value    ("filter"    , rc);
+   --rce;  if (g_ntask <= 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
    }
+   rc = FORMAT_refresh ();
+   DEBUG_PROG   yLOG_value    ("format"    , rc);
    /*---(overall)------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -276,8 +295,12 @@ PROG_dawn          (void)
    char        rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-
-   rc = yVIOPENGL_init ("metis", P_VERNUM, MODE_MAP, my.w_wide, my.w_tall);
+   rc = yVIOPENGL_init ("metis-okeanides", P_VERNUM, MODE_MAP, my.w_wide, my.w_tall);
+   DEBUG_PROG   yLOG_value    ("yVIOPENGL" , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    /*> rc = FILE_init      ();                                                        <*/
    /*> rc = yFILE_whoami   (P_FULLPATH, P_VERNUM, P_VERTXT, P_ONELINE, P_SUFFIX, P_CONTENT, NULL, NULL, NULL);   <*/
    /*> rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");   <*/
@@ -291,9 +314,20 @@ PROG_dawn          (void)
    api_yvikeys_init      ();
    /*---(create texture)------------------------*/
    font_load ();
+   rc = yVIEW_full (YVIEW_MAIN , YVIEW_FLAT, YVIEW_TOPLEF,  1, 0, OPENGL_show);
+   DEBUG_PROG   yLOG_value    ("MAIN"      , rc);
+   yCMD_direct (":layout  min");
+   yCMD_direct (":title   disable");
+   yCMD_direct (":version disable");
+   yCMD_direct (":formula disable");
+   yCMD_direct (":nav     disable");
+   yCMD_direct (":details disable");
+   yCMD_direct (":ribbon  disable");
+   yCMD_direct (":keys    disable");
    OPENGL_init  ();
-   /*> OPENGL_draw  ();                                                               <* 
-    *> OPENGL_mask  ();                                                               <*/
+   OPENGL_draw  ();
+   OPENGL_show  ();
+   /*> OPENGL_mask  ();                                                               <*/
    /*> yVIKEYS_cmds_direct   (":window col_rig");                                     <* 
     *> yVIKEYS_menu_add ("µv?u", "urgent"    , ":help u¦");                           <* 
     *> yVIKEYS_menu_add ("µv?i", "important" , ":help i¦");                           <* 
@@ -304,6 +338,9 @@ PROG_dawn          (void)
    /*---(ready display)-------------------------*/
    /*> OPENGL_resize (my.w_wide, my.w_tall);                                            <*/
    prog_signals();
+   api_yvikeys_refresh ();
+   api_yvikeys__resize ('-');
+   yVIEW_debug_list ();
    /*---(complete)------------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -373,8 +410,12 @@ PROG_dispatch           (void)
       break;
    case CASE_NORMAL     : case CASE_STRICT     :
       rc = PROG_dawn    ();
-      if (rc >= 0)  rc = yVIOPENGL_main  ("keys", "every", NULL);
+      DEBUG_PROG    yLOG_value   ("dawn"      , rc);
+      if (rc < 0)  break;
+      rc = yVIOPENGL_main  ("keys", "every", NULL);
+      DEBUG_PROG    yLOG_value   ("main"      , rc);
       rc = PROG_dusk   ();
+      DEBUG_PROG    yLOG_value   ("dusk"      , rc);
       break;
       /*---(trouble)---------------------*/
    default              :
@@ -400,6 +441,10 @@ PROG__end               (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   /*> metis_data_wrap   ();                                                          <*/
+   /*> metis_source_wrap ();                                                          <*/
+   metis_minor_wrap  ();
+   metis_major_wrap  ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
