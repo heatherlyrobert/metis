@@ -186,6 +186,11 @@ metis_source_hook        (tSOURCE *a_source, tTASK *a_task)
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   DEBUG_DATA   yLOG_point   ("->source"  , a_task->source);
+   --rce;  if (a_task->source != NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(onto major)---------------------*/
    DEBUG_DATA   yLOG_point   ("head"      , a_source->head);
    DEBUG_DATA   yLOG_point   ("tail"      , a_source->tail);
@@ -223,9 +228,8 @@ metis_source_unhook      (tTASK *a_task)
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   DEBUG_DATA   yLOG_point   ("count"     , a_task->source->count);
-   --rce;  if (a_task->source->count > 0) {
-      DEBUG_DATA   yLOG_note    ("minor has children, can not unhook");
+   DEBUG_DATA   yLOG_point   ("->source"  , a_task->source);
+   --rce;  if (a_task->source == NULL) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }

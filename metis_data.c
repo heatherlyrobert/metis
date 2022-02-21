@@ -7,11 +7,16 @@
  * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
  *
  * metis § dw2#Ï § add data refresh command and check                                       § 1645047879 § 1645055000 §
+ *
  * metis § dw2·· § add data refresh to menus                                                § 1645047880 § ·········· §
  * metis § ww4-· § add mark to tasks so that they can be selected to a short list           § 1645047881 § ·········· §
  * metis § ww4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y         § 1645047882 § ·········· §
  * metis § ww4-· § add sharing flag to control database usage and marking                   § 1645047883 § ·········· §
  * metis § wl4-· § switch beg and end dates to pseudo-mongo (6 chars)                       § 1645162236 § ·········· §
+ * metis § dv2·· § when data is refreshed, the number of cards shown must be updated        § 1645438169 § ·········· §
+ * metis § mv4·· § add a metis field for extra data, text, and notes (variable length)      § 1645438452 § ·········· §
+ * metis § wno·· § build central database capability                                        § 1645438579 § ·········· §
+ *
  *
  */
 
@@ -81,7 +86,7 @@ const tDECODE g_decode   [] = {
    { 'i', 'm', "might"       , "plausable, could be done, but there is no real push"          },
    { 'i', '-', "backlog"     , "not been assigned an importance"                              },
    /*---(estimate)-----------------------*/
-   { 'e', '*', "huge"        , "longer than a full day of work"                               },
+   { 'e', 'o', "huge"        , "longer than a full day of work"                               },
    { 'e', '8', "480m"        , "full day of work, or possibly until start of the next day"    },
    { 'e', '4', "240m"        , "half day of work, which means serious focus and dedication"   },
    { 'e', '2', "120m"        , "couple hours, meaning dedicated focus and continuous time"    },
@@ -133,6 +138,8 @@ metis_data_init         (void)
    char        t           [LEN_LABEL];
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
+   /*---(purge tasks)--------------------*/
+   metis_task_wrap ();
    /*---(create validation strings)------*/
    strlcpy (my.urgs, "", LEN_LABEL);
    strlcpy (my.imps, "", LEN_LABEL);
@@ -157,7 +164,6 @@ metis_data_init         (void)
    DEBUG_INPT   yLOG_info     ("my.shrs"   , my.shrs);
    /*---(add commands and menus)---------*/
    yCMD_add (YCMD_M_FILE   , "refresh"     , "r"   , ""     , api_yvikeys_refresh , ""                   );
-   /*> yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "dump"        , ""    , ""     , task_dump           , ""                   );   <*/
    /*---(complete)-----------------------*/
    DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -175,34 +181,6 @@ char      g_recd [LEN_RECD] = "";      /* record from stdin                   */
 char*     p         = NULL;         /* strtok() parsing pointer            */
 char     *q         = "";         /* strtok() delimiters                 */
 
-
-char             /* [p-----] initialize a single task ------------------------*/
-DATA__clear        (int a_num)
-{
-   /*> /+---(master data)-----------------+/                                                    <* 
-    *> g_tasks [a_num].one [0]  = '\0';                                                         <* 
-    *> g_tasks [a_num].two [0]  = '\0';                                                         <* 
-    *> g_tasks [a_num].urg      = '-';                                                          <* 
-    *> g_tasks [a_num].imp      = '-';                                                          <* 
-    *> g_tasks [a_num].est      = '-';                                                          <* 
-    *> g_tasks [a_num].prg      = '-';                                                          <* 
-    *> g_tasks [a_num].shr      = '-';                                                          <* 
-    *> g_tasks [a_num].txt [0]  = '\0';                                                         <* 
-    *> /+> g_tasks [a_num].beg      =   0;                                                <+/   <* 
-    *> /+> g_tasks [a_num].end      =   0;                                                <+/   <* 
-    *> /+---(source data)-----------------+/                                                    <* 
-    *> g_tasks [a_num].line     =  -1;                                                          <* 
-    *> g_tasks [a_num].seq      =  -1;                                                          <* 
-    *> /+---(filtering)-------------------+/                                                    <* 
-    *> g_tasks [a_num].act      = '-';                                                          <* 
-    *> g_tasks [a_num].key [0]  = '\0';                                                         <* 
-    *> /+---(visualization)---------------+/                                                    <* 
-    *> g_tasks [a_num].pos      =  0;                                                           <* 
-    *> g_tasks [a_num].col      = -1;                                                           <* 
-    *> g_tasks [a_num].row      = -1;                                                           <* 
-    *> /+---(complete)-----------------------+/                                                 <* 
-    *> return 0;                                                                                <*/
-}
 
 char
 metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel, char *a_desc)
@@ -413,14 +391,6 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    }
    /*---(source)------------------------*/
    x_task->line = a_line;
-   /*---(categories)--------------------*/
-   /*> strlcpy  (g_tasks [g_ntask].one, s_one, LEN_LABEL);                            <* 
-    *> strlcpy  (g_tasks [g_ntask].two, s_two, LEN_LABEL);                            <* 
-    *> strlcpy  (g_tasks [g_ntask].source, a_source, LEN_LABEL);                      <* 
-    *> g_tasks [g_ntask].line  = a_line;                                              <* 
-    *> g_tasks [g_ntask].seq   = g_ntask;                                             <* 
-    *> ++g_ntask;                                                                     <*/
-   /*> DEBUG_INPT   yLOG_value    ("g_ntask"   , g_ntask);                            <*/
    /*---(stats)--------------------------*/
    DEBUG_INPT   yLOG_value    ("majors"    , metis_major_count ());
    DEBUG_INPT   yLOG_value    ("minors"    , metis_minor_count ());
@@ -818,6 +788,13 @@ metis_data_refresh      (void)
    ++c;
    /*---(add placeholder)----------------*/
    DATA__blankcard ();
+   /*---(refresh others)-----------------*/
+   FILTER_refresh  ();
+   FORMAT_refresh  ();
+   CROW = CCOL = 0;
+   yMAP_refresh_full ();
+   /*> metis_opengl_draw ();                                                          <* 
+    *> metis_opengl_mask ();                                                          <*/
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return rc;
@@ -827,136 +804,6 @@ char
 DATA__blankcard    (void)
 {
    DEBUG_INPT   yLOG_bullet  (g_ntask     , "adding blank card");
-   DATA__clear (g_ntask);
-   strlcpy (g_tasks [g_ntask].one, "empty", LEN_LABEL);
-   strlcpy (g_tasks [g_ntask].two, "empty", LEN_LABEL);
-   strlcpy (g_tasks [g_ntask].txt, "this card intentionally left blank", LEN_HUND);
-   g_tasks [g_ntask].act = '-';
-   return 0;
-}
-
-
-
-/*====================------------------------------------====================*/
-/*===----                        task cursor                           ----===*/
-/*====================------------------------------------====================*/
-static void      o___CURSOR__________________o (void) {;}
-
-static int s_cursor  = -1;
-
-int          /*--> find the nth active task ---------[------ [---------------]*/
-DATA_cursor             (char a_type)
-{
-   /*---(locals)-----------+-----+-----+-*/
-   int         i           =    0;
-   int         x_beg       =    0;
-   /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
-   DEBUG_DATA   yLOG_value    ("g_ntask"   , g_ntask);
-   /*---(adjust max)---------------------*/
-   switch (a_type) {
-   case YDLST_HEAD :  x_beg = 0;              break;
-   case YDLST_NEXT :  x_beg = s_cursor + 1;   break;
-   }
-   /*---(findst max)---------------------*/
-   for (i = x_beg; i <= g_ntask; ++i) {
-      /*---(filter)-------------------*/
-      DEBUG_DATA   yLOG_complex  ("card"      , "%2d, %c %s", i, g_tasks [i].act, g_tasks [i].txt);
-      if (g_tasks [i].act != 'y')  continue;
-      /*---(found)--------------------*/
-      s_cursor = i;
-      DEBUG_DATA   yLOG_value    ("FOUND"     , s_cursor);
-      DEBUG_DATA   yLOG_exit    (__FUNCTION__);
-      return s_cursor;
-      /*---(done)---------------------*/
-   }
-   s_cursor = -1;
-   /*---(complete)------------------------------*/
-   DEBUG_DATA   yLOG_exitr   (__FUNCTION__, -1);
-   return -1;
-}
-
-
-
-/*====================------------------------------------====================*/
-/*===----                          reporting                           ----===*/
-/*====================------------------------------------====================*/
-static void      o___REPORTING_______________o (void) {;}
-
-char             /* [G-----] output a formatted report of tasks --------------*/
-task_list          (void)
-{
-   /*---(locals)-----------+-----------+-*/
-   int         i           = 0;
-   /*---(display)------------------------*/
-   printf (" num     u i e f     ------one------     ------two------     ----------------------------------text--------------------------------     a seq     --pos-- -col- -row-\n");
-   for (i = 0; i < g_ntask; ++i) {
-      if ((i % 3) == 0)  printf ("\n");
-      printf (" %3d  "              , i);
-      if (g_tasks [i].prg == 'h') {
-         printf ("   %c-%c-%c-%c  ", g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
-      } else {
-         printf ("   %c %c %c %c  ", g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
-      }
-      printf ("   %-15s     %-15s  ", g_tasks [i].one, g_tasks [i].two);
-      printf ("   %-70.70s  "       , g_tasks [i].txt);
-      printf ("   %c  "             , g_tasks [i].act);
-      printf ("   %7d %5d %5d   \n" , g_tasks [i].pos, g_tasks [i].col, g_tasks [i].row);
-   }
-   printf ("\n");
-   printf (" num     u i e f     ------one------     ------two------     ----------------------------------text--------------------------------     a seq     --pos-- -col- -row-\n");
-   printf ("g_ntask = %3d, max_disp %3d, my.nact = %3d\n", g_ntask, max_disp, my.nact);
-   /*---(complete)-----------------------*/
-   return 0;
-}
-
-char             /* [G-----] output a formatted structure of tasks -----------*/
-task_structure     (void)
-{
-   /*---(locals)-----------+-----------+-*/
-   int         i           = 0;
-   char        s_one       [15] = "";  /* save/prev major category            */
-   char        s_two       [15] = "";  /* save/prev minor category            */
-   int         n           = 0;
-   /*---(display)------------------------*/
-   printf ("\n");
-   printf (" num     ------one------     ------two------\n");
-   for (i = 0; i < g_ntask; ++i) {
-      if (strcmp (g_tasks [i].one, s_one) != 0) {
-         ++n;
-         printf (" %3d  |  %-15s  |  %-15s  \n", i, g_tasks [i].one, g_tasks [i].two);
-         strcpy (s_one, g_tasks [i].one);
-         strcpy (s_two, g_tasks [i].two);
-      } else if (strcmp (g_tasks [i].two, s_two) != 0) {
-         ++n;
-         printf (" %3d  |  %-15s  |  %-15s  \n", i, " ", g_tasks [i].two);
-         strcpy (s_two, g_tasks [i].two);
-      }
-   }
-   printf (" num     ------one------     ------two------\n");
-   printf ("g_ntask = %3d, groups = %3d\n", g_ntask, n);
-   /*---(complete)-----------------------*/
-   return 0;
-}
-
-char
-task_dump          (void)
-{
-   /*---(locals)-----------+-----------+-*/
-   int         i           =    0;
-   int         c           =    0;
-   /*---(display)------------------------*/
-   for (i = 0; i < g_ntask; ++i) {
-      if (g_tasks [i].act != 'y')  continue;
-      if (c % 5 == 0) printf ("##-----one--------  -------two--------  uiep·  ----------------------------------text-------------------------------- \n");
-      printf ("%-18s  %-18s ", g_tasks [i].one, g_tasks [i].two);
-      printf (" %c%c%c%c· "    , g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
-      printf (" %-70.70s "     , g_tasks [i].txt);
-      printf ("\n");
-      ++c;
-   }
-   printf ("## end-of-file\n");
-   /*---(complete)-----------------------*/
    return 0;
 }
 

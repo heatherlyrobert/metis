@@ -167,7 +167,7 @@ metis_rptg_matrix       (void)
    metis_rptg__number (2, q [0][1], t [0][1]);
    metis_rptg__number (3, q [1][1], t [1][1]);
    /*  */ printf ("                                                       \n");
-   /*  */ printf ("           7d+      urgency      6d-                   \n");
+   /*  */ printf ("           7+       urgency       6-                   \n");
    /*  */ printf (" II                                         I          \n");
    /*  */ printf ("    %3s  -   y   m   w   d   s   t   !  %3s            \n", t [0][0], t [1][0]);
    /*  */ printf ("       ƒ€€€€€€€‰€€€€€€€‰€€€€€€€‰€€€€€€€‚               \n");

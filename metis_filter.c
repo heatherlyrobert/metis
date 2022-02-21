@@ -63,6 +63,8 @@ FILTER_refresh          (void)
 {
    /*---(locals)-----------+-----------+-*/
    int         i           = 0;
+   char        x_show      =  'y';
+   tTASK      *x_task      = NULL;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    DEBUG_DATA   yLOG_char     ("my.curg"    , my.curg);
@@ -71,59 +73,59 @@ FILTER_refresh          (void)
    DEBUG_DATA   yLOG_char     ("my.cflg"    , my.cflg);
    /*---(prepare)------------------------*/
    my.nact = 0;
-   g_tasks [g_ntask].act = '-';
    /*---(display)------------------------*/
-   for (i = 0; i < g_ntask; ++i) {
-      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", i, g_tasks [i].urg, g_tasks [i].imp, g_tasks [i].est, g_tasks [i].prg);
+   metis_task_by_cursor (YDLST_HEAD, &x_task);
+   while (x_task != NULL) {
+      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", i, x_task->urg, x_task->imp, x_task->est, x_task->prg);
       /*---(default)---------------------*/
-      g_tasks [i].act  = '-';
+      x_task->show  = 'y';
       /*> if (my.nact > NROWS)  continue;                                         <*/
       /*---(urgency)---------------------*/
-      if ((my.curg != ' ' && g_tasks [i].urg != my.curg)) {
+      if ((my.curg != ' ' && x_task->urg != my.curg)) {
          DEBUG_DATA   yLOG_note     ("skip as urgent does not match filter");
-         continue;
+         x_task->show = '-';
       }
       /*---(importance)------------------*/
-      if ((my.cimp != ' ' && g_tasks [i].imp != my.cimp)) {
+      else if ((my.cimp != ' ' && x_task->imp != my.cimp)) {
          DEBUG_DATA   yLOG_note     ("skip as importance does not match filter");
-         continue;
+         x_task->show = '-';
       }
       /*---(estimate)--------------------*/
-      if ((my.cest != ' ' && g_tasks [i].est != my.cest)) {
+      else if ((my.cest != ' ' && x_task->est != my.cest)) {
          DEBUG_DATA   yLOG_note     ("skip as estimate does not match filter");
-         continue;
+         x_task->show = '-';
       }
       /*---(status)----------------------*/
-      if ((my.cflg != ' ' && g_tasks [i].prg != my.cflg)) {
+      else if ((my.cflg != ' ' && x_task->prg != my.cflg)) {
          DEBUG_DATA   yLOG_note     ("skip as flag/status does not match filter");
-         continue;
+         x_task->show = '-';
       }
       /*---(one)-------------------------*/
-      if (my.cone [0] != '\0' && strstr (g_tasks [i].one, my.cone) == NULL) {
-         DEBUG_DATA   yLOG_note     ("skip as cat one does not contain filter");
-         continue;
-      }
+      /*> if (my.cone [0] != '\0' && strstr (x_task->one, my.cone) == NULL) {          <* 
+       *>    DEBUG_DATA   yLOG_note     ("skip as cat one does not contain filter");   <* 
+       *>    continue;                                                                 <* 
+       *> }                                                                            <*/
       /*---(two)-------------------------*/
-      if (my.ctwo [0] != '\0' && strstr (g_tasks [i].two, my.ctwo) == NULL) {
-         DEBUG_DATA   yLOG_note     ("skip as cat two does not contain filter");
-         continue;
-      }
+      /*> if (my.ctwo [0] != '\0' && strstr (x_task->two, my.ctwo) == NULL) {          <* 
+       *>    DEBUG_DATA   yLOG_note     ("skip as cat two does not contain filter");   <* 
+       *>    continue;                                                                 <* 
+       *> }                                                                            <*/
       /*---(text)------------------------*/
-      if (my.ctxt [0] != '\0' && strstr (g_tasks [i].txt, my.ctxt) == NULL) {
-         DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");
-         continue;
-      }
+      /*> if (my.ctxt [0] != '\0' && strstr (x_task->txt, my.ctxt) == NULL) {         <* 
+       *>    DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");      <* 
+       *>    continue;                                                                <* 
+       *> }                                                                           <*/
       /*---(increment)-------------------*/
-      g_tasks [i].act  = 'y';
-      ++my.nact;
+      if (x_task->show == 'y')  ++my.nact;
+      metis_task_by_cursor (YDLST_NEXT, &x_task);
       /*---(done)------------------------*/
    }
    DEBUG_DATA   yLOG_value    ("my.nact"  , my.nact);
-   if (my.nact == 0) {
-      DEBUG_DATA   yLOG_note     ("add placeholder");
-      g_tasks [g_ntask].act = 'y';
-      ++my.nact;
-   }
+   /*> if (my.nact == 0) {                                                            <* 
+    *>    DEBUG_DATA   yLOG_note     ("add placeholder");                             <* 
+    *>    g_tasks [g_ntask].act = 'y';                                                <* 
+    *>    ++my.nact;                                                                  <* 
+    *> }                                                                              <*/
    DEBUG_DATA   yLOG_value    ("my.nact"  , my.nact);
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);

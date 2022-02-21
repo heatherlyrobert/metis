@@ -142,13 +142,20 @@ metis_task_free        (tTASK **r_old)
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   /*---(unhook from major)--------------*/
+   /*---(unhook from minor)--------------*/
    rc = metis_minor_unhook (*r_old);
    DEBUG_DATA   yLOG_value   ("unhook"    , rc);
    --rce;  if (rc < 0) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   /*---(unhook from major)--------------*/
+   /*> rc = metis_source_unhook (*r_old);                                             <* 
+    *> DEBUG_DATA   yLOG_value   ("unhook"    , rc);                                  <* 
+    *> --rce;  if (rc < 0) {                                                          <* 
+    *>    DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                              <* 
+    *>    return rce;                                                                 <* 
+    *> }                                                                              <*/
    /*---(unhook from btree)--------------*/
    rc = ySORT_unhook (&((*r_old)->ysort));
    DEBUG_DATA   yLOG_value   ("btree"     , rc);

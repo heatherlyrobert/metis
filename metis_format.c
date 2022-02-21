@@ -6,6 +6,9 @@
  * metis § ww4-· § add --lstreamer (two screen) vs -streamer (one screen)                   § 1645047884 § ·········· §
  * metis § ww4-· § bring back menu items and commands for formatting                        § 1645047885 § ·········· §
  * metis § dn2·· § data refresh needs to update card count and format                       § 1645162543 § ·········· §
+ *
+ * metis § mn*·· § format that has four indenpendently chosen and scrolled columns          § 1645438354 § ·········· §
+ *
  */
 
 
@@ -57,17 +60,19 @@ format__assign     (void)
    int         x_col, x_row;
    int         n           =    0;
    int         c           =    0;
+   tTASK      *x_task      = NULL;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    /*---(prepare)------------------------*/
    format__clear ();
-   n = DATA_cursor (YDLST_HEAD);
+   n = metis_task_count ();
    if (n < 0) {
       DEBUG_DATA   yLOG_note     ("no data available");
       DEBUG_DATA   yLOG_exit     (__FUNCTION__);
       return 0;
    }
    /*---(walk tasks)---------------------*/
+   metis_task_by_cursor (YDLST_HEAD, &x_task);
    for (x_col = 1; x_col <= TCOLS; ++x_col) {
       for (x_row = 1; x_row <= TROWS; ++x_row) {
          /*---(process)--------*/
@@ -80,8 +85,8 @@ format__assign     (void)
          /*---(output)---------*/
          DEBUG_DATA   yLOG_complex  ("place"     , "%2dx ,%2dy, %2dc, %2d ncols, %2d nrows", x_col, x_row, c, NCOLS, NROWS);
          /*---(next)-----------*/
-         n = DATA_cursor (YDLST_NEXT);
-         if (n < 0) {
+         metis_task_by_cursor (YDLST_NEXT, &x_task);
+         if (x_task == NULL) {
             DEBUG_DATA   yLOG_note     ("done with existing data");
             DEBUG_DATA   yLOG_exit     (__FUNCTION__);
             return c;

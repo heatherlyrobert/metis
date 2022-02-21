@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5c"
-#define     P_VERTXT    "tasks, sources, and very basic reporting"
+#define     P_VERNUM    "1.5d"
+#define     P_VERTXT    "source unit testing done"                   
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -44,11 +44,11 @@
 
 /*
  * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
- * metis § wv8·· § write interactive-use manual for metis                                   § 1645134601 § ·········· §
+ * metis § wc8·· § write interactive-use manual for metis                                   § 1645134601 § ·········· §
  *
  */
 
-/*  ,x··0D··:put =strftime('%s')¦···0kdd··i * metis § ····· § tbd                                                                                  § ¥··$a § ·········· §¥··,y         */
+/*  ,x··0D··:put =strftime('%s')¦···0kdd··i * metis § ····· § tbd                                                                              § ¥··$a § ·········· §¥··,y         */
 
 /*
  * few people regularly (except under duress) keep task lists
@@ -373,6 +373,7 @@ struct cMY {
    int         fixed;                       /* fixed font                     */
    int         pretty;                      /* pretty font                    */
    char        lines;                       /* show some helpful debug stats  */
+   char        png;                         /* png save control flag          */
    /*---(data source)--------------------*/
    char        source;                      /* data sourcing location         */
    char        file        [LEN_RECD];      /* file for reading tasks         */
@@ -510,27 +511,13 @@ extern float     step;
 int        main              (int a_argc, char *a_argv []);
 
 
-char       font_load         (void);
-char       font_delete       (void);
 
-char             /* [G-----] output a formatted report of tasks --------------*/
-task_list          (void);
 
-char             /* [G-----] output a formatted structure of tasks -----------*/
-task_structure     (void);
 
-char       task_dump          (void);
 
-/*---(program-level)------------------*/
-char       OPENGL_init              (void);
-char       OPENGL_wrap              (void);
 /*---(task texture)-------------------*/
-char       OPENGL_show              (void);
-char       OPENGL_draw              (void);
 char       OPENGL_resize            (uint, uint);
-char       OPENGL_mask              (void);
 
-char        OPENGL__clearall        (void);
 char*       OPENGL__unit            (char *a_question, int a_num);
 
 void       prog_catch        (int);
@@ -561,7 +548,6 @@ char        metis_data_refresh      (void);
 
 
 char        DATA__blankcard         (void);
-int         DATA_cursor             (char a_type);
 char*       DATA__unit              (char *a_question, int a_num);
 
 
@@ -736,6 +722,40 @@ char        metis_task_wrap         (void);
 /*---(done)-----------------*/
 
 
+
+/*===[[ metis_opengl.c ]]=====================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(support)--------------*/
+char        metis_opengl_color      (char *a_valid, char a_color, float a_alpha);
+char        metis_opengl_font_load  (void);
+char        metis_opengl_font_close (void);
+/*---(program)--------------*/
+char        metis_opengl_init       (void);
+char        metis_opengl_wrap       (void);
+/*---(show)-----------------*/
+char        metis_opengl__panel     (float a_wtop, float a_wlef, float a_wbot, float a_wrig, float a_ttop, float a_tlef, float a_tbot, float a_trig);
+char        metis_opengl__tickers   (float *a_xcur, float *a_ycur);
+char        metis_opengl__columns   (float *a_xcur, float *a_ycur);
+char        metis_opengl__larges    (float *a_xcur, float *a_ycur);
+char        metis_opengl__current   (float a_xcur, float a_ycur);
+char        metis_opengl_show       (void);
+/*---(draw)-----------------*/
+char        metis_opengl__urg       (char a_value, int z);
+char        metis_opengl__imp       (char a_value, int z);
+char        metis_opengl__est       (char a_value, int z);
+char        metis_opengl__prg       (char a_value, int z);
+char        metis_opengl__age       (int  a_value, int z);
+char        metis_opengl__bullets   (void);
+char        metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text);
+char        metis_opengl__cats      (char a_urg, char a_imp, char a_est);
+char        metis_opengl__borders   (void);
+char        metis_opengl__card      (int a_index);
+char        metis_opengl__colrow    (int a_max, short a_xinc, short a_yinc);
+char        metis_opengl__prep      (void);
+char        metis_opengl_draw       (void);
+/*---(mask)-----------------*/
+char        metis_opengl_mask       (void);
+/*---(done)-----------------*/
 
 
 #endif

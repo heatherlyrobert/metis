@@ -231,8 +231,8 @@ api_yvikeys_sort        (char *a_how)
    SORT_refresh   ();
    /*> FILTER_refresh ();                                                             <*/
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
-   OPENGL_draw ();
-   /*> OPENGL_mask();                                                                 <*/
+   metis_opengl_draw ();
+   metis_opengl_mask();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -256,8 +256,8 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    /*> SORT_refresh   ();                                                             <*/
    FILTER_refresh ();
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
-   OPENGL_draw ();
-   /*> OPENGL_mask();                                                                 <*/
+   metis_opengl_draw ();
+   metis_opengl_mask();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -300,8 +300,8 @@ api_yvikeys_window      (char *a_format)
    api_yvikeys__resize ('-');
    /*> yVIKEYS_map_refresh ();                                                        <*/
    /*> api_yvikeys_mapper  (YVIKEYS_INIT);                                            <*/
-   OPENGL_draw ();
-   /*> OPENGL_mask();                                                                 <*/
+   metis_opengl_draw ();
+   metis_opengl_mask();
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -317,8 +317,8 @@ api_yvikeys_refresh     (void)
    FORMAT_refresh ();
    api_yvikeys__resize ('-');
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
-   OPENGL_draw    ();
-   /*> OPENGL_mask    ();                                                             <*/
+   metis_opengl_draw    ();
+   metis_opengl_mask    ();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }

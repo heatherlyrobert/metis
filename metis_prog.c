@@ -132,6 +132,7 @@ PROG__init              (void)
    my.quit    = '-';
    my.trouble = '-';
    strlcpy (my.win_title, "metis_tasklist", LEN_DESC);
+   my.png     = '-';
    /*---(elements)-----------------------*/
    metis_major_init  ();
    metis_minor_init  ();
@@ -200,6 +201,8 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strcmp  (a, "--master"        ) == 0)  my.source = DATA_MASTER;
       else if (strcmp  (a, "--code"          ) == 0)  my.source = DATA_SOURCES;
       /*---(control)---------------------*/
+      else if (strcmp  (a, "--pngonly"       ) == 0)  my.png    = 'y';
+      else if (strcmp  (a, "--pngalso"       ) == 0)  my.png    = '+';
       else if (strcmp  (a, "--lines"         ) == 0)  my.lines  = 'y';
       else if (strcmp  (a, "--foreground"    ) == 0)  my.daemon = '-';
       /*---(file)------------------------*/
@@ -306,8 +309,6 @@ PROG_dawn          (void)
    /*> rc = FILE_init      ();                                                        <*/
    /*> rc = yFILE_whoami   (P_FULLPATH, P_VERNUM, P_VERTXT, P_ONELINE, P_SUFFIX, P_CONTENT, NULL, NULL, NULL);   <*/
    /*> rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");   <*/
-
-   /*> task_list ();                                                                  <*/
    if (my.daemon == 'y') {
       rc = daemon (1, 0);
       if (rc != 0) return rc;
@@ -315,8 +316,8 @@ PROG_dawn          (void)
    /*---(open window)---------------------------*/
    api_yvikeys_init      ();
    /*---(create texture)------------------------*/
-   font_load ();
-   rc = yVIEW_full (YVIEW_MAIN , YVIEW_FLAT, YVIEW_TOPLEF,  1, 0, OPENGL_show);
+   metis_opengl_font_load ();
+   rc = yVIEW_full (YVIEW_MAIN , YVIEW_FLAT, YVIEW_TOPLEF,  1, 0, metis_opengl_show);
    DEBUG_PROG   yLOG_value    ("MAIN"      , rc);
    yCMD_direct (":layout  min");
    yCMD_direct (":title   disable");
@@ -326,10 +327,10 @@ PROG_dawn          (void)
    yCMD_direct (":details disable");
    yCMD_direct (":ribbon  disable");
    yCMD_direct (":keys    disable");
-   OPENGL_init  ();
-   OPENGL_draw  ();
-   OPENGL_show  ();
-   /*> OPENGL_mask  ();                                                               <*/
+   metis_opengl_init  ();
+   metis_opengl_draw  ();
+   metis_opengl_show  ();
+   metis_opengl_mask  ();
    /*> yVIKEYS_cmds_direct   (":window col_rig");                                     <* 
     *> yVIKEYS_menu_add ("µv?u", "urgent"    , ":help u¦");                           <* 
     *> yVIKEYS_menu_add ("µv?i", "important" , ":help i¦");                           <* 
@@ -353,7 +354,7 @@ PROG_dusk               (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   font_delete();
+   metis_opengl_font_close ();
    /*> yX11_end();                  /+ close window and xwin context            +/    <*/
    yVIOPENGL_wrap ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
@@ -414,7 +415,7 @@ PROG_dispatch           (void)
       rc = PROG_dawn    ();
       DEBUG_PROG    yLOG_value   ("dawn"      , rc);
       if (rc < 0)  break;
-      rc = yVIOPENGL_main  ("keys", "every", NULL);
+      if (my.png != 'y')   rc = yVIOPENGL_main  ("keys", "every", NULL);
       DEBUG_PROG    yLOG_value   ("main"      , rc);
       rc = PROG_dusk   ();
       DEBUG_PROG    yLOG_value   ("dusk"      , rc);
