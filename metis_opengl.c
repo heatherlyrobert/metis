@@ -1028,7 +1028,7 @@ OPENGL_help_one         (char a_type, int a_col)
       glTranslatef (a_col * my.c_offset, 0.0, 0.0);
       for (i = 0; i < x_max; ++i) {
          x_abbr = p [i];
-         DATA_catinfo (a_type, x_abbr, x_label, x_desc);
+         metis_data_catinfo (a_type, x_abbr, NULL, x_label, x_desc);
          sprintf (x_text, "%s, %s", x_label, x_desc);
          if (a_type == 'p')   OPENGL__base    (x_abbr);
          else                 OPENGL__base    (0);

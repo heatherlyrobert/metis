@@ -227,7 +227,7 @@ api_yvikeys_sort        (char *a_how)
    else if (strcmp (a_how, "ascend"  ) == 0)   my.order = 'a';
    else if (strcmp (a_how, "descend" ) == 0)   my.order = 'd';
    else                                        return -2;
-   /*> DATA_refresh   ();                                                             <*/
+   /*> metis_data_refresh   ();                                                             <*/
    SORT_refresh   ();
    /*> FILTER_refresh ();                                                             <*/
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
@@ -252,7 +252,7 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    else if (strcmp (a_which, "txt"     ) == 0)   strlcpy (my.ctxt, a_string, LEN_HUND);
    else if (strcmp (a_which, "clear"   ) == 0)   FILTER_clear ();
    else                                        return -3;
-   /*> DATA_refresh   ();                                                             <*/
+   /*> metis_data_refresh   ();                                                             <*/
    /*> SORT_refresh   ();                                                             <*/
    FILTER_refresh ();
    /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
@@ -311,7 +311,7 @@ char
 api_yvikeys_refresh     (void)
 {
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
-   DATA_refresh   ();
+   metis_data_refresh   ();
    SORT_refresh   ();
    FILTER_refresh ();
    FORMAT_refresh ();

@@ -133,10 +133,12 @@ PROG__init              (void)
    my.trouble = '-';
    strlcpy (my.win_title, "metis_tasklist", LEN_DESC);
    /*---(elements)-----------------------*/
-   metis_major_init ();
-   metis_minor_init ();
+   metis_major_init  ();
+   metis_minor_init  ();
+   metis_task_init   ();
+   metis_source_init ();
    /*---(yvikeys config)-----------------*/
-   DATA_init ();
+   metis_data_init ();
    FILTER_init ();
    FORMAT_init ();
    /*---(complete)-----------------------*/
@@ -230,21 +232,21 @@ PROG__begin             (void)
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(process data)-------------------*/
-   rc = DATA_refresh   ();
+   rc = metis_data_refresh   ();
    DEBUG_PROG   yLOG_value    ("data"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
-   rc = SORT_refresh   ();
+   /*> rc = SORT_refresh   ();                                                        <*/
    DEBUG_PROG   yLOG_value    ("sort"      , rc);
-   rc = FILTER_refresh ();
+   /*> rc = FILTER_refresh ();                                                        <*/
    DEBUG_PROG   yLOG_value    ("filter"    , rc);
-   --rce;  if (g_ntask <= 0) {
-      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
-      return rce;
-   }
-   rc = FORMAT_refresh ();
+   /*> --rce;  if (g_ntask <= 0) {                                                    <* 
+    *>    DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);                             <* 
+    *>    return rce;                                                                 <* 
+    *> }                                                                              <*/
+   /*> rc = FORMAT_refresh ();                                                        <*/
    DEBUG_PROG   yLOG_value    ("format"    , rc);
    /*---(overall)------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
@@ -441,8 +443,8 @@ PROG__end               (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   /*> metis_data_wrap   ();                                                          <*/
-   /*> metis_source_wrap ();                                                          <*/
+   metis_task_wrap   ();
+   metis_source_wrap ();
    metis_minor_wrap  ();
    metis_major_wrap  ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);

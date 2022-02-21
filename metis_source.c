@@ -9,11 +9,11 @@
 static void  o___SUPPORT_________o () { return; }
 
 char
-metis_major_wipe        (tMAJOR *a_dst)
+metis_source_wipe        (tSOURCE *a_dst)
 {
    if (a_dst == NULL)  return -1;
    /*---(overall)-----------*/
-   a_dst->name     [0] = '\0';
+   a_dst->path     [0] = '\0';
    /*---(files)-------------*/
    a_dst->head      = NULL;
    a_dst->tail      = NULL;
@@ -31,7 +31,7 @@ metis_major_wipe        (tMAJOR *a_dst)
 static void  o___MEMORY__________o () { return; }
 
 char
-metis_major_new         (char *a_name, char a_force, tMAJOR **r_new)
+metis_source_new         (char *a_path, char a_force, tSOURCE **r_new)
 {  /*---(design notes)-------------------*/
    /*
     * a_force   '-' means r_new must be grounded (safefy), update btree
@@ -41,18 +41,18 @@ metis_major_new         (char *a_name, char a_force, tMAJOR **r_new)
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
-   tMAJOR     *x_exist     = NULL;
+   tSOURCE    *x_exist     = NULL;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    DEBUG_DATA   yLOG_char    ("a_force"   , a_force);
    /*---(defense)------------------------*/
-   DEBUG_DATA   yLOG_point   ("a_name"    , a_name);
-   --rce;  if (a_name == NULL) {
+   DEBUG_DATA   yLOG_point   ("a_path"    , a_path);
+   --rce;  if (a_path == NULL) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   DEBUG_DATA   yLOG_info    ("a_name"    , a_name);
-   --rce;  if (a_name [0] == '\0') {
+   DEBUG_DATA   yLOG_info    ("a_path"    , a_path);
+   --rce;  if (a_path [0] == '\0') {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
@@ -70,7 +70,7 @@ metis_major_new         (char *a_name, char a_force, tMAJOR **r_new)
    /*---(default)------------------------*/
    *r_new = NULL;
    /*---(check for duplicate)------------*/
-   rc = ySORT_by_name (B_MAJOR, a_name, &x_exist);
+   rc = ySORT_by_name (B_SOURCE, a_path, &x_exist);
    DEBUG_DATA   yLOG_point   ("x_exist"   , x_exist);
    --rce;  if (x_exist != NULL) {
       *r_new = x_exist;
@@ -78,16 +78,16 @@ metis_major_new         (char *a_name, char a_force, tMAJOR **r_new)
       return 1;
    }
    /*---(create)-------------------------*/
-   rc = metis_shared_new  (B_MAJOR, &x_exist, '-', metis_major_wipe);
+   rc = metis_shared_new  (B_SOURCE, &x_exist, '-', metis_source_wipe);
    DEBUG_DATA   yLOG_value   ("new"       , rc);
    --rce;  if (rc < 0) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    /*---(populate)-----------------------*/
-   strlcpy (x_exist->name, a_name, LEN_LABEL);
+   strlcpy (x_exist->path, a_path, LEN_PATH);
    /*---(hook)---------------------------*/
-   rc = ySORT_hook (B_MAJOR, x_exist, x_exist->name, &(x_exist->ysort));
+   rc = ySORT_hook (B_SOURCE, x_exist, x_exist->path, &(x_exist->ysort));
    DEBUG_DATA   yLOG_value   ("hook"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
@@ -95,7 +95,7 @@ metis_major_new         (char *a_name, char a_force, tMAJOR **r_new)
    }
    /*---(prepare)------------------------*/
    if (a_force != 'r') {
-      rc = ySORT_prepare (B_MAJOR);
+      rc = ySORT_prepare (B_SOURCE);
       DEBUG_DATA   yLOG_value   ("prepare"   , rc);
       --rce;  if (rc < 0) {
          DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
@@ -110,7 +110,7 @@ metis_major_new         (char *a_name, char a_force, tMAJOR **r_new)
 }
 
 char
-metis_major_free        (tMAJOR **r_old)
+metis_source_free        (tSOURCE **r_old)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -142,14 +142,14 @@ metis_major_free        (tMAJOR **r_old)
       return rce;
    }
    /*---(free memory)--------------------*/
-   rc = metis_shared_free (B_MAJOR, r_old);
+   rc = metis_shared_free (B_SOURCE, r_old);
    DEBUG_DATA   yLOG_value   ("free"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    /*---(prepare)------------------------*/
-   rc = ySORT_prepare (B_MAJOR);
+   rc = ySORT_prepare (B_SOURCE);
    DEBUG_DATA   yLOG_value   ("prepare"   , rc);
    --rce;  if (rc < 0) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
@@ -168,7 +168,7 @@ metis_major_free        (tMAJOR **r_old)
 static void  o___HOOKING_________o () { return; }
 
 char
-metis_major_hook        (tMAJOR *a_major, tMINOR *a_minor)
+metis_source_hook        (tSOURCE *a_source, tTASK *a_task)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -176,41 +176,41 @@ metis_major_hook        (tMAJOR *a_major, tMINOR *a_minor)
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
-   DEBUG_DATA   yLOG_point   ("a_major"   , a_major);
-   --rce;  if (a_major == NULL) {
+   DEBUG_DATA   yLOG_point   ("a_source"  , a_source);
+   --rce;  if (a_source == NULL) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   DEBUG_DATA   yLOG_point   ("a_minor"   , a_minor);
-   --rce;  if (a_minor == NULL) {
+   DEBUG_DATA   yLOG_point   ("a_task"    , a_task);
+   --rce;  if (a_task == NULL) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    /*---(onto major)---------------------*/
-   DEBUG_DATA   yLOG_point   ("head"      , a_major->head);
-   DEBUG_DATA   yLOG_point   ("tail"      , a_major->tail);
-   if (a_major->head  == NULL) {
+   DEBUG_DATA   yLOG_point   ("head"      , a_source->head);
+   DEBUG_DATA   yLOG_point   ("tail"      , a_source->tail);
+   if (a_source->head  == NULL) {
       DEBUG_DATA   yLOG_note    ("first");
-      a_major->head        = a_major->tail  = a_minor;
+      a_source->head        = a_source->tail  = a_task;
    } else {
       DEBUG_DATA   yLOG_note    ("append");
-      a_minor->prev        = a_major->tail;
-      a_major->tail->next  = a_minor;
-      a_major->tail        = a_minor;
+      a_task->s_prev          = a_source->tail;
+      a_source->tail->s_next  = a_task;
+      a_source->tail        = a_task;
    }
    /*---(tie function back to file)------*/
    DEBUG_DATA   yLOG_note    ("set file");
-   a_minor->major = a_major;
+   a_task->source = a_source;
    /*---(update count)-------------------*/
    DEBUG_DATA   yLOG_note    ("increment counts");
-   ++(a_major->count);
+   ++(a_source->count);
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
-metis_major_unhook      (tMINOR *a_minor)
+metis_source_unhook      (tTASK *a_task)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -218,39 +218,39 @@ metis_major_unhook      (tMINOR *a_minor)
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
-   DEBUG_DATA   yLOG_point   ("a_minor"   , a_minor);
-   --rce;  if (a_minor == NULL) {
+   DEBUG_DATA   yLOG_point   ("a_minor"   , a_task);
+   --rce;  if (a_task == NULL) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   DEBUG_DATA   yLOG_point   ("count"     , a_minor->count);
-   --rce;  if (a_minor->count > 0) {
+   DEBUG_DATA   yLOG_point   ("count"     , a_task->source->count);
+   --rce;  if (a_task->source->count > 0) {
       DEBUG_DATA   yLOG_note    ("minor has children, can not unhook");
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    /*---(out of linked list)-------------*/
-   DEBUG_DATA   yLOG_point   ("head"      , a_minor->major->head);
-   DEBUG_DATA   yLOG_point   ("tail"      , a_minor->major->tail);
+   DEBUG_DATA   yLOG_point   ("head"      , a_task->source->head);
+   DEBUG_DATA   yLOG_point   ("tail"      , a_task->source->tail);
    DEBUG_DATA   yLOG_note    ("unlink");
-   if (a_minor->next != NULL)   a_minor->next->prev  = a_minor->prev;
-   else                         a_minor->major->tail = a_minor->prev;
-   if (a_minor->prev != NULL)   a_minor->prev->next  = a_minor->next;
-   else                         a_minor->major->head = a_minor->next;
-   DEBUG_DATA   yLOG_point   ("head*"     , a_minor->major->head);
-   DEBUG_DATA   yLOG_point   ("tail*"     , a_minor->major->tail);
+   if (a_task->s_next != NULL)   a_task->s_next->s_prev  = a_task->s_prev;
+   else                          a_task->source->tail    = a_task->s_prev;
+   if (a_task->s_prev != NULL)   a_task->s_prev->s_next  = a_task->s_next;
+   else                          a_task->source->head    = a_task->s_next;
+   DEBUG_DATA   yLOG_point   ("head*"     , a_task->source->head);
+   DEBUG_DATA   yLOG_point   ("tail*"     , a_task->source->tail);
    /*---(update count)-------------------*/
    DEBUG_DATA   yLOG_note    ("decrement counts");
-   --(a_minor->major->count);
-   if (a_minor->major->count == 0) {
-      a_minor->major->head  = NULL;
-      a_minor->major->tail  = NULL;
+   --(a_task->source->count);
+   if (a_task->source->count == 0) {
+      a_task->source->head  = NULL;
+      a_task->source->tail  = NULL;
    }
    /*---(ground)-------------------------*/
    DEBUG_DATA   yLOG_note    ("unset file");
-   a_minor->major = NULL;
-   a_minor->prev  = NULL;
-   a_minor->next  = NULL;
+   a_task->source = NULL;
+   a_task->s_prev = NULL;
+   a_task->s_next = NULL;
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -263,22 +263,22 @@ metis_major_unhook      (tMINOR *a_minor)
 /*====================------------------------------------====================*/
 static void  o___SEARCH__________o () { return; }
 
-int  metis_major_count       (void)                            { return ySORT_count     (B_MAJOR); }
-char metis_major_by_name     (uchar *a_name, tMAJOR **r_major) { return ySORT_by_name   (B_MAJOR, a_name, r_major); }
-char metis_major_by_index    (int n, tMAJOR **r_major)         { return ySORT_by_index  (B_MAJOR, n, r_major); }
-char metis_major_by_cursor   (char a_dir, tMAJOR **r_major)    { return ySORT_by_cursor (B_MAJOR, a_dir, r_major); }
+int  metis_source_count       (void)                              { return ySORT_count     (B_SOURCE); }
+char metis_source_by_name     (uchar *a_name, tSOURCE **r_source) { return ySORT_by_name   (B_SOURCE, a_name, r_source); }
+char metis_source_by_index    (int n, tSOURCE **r_source)         { return ySORT_by_index  (B_SOURCE, n, r_source); }
+char metis_source_by_cursor   (char a_dir, tSOURCE **r_source)    { return ySORT_by_cursor (B_SOURCE, a_dir, r_source); }
 
 char*
-metis_major_entry       (int n)
+metis_source_entry       (int n)
 {
-   tMAJOR     *x_major     = NULL;
+   tSOURCE    *x_source     = NULL;
    char        s           [LEN_LABEL] = " -åæ";
    char        t           [LEN_LABEL] = " -åæ";
-   metis_major_by_index (n, &x_major);
-   if (x_major == NULL)  return "n/a";
-   if (x_major->head != NULL)  sprintf (s, "%2då%.20sæ", strlen (x_major->head->name), x_major->head->name);
-   if (x_major->tail != NULL)  sprintf (t, "%2då%.20sæ", strlen (x_major->tail->name), x_major->tail->name);
-   sprintf (g_print, "%-2d %-20.20s %2d %-24.24s %s", n, x_major->name, x_major->count, s, t);
+   metis_source_by_index (n, &x_source);
+   if (x_source == NULL)  return "n/a";
+   if (x_source->head != NULL)  sprintf (s, "%2då%.20sæ", strlen (x_source->head->txt), x_source->head->txt);
+   if (x_source->tail != NULL)  sprintf (t, "%2då%.20sæ", strlen (x_source->tail->txt), x_source->tail->txt);
+   sprintf (g_print, "%-2d %-40.40s %2d %-24.24s %s", n, x_source->path, x_source->count, s, t);
    return g_print;
 }
 
@@ -289,7 +289,7 @@ metis_major_entry       (int n)
 static void  o___PROGRAM_________o () { return; }
 
 char
-metis_major_init        (void)
+metis_source_init        (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -297,7 +297,7 @@ metis_major_init        (void)
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
-   rc = ySORT_btree (B_MAJOR, "majors");
+   rc = ySORT_btree (B_SOURCE, "source");
    DEBUG_PROG   yLOG_value   ("init"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
@@ -309,21 +309,21 @@ metis_major_init        (void)
 }
 
 char
-metis_major_wrap        (void)
+metis_source_wrap        (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
-   tMAJOR     *x_major     = NULL;
+   tSOURCE    *x_source     = NULL;
    int         n           =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(walk)---------------------------*/
-   rc = metis_major_by_index  (n, &x_major);
-   while (x_major != NULL) {
-      rc = metis_major_free   (&x_major);
+   rc = metis_source_by_index  (n, &x_source);
+   while (x_source != NULL) {
+      rc = metis_source_free   (&x_source);
       if (rc < 0) ++n;
-      rc = metis_major_by_index  (n, &x_major);
+      rc = metis_source_by_index  (n, &x_source);
    }
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);

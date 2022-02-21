@@ -92,6 +92,7 @@ metis_minor_new         (tMAJOR *a_major, char *a_name, char a_force, tMINOR **r
       }
       rc = ySORT_by_cursor (B_MINOR, YDLST_NEXT, &x_exist);
    }
+   x_exist = NULL;
    /*---(create)-------------------------*/
    rc = metis_shared_new  (B_MINOR, &x_exist, '-', metis_minor_wipe);
    DEBUG_DATA   yLOG_value   ("new"       , rc);
@@ -137,7 +138,6 @@ metis_minor_free        (tMINOR **r_old)
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
-   tMINOR     *x_exist     = NULL;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
@@ -148,6 +148,12 @@ metis_minor_free        (tMINOR **r_old)
    }
    DEBUG_DATA   yLOG_point   ("*r_old"    , *r_old);
    --rce;  if (*r_old == NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DATA   yLOG_point   ("count"     , (*r_old)->count);
+   --rce;  if ((*r_old)->count > 0) {
+      DEBUG_DATA   yLOG_note    ("minor has children, can not free");
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
@@ -191,68 +197,101 @@ metis_minor_free        (tMINOR **r_old)
 /*====================------------------------------------====================*/
 static void  o___HOOKING_________o () { return; }
 
-/*> char                                                                              <* 
- *> metis_minor_hook        (tMINOR *a_major, tMINOR *a_minor)                        <* 
- *> {                                                                                 <* 
- *>    /+---(locals)-----------+-----+-----+-+/                                       <* 
- *>    char        rce         =  -10;                                                <* 
- *>    char        rc          =    0;                                                <* 
- *>    /+---(header)-------------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_enter   (__FUNCTION__);                                      <* 
- *>    /+---(defense)------------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_point   ("a_major"   , a_major);                             <* 
- *>    --rce;  if (a_major == NULL) {                                                 <* 
- *>       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                              <* 
- *>       return rce;                                                                 <* 
- *>    }                                                                              <* 
- *>    /+---(onto major)---------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_point   ("head"      , a_major->head);                       <* 
- *>    DEBUG_DATA   yLOG_point   ("tail"      , a_major->tail);                       <* 
- *>    if (a_major->head  == NULL) {                                                  <* 
- *>       DEBUG_DATA   yLOG_note    ("first");                                        <* 
- *>       a_major->head        = a_major->tail  = a_minor;                            <* 
- *>    } else {                                                                       <* 
- *>       DEBUG_DATA   yLOG_note    ("append");                                       <* 
- *>       a_minor->prev        = a_major->tail;                                       <* 
- *>       a_major->tail->next  = a_minor;                                             <* 
- *>       a_major->tail        = a_minor;                                             <* 
- *>    }                                                                              <* 
- *>    /+---(tie function back to file)------+/                                       <* 
- *>    DEBUG_DATA   yLOG_note    ("set file");                                        <* 
- *>    a_minor->major = a_major;                                                      <* 
- *>    /+---(update count)-------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_note    ("increment counts");                                <* 
- *>    ++(a_major->count);                                                            <* 
- *>    /+---(complete)-----------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_exit    (__FUNCTION__);                                      <* 
- *>    return 0;                                                                      <* 
- *> }                                                                                 <*/
+char
+metis_minor_hook        (tMINOR *a_minor, tTASK *a_task)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_DATA   yLOG_point   ("a_minor"   , a_minor);
+   --rce;  if (a_minor == NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DATA   yLOG_point   ("a_task"    , a_task);
+   --rce;  if (a_task  == NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(onto major)---------------------*/
+   DEBUG_DATA   yLOG_value   ("count"     , a_minor->count);
+   DEBUG_DATA   yLOG_point   ("head"      , a_minor->head);
+   DEBUG_DATA   yLOG_point   ("tail"      , a_minor->tail);
+   if (a_minor->count > 0) {
+      DEBUG_DATA   yLOG_info    ("head"      , a_minor->head->txt);
+      DEBUG_DATA   yLOG_info    ("tail"      , a_minor->tail->txt);
+   }
+   if (a_minor->head  == NULL) {
+      DEBUG_DATA   yLOG_note    ("first");
+      a_minor->head          = a_minor->tail  = a_task;
+   } else {
+      DEBUG_DATA   yLOG_note    ("append");
+      a_task->m_prev         = a_minor->tail;
+      a_minor->tail->m_next  = a_task;
+      a_minor->tail          = a_task;
+   }
+   DEBUG_DATA   yLOG_info    ("head*"     , a_minor->head->txt);
+   DEBUG_DATA   yLOG_info    ("tail*"     , a_minor->tail->txt);
+   /*---(tie function back to file)------*/
+   DEBUG_DATA   yLOG_note    ("set file");
+   a_task->minor  = a_minor;
+   DEBUG_DATA   yLOG_value   ("count*"    , a_minor->count);
+   /*---(update count)-------------------*/
+   DEBUG_DATA   yLOG_note    ("increment counts");
+   ++(a_minor->count);
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
 
-/*> char                                                                              <* 
- *> metis_minor_unhook      (tMINOR *a_major)                                         <* 
- *> {                                                                                 <* 
- *>    /+---(locals)-----------+-----+-----+-+/                                       <* 
- *>    char        rce         =  -10;                                                <* 
- *>    char        rc          =    0;                                                <* 
- *>    /+---(header)-------------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_enter   (__FUNCTION__);                                      <* 
- *>    /+---(defense)------------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_point   ("a_major"   , a_major);                             <* 
- *>    --rce;  if (a_major == NULL) {                                                 <* 
- *>       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                              <* 
- *>       return rce;                                                                 <* 
- *>    }                                                                              <* 
- *>    /+---(unhook from btree)--------------+/                                       <* 
- *>    rc = ySORT_unhook (&a_major->ysort);                                           <* 
- *>    DEBUG_DATA   yLOG_value   ("btree"     , rc);                                  <* 
- *>    --rce;  if (rc < 0) {                                                          <* 
- *>       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                              <* 
- *>       return rce;                                                                 <* 
- *>    }                                                                              <* 
- *>    /+---(complete)-----------------------+/                                       <* 
- *>    DEBUG_DATA   yLOG_exit    (__FUNCTION__);                                      <* 
- *>    return 0;                                                                      <* 
- *> }                                                                                 <*/
+char
+metis_minor_unhook      (tTASK *a_task)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_DATA   yLOG_point   ("a_task"    , a_task);
+   --rce;  if (a_task == NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(out of linked list)-------------*/
+   DEBUG_DATA   yLOG_value   ("count"     , a_task->minor->count);
+   DEBUG_DATA   yLOG_info    ("head"      , a_task->minor->head->txt);
+   DEBUG_DATA   yLOG_info    ("tail"      , a_task->minor->tail->txt);
+   DEBUG_DATA   yLOG_note    ("unlink");
+   if (a_task->m_next != NULL)   a_task->m_next->m_prev  = a_task->m_prev;
+   else                          a_task->minor->tail     = a_task->m_prev;
+   if (a_task->m_prev != NULL)   a_task->m_prev->m_next  = a_task->m_next;
+   else                          a_task->minor->head     = a_task->m_next;
+   DEBUG_DATA   yLOG_point   ("head*"     , a_task->minor->head);
+   DEBUG_DATA   yLOG_point   ("tail*"     , a_task->minor->tail);
+   if (a_task->minor->count > 1) {
+      DEBUG_DATA   yLOG_info    ("head*"     , a_task->minor->head->txt);
+      DEBUG_DATA   yLOG_info    ("tail*"     , a_task->minor->tail->txt);
+   }
+   /*---(update count)-------------------*/
+   --(a_task->minor->count);
+   DEBUG_DATA   yLOG_value   ("count*"    , a_task->minor->count);
+   if (a_task->minor->count == 0) {
+      a_task->minor->head  = NULL;
+      a_task->minor->tail  = NULL;
+   }
+   /*---(tie function back to file)------*/
+   DEBUG_DATA   yLOG_note    ("unset file");
+   a_task->minor   = NULL;
+   a_task->m_prev  = NULL;
+   a_task->m_next  = NULL;
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
 
 
 
@@ -295,7 +334,7 @@ metis_minor_init        (void)
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
-   rc = ySORT_btree (B_MINOR, "major");
+   rc = ySORT_btree (B_MINOR, "minors");
    DEBUG_PROG   yLOG_value   ("init"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
@@ -313,13 +352,15 @@ metis_minor_wrap        (void)
    char        rce         =  -10;
    char        rc          =    0;
    tMINOR     *x_minor     = NULL;
+   int         n           =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    /*---(walk)---------------------------*/
-   rc = metis_minor_by_cursor (YDLST_HEAD, &x_minor);
+   rc = metis_minor_by_index  (n, &x_minor);
    while (x_minor != NULL) {
-      metis_minor_free   (&x_minor);
-      rc = metis_minor_by_cursor (YDLST_HEAD, &x_minor);
+      rc = metis_minor_free   (&x_minor);
+      if (rc < 0) ++n;
+      rc = metis_minor_by_index  (n, &x_minor);
    }
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);

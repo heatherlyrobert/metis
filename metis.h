@@ -1,4 +1,6 @@
 /*============================----beg-of-source---============================*/
+#ifndef METIS
+#define METIS yes
 
 /*===[[ BEG_HEADER ]]=========================================================*/
 
@@ -32,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5b"
-#define     P_VERTXT    "major and minor now build using btrees and unit tested"
+#define     P_VERNUM    "1.5c"
+#define     P_VERTXT    "tasks, sources, and very basic reporting"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -254,7 +256,7 @@ struct      cSOURCE {
    /*---(parent)------------*/
    tMAJOR     *major;
    /*---(master data)-------*/
-   uchar       name        [LEN_HUND];      /* data source                    */
+   uchar       path        [LEN_PATH];      /* data source                    */
    /*---(children)----------*/
    tTASK      *head;
    tTASK      *tail;
@@ -267,22 +269,28 @@ struct      cSOURCE {
 struct      cTASK  {
    /*---(parent)------------*/
    tMINOR     *minor;
+   short       seq;                         /* original order (to unsort)      */
    /*---(master data)-------*/
-   char        urg;                         /* urgency code                        */
-   char        imp;                         /* importance code                     */
-   char        est;                         /* estimated work                      */
-   char        prg;                         /* progress flag                       */
-   char        shr;                         /* sharing flag                        */
-   char        txt         [LEN_HUND];      /* text of task                        */
-   int         beg;                         /* created on epoch                    */
-   int         end;                         /* completed on epoch                  */
+   char        urg;                         /* urgency code                    */
+   char        imp;                         /* importance code                 */
+   char        est;                         /* estimated work                  */
+   char        prg;                         /* progress flag                   */
+   char        shr;                         /* sharing flag                    */
+   char        txt         [LEN_HUND];      /* text of task                    */
+   int         beg;                         /* created on epoch                */
+   int         end;                         /* completed on epoch              */
    /*---(in minor)----------*/
-   tMINOR     *prev;
-   tMINOR     *next;
+   tTASK      *m_prev;
+   tTASK      *m_next;
    /*---(source)------------*/
    tSOURCE    *source;
-   short       seq;                         /* original order (to unsort)          */
-   short       line;                        /* source line in file                 */
+   tTASK      *s_prev;
+   tTASK      *s_next;
+   short       line;                        /* source line in file             */
+   /*---(filtering)---------*/
+   char        show;                        /* filtering mark                  */
+   char        note;                        /* none (-), regex (r)             */
+   char        key         [LEN_HUND];
    /*---(btree)-------------*/
    tSORT      *ysort;
    /*---(done)--------------*/
@@ -313,9 +321,9 @@ struct      cCARD
    short       seq;                         /* original order (to unsort)          */
    char        source      [LEN_HUND];      /* text of task                        */
    short       line;                        /* source line in file                 */
-   /*---(filtering)----------------------*/
+   /*---(filtering)---------*/
    char        act;                         /* active (y/n)                        */
-   char        key         [LEN_RECD];
+   char        key         [LEN_HUND];
    /*---(visualization)------------------*/
    short       pos;
    short       col;
@@ -528,20 +536,35 @@ char*       OPENGL__unit            (char *a_question, int a_num);
 void       prog_catch        (int);
 char       prog_signals      (void);
 
+
+
+
+/*===[[ metis_data.c ]]=======================================================*/
 /*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
-char        DATA_catinfo            (char a_type, char a_abbr, char *a_label, char *a_desc);
-char        DATA_init               (void);
-char        DATA__header            (char *a_recd);
-char        DATA__stats             (char *a_stats);
-char        DATA__detail            (char *a_source, int a_line, char *a_recd);
+/*---(program)--------------*/
+char        metis_data_init         (void);
+/*---(parse)----------------*/
+char        metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel, char *a_desc);
+char        metis_data_stats        (tTASK *a_task, char *a_stats);
+char        metis_data_header       (char *a_recd);
+char        metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a_recd);
+/*---(source)---------------*/
+char         metis_data_file        (tMINOR *a_minor, tSOURCE *a_source, char *a_name);
+char        metis_data_directory    (tMAJOR *a_major, char *a_home, char *a_suffix);
+char        metis_data_project      (void);
+/*---(other)----------------*/
 char        DATA__read              (char *a_filename);
 char        DATA__master            (void);
 char        DATA__custom            (void);
-char        DATA__sources           (char *a_suffix);
+/*---(driver)---------------*/
+char        metis_data_refresh      (void);
+
+
 char        DATA__blankcard         (void);
-char        DATA_refresh            (void);
 int         DATA_cursor             (char a_type);
 char*       DATA__unit              (char *a_question, int a_num);
+
+
 
 char        FORMAT_init             (void);
 int         format_check            (int a_col, int a_row);
@@ -671,9 +694,49 @@ char        metis_minor_wrap        (void);
 
 
 
+/*===[[ metis_source.c ]]=====================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(support)--------------*/
+char        metis_source_wipe       (tSOURCE *a_dst);
+/*---(memory)---------------*/
+char        metis_source_new        (char *a_name, char a_force, tSOURCE **r_new);
+char        metis_source_free       (tSOURCE **r_old);;
 /*---(hooking)--------------*/
-/*> char        metis_major_hook        (tMAJOR *a_major, tMINOR *a_minor);           <*/
-/*> char        metis_major_unhook      (tMINOR *a_minor);                            <*/
+char        metis_source_hook       (tSOURCE *a_source, tTASK *a_task);
+char        metis_source_unhook     (tTASK *a_task);
+/*---(search)---------------*/
+int         metis_source_count      (void);
+char        metis_source_by_name    (uchar *a_name, tSOURCE **r_source);
+char        metis_source_by_index   (int n, tSOURCE **r_source);
+char        metis_source_by_cursor  (char a_dir, tSOURCE **r_source);
+char*       metis_source_entry      (int n);
+/*---(program)--------------*/
+char        metis_source_init       (void);
+char        metis_source_wrap       (void);
+/*---(done)-----------------*/
 
 
+
+/*===[[ metis_task.c ]]=======================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(support)--------------*/
+char        metis_task_wipe         (tTASK *a_dst);
+/*---(memory)---------------*/
+char        metis_task_new          (tMINOR *a_minor, char a_force, tTASK **r_new);
+char        metis_task_free         (tTASK **r_old);;
+/*---(search)---------------*/
+int         metis_task_count        (void);
+char        metis_task_by_index     (int n, tTASK **r_task);
+char        metis_task_by_cursor    (char a_dir, tTASK **r_task);
+int         metis_task_by_regex     (char *a_regex, tTASK **r_task);
+char*       metis_task_entry        (int n);
+/*---(program)--------------*/
+char        metis_task_init         (void);
+char        metis_task_wrap         (void);
+/*---(done)-----------------*/
+
+
+
+
+#endif
 /*============================----end-of-source---============================*/
