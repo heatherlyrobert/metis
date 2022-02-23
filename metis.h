@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5g"
-#define     P_VERTXT    "really worked on data reading from files and unit testing"
+#define     P_VERNUM    "1.5h"
+#define     P_VERTXT    "cleaned up and unit tested task file reading"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -541,7 +541,7 @@ char        metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_
 char        metis_data_directory    (tMAJOR *a_major, char *a_home);
 char        metis_data_project      (void);
 /*---(other)----------------*/
-char        DATA__read              (char *a_filename);
+char        metis_data_read         (char *a_filename);
 char        DATA__master            (void);
 char        DATA__custom            (void);
 /*---(driver)---------------*/

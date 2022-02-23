@@ -202,7 +202,6 @@ metis_data_init         (void)
 static void      o___PARSE___________________o (void) {;}
 
 #define   MAXLINE  1000
-FILE     *f         = NULL;         /* input file                          */
 char      g_recd [LEN_RECD] = "";      /* record from stdin                   */
 char*     p         = NULL;         /* strtok() parsing pointer            */
 char     *q         = "";         /* strtok() delimiters                 */
@@ -551,6 +550,7 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
    int         x_len       =    0;
    int         a           =    0;
    int         x_off       =    0;
+   FILE       *f           = NULL;
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(open)---------------------------*/
@@ -802,49 +802,66 @@ DATA__stdin        (void)
 }
 
 char             /* [G-----] read all tasks from the file --------------------*/
-DATA__read         (char *a_filename)
+metis_data_read         (char *a_file)
 {
-   /*> /+---(locals)--------------------------------+/                                                <* 
-    *> char    rc = 0;                                                                                <* 
-    *> char    msg[100];                                                                              <* 
-    *> /+> char      card_file[200] = "";                                                 <+/         <* 
-    *> int         a            =    0;                                                               <* 
-    *> /+---(header)-------------------------+/                                                       <* 
-    *> DEBUG_INPT   yLOG_enter   (__FUNCTION__);                                                      <* 
-    *> /+---(identify file)------------------+/                                                       <* 
-    *> /+> snprintf(card_file, 190, "/home/member/g_hlosdo/metis_new.tasks", getenv("HOME"));   <+/   <* 
-    *> /+---(open)---------------------------+/                                                       <* 
-    *> f = fopen(a_filename, "r");                                                                    <* 
-    *> if (f == NULL) {                                                                               <* 
-    *>    printf("FATAL : can not open card file <<%s>>\n", a_filename);                              <* 
-    *>    exit (-2);                                                                                  <* 
-    *> }                                                                                              <* 
-    *> while (1) {                                                                                    <* 
-    *>    fgets (g_recd, MAXLINE, f);                                                                 <* 
-    *>    if (feof(f))   break;                                                                       <* 
-    *>    /+---(get rid of the newline)-------------+/                                                <* 
-    *>    p = strchr(g_recd, '\n');              /+ look for a newline              +/                <* 
-    *>    if (p != NULL)   strcpy(p, "\0");    /+ if found, copy '\0' over it     +/                  <* 
-    *>    /+---(defenses)---------------------------+/                                                <* 
-    *>    if (strncmp(g_recd, "# end_of_visible", 16) == 0)   break;                                  <* 
-    *>    ++a;                                                                                        <* 
-    *>    if (g_recd [0] == '#')   continue;                                                          <* 
-    *>    if (g_recd [0] == '\0')  continue;                                                          <* 
-    *>    if (strncmp (g_recd, "  ", 2) == 0) rc = metis_data_parsing (a_filename, a, g_recd);        <* 
-    *>    else                                rc = metis_data_header (g_recd);                        <* 
-    *>    /+> rc = metis_data_parsing ();                                                       <+/   <* 
-    *>    /+> if (rc < 0)                         return 0;                               <*          <* 
-    *>     *> if (g_ntask >=  MAX_CARDS - 2)    break;                                     <+/        <* 
-    *> }                                                                                              <* 
-    *> if (f == NULL) return 0;                                                                       <* 
-    *> fclose(f);                                                                                     <* 
-    *> /+---(complete)------------------------------+/                                                <* 
-    *> DEBUG_INPT   yLOG_exit    (__FUNCTION__);                                                      <* 
-    *> return 0;                                                                                      <*/
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   tMAJOR     *x_major     = NULL;
+   tMINOR     *x_minor     = NULL;
+   tSOURCE    *x_source    = NULL;
+   char    msg[100];
+   int         x_line      =    0;
+   FILE       *f           = NULL;
+   /*---(header)-------------------------*/
+   DEBUG_INPT   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_INPT   yLOG_point   ("a_file"    , a_file);
+   --rce;  if (a_file == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_INPT   yLOG_info    ("a_file"    , a_file);
+   /*---(open)---------------------------*/
+   f = fopen (a_file, "r");
+   DEBUG_INPT   yLOG_point   ("f"         , f);
+   --rce;  if (f == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(create source)------------------*/
+   rc = metis_source_new (a_file, 'y', &x_source);
+   DEBUG_INPT   yLOG_point   ("x_source"  , x_source);
+   --rce;  if (x_source == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_INPT   yLOG_info    ("->path"    , x_source->path);
+   /*---(walk file)----------------------*/
+   while (1) {
+      /*---(get a line)------------------*/
+      fgets (g_recd, MAXLINE, f);
+      if (feof(f))   break;
+      /*---(get rid of the newline)------*/
+      p = strchr (g_recd, '\n');           /* look for a newline              */
+      if (p != NULL)   strcpy (p, "\0");   /* if found, copy '\0' over it     */
+      /*---(defenses)--------------------*/
+      if (strncmp (g_recd, "# end_of_visible", 16) == 0)   break;
+      ++x_line;
+      if (g_recd [0] == '#')   continue;
+      if (g_recd [0] == '\0')  continue;
+      if (g_recd [0] == ' ')   rc = metis_data_parsing (x_minor, x_source, x_line, g_recd);
+      else                     rc = metis_data_header  (g_recd, &x_major, &x_minor);
+   }
+   /*---(close)--------------------------*/
+   fclose (f);
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   return 0;
 }
 
-char DATA__master        (void) { return DATA__read    (FILE_MASTER); }
-char DATA__custom        (void) { return DATA__read    (my.file);     }
+char DATA__master        (void) { return metis_data_read (FILE_MASTER); }
+char DATA__custom        (void) { return metis_data_read (my.file);     }
 
 
 
