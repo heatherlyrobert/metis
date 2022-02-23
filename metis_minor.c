@@ -346,7 +346,7 @@ metis_minor_init        (void)
 }
 
 char
-metis_minor_wrap        (void)
+metis_minor_cleanse     (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -361,6 +361,32 @@ metis_minor_wrap        (void)
       rc = metis_minor_free   (&x_minor);
       if (rc < 0) ++n;
       rc = metis_minor_by_index  (n, &x_minor);
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_minor_purge_tasks (tMINOR *a_minor)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   tTASK      *x_task      = NULL;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_PROG   yLOG_point   ("a_minor"   , a_minor);
+   --rce;  if (a_minor == NULL) {
+      DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(walk)---------------------------*/
+   x_task = a_minor->head;
+   while (x_task != NULL) {
+      metis_task_free   (&x_task);
+      x_task = a_minor->head;
    }
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);

@@ -4,18 +4,17 @@
 
 
 /*
- * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
  *
- * metis § dw2#Ï § add data refresh command and check                                       § 1645047879 § 1645055000 §
+ * metis § dw2#Ï § add data refresh command and check                                     § M1FDid §
  *
- * metis § dw2·· § add data refresh to menus                                                § 1645047880 § ·········· §
- * metis § ww4-· § add mark to tasks so that they can be selected to a short list           § 1645047881 § ·········· §
- * metis § ww4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y         § 1645047882 § ·········· §
- * metis § ww4-· § add sharing flag to control database usage and marking                   § 1645047883 § ·········· §
- * metis § wl4-· § switch beg and end dates to pseudo-mongo (6 chars)                       § 1645162236 § ·········· §
- * metis § dv2·· § when data is refreshed, the number of cards shown must be updated        § 1645438169 § ·········· §
- * metis § mv4·· § add a metis field for extra data, text, and notes (variable length)      § 1645438452 § ·········· §
- * metis § wno·· § build central database capability                                        § 1645438579 § ·········· §
+ * metis § dw2·· § add data refresh to menus                                              § M1FDie §
+ * metis § ww4-· § add mark to tasks so that they can be selected to a short list         § M1FDif §
+ * metis § ww4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y       § M1FDig §
+ * metis § ww4-· § add sharing flag to control database usage and marking                 § M1FDik §
+ * metis § wl4-· § switch beg and end dates to pseudo-mongo (6 chars)                     § M1GLUa §
+ * metis § dv2·· § when data is refreshed, the number of cards shown must be updated      § M1K29T §
+ * metis § mv4·· § add a metis field for extra data, text, and notes (variable length)    § M1K2EC §
+ * metis § wno·· § build central database capability                                      § M1K2GJ §
  *
  *
  */
@@ -86,7 +85,7 @@ const tDECODE g_decode   [] = {
    { 'i', 'm', "might"       , "plausable, could be done, but there is no real push"          },
    { 'i', '-', "backlog"     , "not been assigned an importance"                              },
    /*---(estimate)-----------------------*/
-   { 'e', 'o', "huge"        , "longer than a full day of work"                               },
+   { 'e', '!', "huge"        , "longer than a full day of work"                               },
    { 'e', '8', "480m"        , "full day of work, or possibly until start of the next day"    },
    { 'e', '4', "240m"        , "half day of work, which means serious focus and dedication"   },
    { 'e', '2', "120m"        , "couple hours, meaning dedicated focus and continuous time"    },
@@ -139,7 +138,7 @@ metis_data_init         (void)
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(purge tasks)--------------------*/
-   metis_task_wrap ();
+   metis_task_purge_all ();
    /*---(create validation strings)------*/
    strlcpy (my.urgs, "", LEN_LABEL);
    strlcpy (my.imps, "", LEN_LABEL);
@@ -273,33 +272,69 @@ metis_data_stats   (tTASK *a_task, char *a_stats)
 }
 
 char
-metis_data_header       (char *a_recd)
+metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
+   char        rc          =    0;
    char        x_recd      [LEN_RECD];
-   int         x_len       =    0;
    char       *p           = NULL;
-   char       *q           = "";
-   /*---(prepare)-----------------------*/
-   strlcpy  (s_one, "blank", LEN_LABEL);
-   strlcpy  (s_two, "blank", LEN_LABEL);
+   char       *q           = "§";
+   /*---(header)-------------------------*/
+   DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(defenses)----------------------*/
-   --rce;  if (a_recd     == NULL)          return  rce;
+   DEBUG_INPT   yLOG_point   ("r_major"   , r_major);
+   --rce;  if (r_major == NULL)  {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
+   *r_major = NULL;
+   DEBUG_INPT   yLOG_point   ("r_minor"   , r_minor);
+   --rce;  if (r_minor == NULL)  {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
+   *r_minor = NULL;
+   DEBUG_INPT   yLOG_point   ("a_recd"    , a_recd);
+   --rce;  if (a_recd == NULL)  {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
    strlcpy (x_recd, a_recd, LEN_RECD);
-   x_len = strlen (x_recd);
-   --rce;  if (x_len <  10)                 return  rce;
-   /*---(category one)------------------*/
+   /*---(create major)-------------------*/
    p = strtok  (x_recd, q);
-   --rce;  if (p == NULL)                   return rce;
+   DEBUG_INPT   yLOG_point   ("p"         , p);
+   --rce;  if (p == NULL) {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    strltrim (p, ySTR_BOTH, LEN_LABEL);
-   strlcpy  (s_one, p, LEN_LABEL);
-   /*---(category two)------------------*/
+   rc = metis_major_new (p, '-', r_major);
+   DEBUG_INPT   yLOG_value   ("new"       , rc);
+   DEBUG_INPT   yLOG_point   ("*r_major"  , *r_major);
+   --rce;  if (*r_major == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_INPT   yLOG_info    ("->name"    , (*r_major)->name);
+   /*---(create minor)-------------------*/
    p = strtok  (NULL, q);
-   --rce;  if (p == NULL)                   return rce;
+   DEBUG_INPT   yLOG_point   ("p"         , p);
+   --rce;  if (p == NULL) {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    strltrim (p, ySTR_BOTH, LEN_LABEL);
-   strlcpy  (s_two, p, LEN_LABEL);
+   rc = metis_minor_new (*r_major, p, '-', r_minor);
+   DEBUG_INPT   yLOG_value   ("new"       , rc);
+   DEBUG_INPT   yLOG_point   ("*r_minor"  , *r_minor);
+   --rce;  if (*r_minor == NULL) {
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_INPT   yLOG_info    ("->name"    , (*r_minor)->name);
    /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -314,6 +349,8 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    char       *p           = NULL;
    char       *q           = "§";
    tTASK      *x_task      = NULL;
+   tTASK      *x_exist     = NULL;
+   char        x_mongo     [LEN_TERSE] = "";
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    DEBUG_INPT   yLOG_value    ("g_ntask"   , g_ntask);
@@ -344,50 +381,69 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   /*---(create task)--------------------*/
-   rc = metis_source_hook (a_source, x_task);
-   DEBUG_INPT   yLOG_value   ("hook"      , rc);
-   --rce;  if (rc < 0) {
-      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
-      return rce;
-   }
    /*---(statistics)--------------------*/
    p = strtok  (NULL, q);
    --rce;  if (p == NULL) {
+      metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    strltrim (p, ySTR_BOTH, LEN_LABEL);
    rc = metis_data_stats (x_task, p);
    --rce;  if (rc < 0) {
+      metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    /*---(text)--------------------------*/
    p = strtok  (NULL, q);
    if (p == NULL) {
+      metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    strltrim (p, ySTR_BOTH, LEN_HUND);
    if (strlen (p) <= 0) {
+      metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    strlcpy  (x_task->txt, p, LEN_HUND);
    /*---(unique/start)------------------*/
    p = strtok  (NULL, q);
-   if (p != NULL) {
-      strltrim (p, ySTR_BOTH, LEN_LABEL);
-      x_task->beg = atoi (p);
+   if (p == NULL) {
+      metis_task_free (&x_task);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
    }
-   /*---(unique/end)--------------------*/
-   if (p != NULL) {
-      p = strtok  (NULL, q);
-      if (p != NULL) {
-         strltrim (p, ySTR_BOTH, LEN_LABEL);
-         x_task->end = atoi (p);
-      }
+   strltrim (p, ySTR_BOTH, LEN_LABEL);
+   if (strlen (p) == 6)  strlcpy (x_task->epoch, p, LEN_TERSE);
+   else {
+      str2mongo (atoi (p), x_mongo);
+      strlcpy (x_task->epoch, x_mongo, LEN_TERSE);
+   }
+   metis_epoch_by_name (x_task->epoch, &x_exist);
+   DEBUG_DATA   yLOG_point   ("x_exist"   , x_exist);
+   if (x_exist != NULL) {
+      metis_task_free (&x_task);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
+   /*---(hook to unique)-----------------*/
+   rc = ySORT_hook (B_UNIQUE, x_task, x_task->epoch, &(x_task->unique));
+   DEBUG_DATA   yLOG_value   ("hook"      , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   rc = ySORT_prepare (B_UNIQUE);
+   /*---(hook to source)-----------------*/
+   rc = metis_source_hook (a_source, x_task);
+   DEBUG_INPT   yLOG_value   ("hook"      , rc);
+   --rce;  if (rc < 0) {
+      metis_task_free (&x_task);
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
    }
    /*---(source)------------------------*/
    x_task->line = a_line;
@@ -426,11 +482,7 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name)
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
-   strlcpy (x_proj, a_name, LEN_LABEL);
-   p = strchr (x_proj, '_');
-   if (p != NULL)  p [0] = '\0';
-   sprintf (x_recd, "%s  %s ", x_proj, a_name);
-   metis_data_header (x_recd);
+   /*---(walk the entries)---------------*/
    --rce;  while (1) {
       /*---(read)------------------------*/
       fgets (x_recd, LEN_RECD, f);
@@ -486,7 +538,7 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name)
 }
 
 char         /*--> make a list of input files --------------------------------*/
-metis_data_directory    (tMAJOR *a_major, char *a_home, char *a_suffix)
+metis_data_directory    (tMAJOR *a_major, char *a_home)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;          /* return code for errors         */
@@ -503,21 +555,9 @@ metis_data_directory    (tMAJOR *a_major, char *a_home, char *a_suffix)
    tMINOR     *x_minor     = NULL;
    char        x_full      [LEN_PATH]  = "";
    tSOURCE    *x_source    = NULL;
+   char        x_pass      =  '-';
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
-   /*---(defense)------------------------*/
-   DEBUG_INPT   yLOG_point   ("a_suffix"  , a_suffix);
-   --rce;  if (a_suffix == NULL) {
-      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
-      return  rce;
-   }
-   --rce;  if (a_suffix [0] != '.') {
-      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
-      return  rce;
-   }
-   /*---(process entries)----------------*/
-   x_suflen = strlen (a_suffix);
-   DEBUG_INPT   yLOG_info    ("SUFFIX"    , a_suffix);
    /*---(open dir)-----------------------*/
    x_dir = opendir(".");
    DEBUG_INPT   yLOG_point   ("x_dir"      , x_dir);
@@ -540,21 +580,28 @@ metis_data_directory    (tMAJOR *a_major, char *a_home, char *a_suffix)
          DEBUG_INPT   yLOG_note    ("hidden, SKIP");
          continue;
       }
+      /*---(check suffixes)--------------*/
+      x_pass = '-';
       x_len = strlen (x_name);
       DEBUG_INPT   yLOG_value   ("x_len"     , x_len);
-      if (x_len < x_suflen + 2) {
-         DEBUG_INPT   yLOG_note    ("name too short with suffix, SKIP");
-         continue;
+      if (x_len >= 3 && strncmp (x_name + x_len - 2, ".c"     , 2) == 0) {
+         if (x_len >= 8 && strncmp (x_name + x_len - 7, "_unit.c", 7) == 0) {
+            x_pass = '-';
+         } else {
+            DEBUG_INPT   yLOG_note    ("normal c source file");
+            x_pass = 'y';
+         }
       }
-      /*---(cut on suffix len)-----------*/
-      DEBUG_INPT   yLOG_info    ("potential" , x_name + x_len - x_suflen);
-      if (strncmp (x_name + x_len - x_suflen, a_suffix, x_suflen) != 0) {
-         DEBUG_INPT   yLOG_note    ("suffix does not match, SKIP");
-         continue;
+      if (x_len >= 3 && strncmp (x_name + x_len - 2, ".h"     , 2) == 0) {
+         DEBUG_INPT   yLOG_note    ("normal c header file");
+         x_pass = 'y';
       }
-      /*---(filter unit test)------------*/
-      if (x_len > 7 && strcmp ("_unit.c", x_name + x_len - 7) == 0) {
-         DEBUG_INPT   yLOG_note    ("cut the unit testing code files, SKIP");
+      if (x_len >= 6 && strncmp (x_name + x_len - 5, ".unit"  , 5) == 0) {
+         DEBUG_INPT   yLOG_note    ("koios unit testing file");
+         x_pass = 'y';
+      }
+      if (x_pass != 'y') {
+         DEBUG_INPT   yLOG_note    ("not an acceptible metis line source");
          continue;
       }
       /*---(create file/minor)--------------*/
@@ -624,16 +671,11 @@ metis_data_project      (void)
    }
    DEBUG_INPT   yLOG_info    ("->name"    , x_major->name);
    /*---(run files)----------------------*/
-   rc = metis_data_directory (x_major, x_home, ".h");
-   rc = metis_data_directory (x_major, x_home, ".c");
-   rc = metis_data_directory (x_major, x_home, ".unit");
-   /*---(stats)--------------------------*/
-   DEBUG_INPT   yLOG_value    ("majors"    , metis_major_count ());
-   DEBUG_INPT   yLOG_value    ("minors"    , metis_minor_count ());
-   DEBUG_INPT   yLOG_value    ("tasks"     , metis_task_count ());
+   rc = metis_data_directory (x_major, x_home);
    /*---(purge empties)------------------*/
-   metis_minor_wrap ();
-   metis_major_wrap ();
+   metis_source_cleanse ();
+   metis_minor_cleanse  ();
+   metis_major_cleanse  ();
    /*---(stats)--------------------------*/
    DEBUG_INPT   yLOG_value    ("majors"    , metis_major_count ());
    DEBUG_INPT   yLOG_value    ("minors"    , metis_minor_count ());

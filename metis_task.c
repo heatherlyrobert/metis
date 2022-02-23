@@ -21,8 +21,7 @@ metis_task_wipe         (tTASK *a_dst)
    a_dst->prg      = '·';
    a_dst->shr      = '·';
    a_dst->txt [0]  = '\0';
-   a_dst->beg      =   0;
-   a_dst->end      =   0;
+   a_dst->epoch [0]= '\0';
    /*---(within parent)---------------*/
    a_dst->m_prev   = NULL;
    a_dst->m_next   = NULL;
@@ -144,18 +143,30 @@ metis_task_free        (tTASK **r_old)
    }
    /*---(unhook from minor)--------------*/
    rc = metis_minor_unhook (*r_old);
-   DEBUG_DATA   yLOG_value   ("unhook"    , rc);
+   DEBUG_DATA   yLOG_value   ("minor"     , rc);
    --rce;  if (rc < 0) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   /*---(unhook from major)--------------*/
-   /*> rc = metis_source_unhook (*r_old);                                             <* 
-    *> DEBUG_DATA   yLOG_value   ("unhook"    , rc);                                  <* 
-    *> --rce;  if (rc < 0) {                                                          <* 
-    *>    DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                              <* 
-    *>    return rce;                                                                 <* 
-    *> }                                                                              <*/
+   /*---(hook to unique)-----------------*/
+   --rce;  if ((*r_old)->unique != NULL) {
+      rc = ySORT_unhook (&(*r_old)->unique);
+      DEBUG_DATA   yLOG_value   ("unique"    , rc);
+      if (rc < 0) {
+         DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+      rc = ySORT_prepare (B_UNIQUE);
+   }
+   /*---(unhook from source)-------------*/
+   --rce;  if ((*r_old)->source != NULL) {
+      rc = metis_source_unhook (*r_old);
+      DEBUG_DATA   yLOG_value   ("source"    , rc);
+      if (rc < 0) {
+         DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+   }
    /*---(unhook from btree)--------------*/
    rc = ySORT_unhook (&((*r_old)->ysort));
    DEBUG_DATA   yLOG_value   ("btree"     , rc);
@@ -189,9 +200,12 @@ metis_task_free        (tTASK **r_old)
 /*====================------------------------------------====================*/
 static void  o___SEARCH__________o () { return; }
 
-int  metis_task_count        (void)                           { return ySORT_count     (B_TASK); }
-char metis_task_by_index     (int n, tTASK **r_task)          { return ySORT_by_index  (B_TASK, n, r_task); }
-char metis_task_by_cursor    (char a_dir, tTASK **r_task)     { return ySORT_by_cursor (B_TASK, a_dir, r_task); }
+int  metis_task_count        (void)                            { return ySORT_count     (B_TASK); }
+char metis_task_by_index     (int n, tTASK **r_task)           { return ySORT_by_index  (B_TASK, n, r_task); }
+char metis_task_by_cursor    (char a_dir, tTASK **r_task)      { return ySORT_by_cursor (B_TASK, a_dir, r_task); }
+char metis_epoch_by_index    (int n, tTASK **r_task)           { return ySORT_by_index  (B_UNIQUE, n, r_task); }
+char metis_epoch_by_cursor   (char a_dir, tTASK **r_task)      { return ySORT_by_cursor (B_UNIQUE, a_dir, r_task); }
+char metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor) { return ySORT_by_name   (B_UNIQUE, a_name, r_minor); }
 
 int
 metis_task_by_regex     (char *a_regex, tTASK **r_task)
@@ -240,13 +254,15 @@ metis_task_entry       (int n)
 {
    tTASK      *x_task      = NULL;
    char        t           [LEN_HUND]  = " -åæ";
+   char        s           [LEN_LABEL] = "·";
    metis_task_by_index (n, &x_task);
    if (x_task == NULL)  return "n/a";
    sprintf (t, "%2då%.25sæ", strlen (x_task->txt), x_task->txt);
-   sprintf (g_print, "%-2d %-20.20s %-20.20s %2d %-29.29s   %c %c %c %c %c   %c %c",
+   if (strlen (x_task->epoch) == 6) sprintf (s, "%6.6s", x_task->epoch);
+   sprintf (g_print, "%-2d %-20.20s %-20.20s %2d %-29.29s %c %c %c %c %c  %c %c  %s",
          n, x_task->minor->major->name, x_task->minor->name, x_task->seq, t,
          x_task->urg, x_task->imp, x_task->est, x_task->prg, x_task->shr,
-         x_task->show, x_task->note);
+         x_task->show, x_task->note, s);
    return g_print;
 }
 
@@ -271,13 +287,19 @@ metis_task_init        (void)
       DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   rc = ySORT_btree (B_UNIQUE, "unique");
+   DEBUG_PROG   yLOG_value   ("init"      , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
-metis_task_wrap        (void)
+metis_task_purge_all   (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;

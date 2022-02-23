@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5d"
-#define     P_VERTXT    "source unit testing done"                   
+#define     P_VERNUM    "1.5f"
+#define     P_VERTXT    "built and tested purging tasks from majors and minors"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -43,12 +43,10 @@
 
 
 /*
- * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
- * metis § wc8·· § write interactive-use manual for metis                                   § 1645134601 § ·········· §
+ * metis § wc8·· § write interactive-use manual for metis                                 § M1GDo1 §
  *
  */
 
-/*  ,x··0D··:put =strftime('%s')¦···0kdd··i * metis § ····· § tbd                                                                              § ¥··$a § ·········· §¥··,y         */
 
 /*
  * few people regularly (except under duress) keep task lists
@@ -217,6 +215,7 @@ extern     char      g_print     [LEN_RECD];
 #define    B_MINOR   'm'
 #define    B_SOURCE  's'
 #define    B_TASK    't'
+#define    B_UNIQUE  'u'
 
 typedef     struct   cMAJOR   tMAJOR;
 typedef     struct   cMINOR   tMINOR;
@@ -269,16 +268,15 @@ struct      cSOURCE {
 struct      cTASK  {
    /*---(parent)------------*/
    tMINOR     *minor;
-   short       seq;                         /* original order (to unsort)      */
+   short       seq;                         /* original order (to unsort)     */
    /*---(master data)-------*/
-   char        urg;                         /* urgency code                    */
-   char        imp;                         /* importance code                 */
-   char        est;                         /* estimated work                  */
-   char        prg;                         /* progress flag                   */
-   char        shr;                         /* sharing flag                    */
-   char        txt         [LEN_HUND];      /* text of task                    */
-   int         beg;                         /* created on epoch                */
-   int         end;                         /* completed on epoch              */
+   char        urg;                         /* urgency code                   */
+   char        imp;                         /* importance code                */
+   char        est;                         /* estimated work                 */
+   char        prg;                         /* progress flag                  */
+   char        shr;                         /* sharing flag                   */
+   char        txt         [LEN_HUND];      /* text of task                   */
+   char        epoch       [LEN_TERSE];     /* date/unique id of task         */
    /*---(in minor)----------*/
    tTASK      *m_prev;
    tTASK      *m_next;
@@ -293,6 +291,7 @@ struct      cTASK  {
    char        key         [LEN_HUND];
    /*---(btree)-------------*/
    tSORT      *ysort;
+   tSORT      *unique;
    /*---(done)--------------*/
 };
 
@@ -360,6 +359,7 @@ struct cMY {
    char        run_file    [LEN_PATH];      /* file to act on                 */
    int         run_uid;                     /* uid of person who launched     */
    long        runtime;
+   char        quick;                       /* generate metis source line     */
    /*---(counts)-------------------------*/
    short       nmajor;
    short       nminor;
@@ -533,11 +533,11 @@ char        metis_data_init         (void);
 /*---(parse)----------------*/
 char        metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel, char *a_desc);
 char        metis_data_stats        (tTASK *a_task, char *a_stats);
-char        metis_data_header       (char *a_recd);
+char        metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor);
 char        metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a_recd);
 /*---(source)---------------*/
-char         metis_data_file        (tMINOR *a_minor, tSOURCE *a_source, char *a_name);
-char        metis_data_directory    (tMAJOR *a_major, char *a_home, char *a_suffix);
+char        metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name);
+char        metis_data_directory    (tMAJOR *a_major, char *a_home);
 char        metis_data_project      (void);
 /*---(other)----------------*/
 char        DATA__read              (char *a_filename);
@@ -655,7 +655,8 @@ char        metis_major_by_cursor   (char a_dir, tMAJOR **r_major);
 char*       metis_major_entry       (int n);
 /*---(program)--------------*/
 char        metis_major_init        (void);
-char        metis_major_wrap        (void);
+char        metis_major_cleanse     (void);
+char        metis_major_purge_tasks (tMAJOR *a_major);
 /*---(done)-----------------*/
 
 
@@ -675,7 +676,8 @@ char        metis_minor_by_cursor   (char a_dir, tMINOR **r_minor);
 char*       metis_minor_entry       (int n);
 /*---(program)--------------*/
 char        metis_minor_init        (void);
-char        metis_minor_wrap        (void);
+char        metis_minor_cleanse     (void);
+char        metis_minor_purge_tasks (tMINOR *a_minor);
 /*---(done)-----------------*/
 
 
@@ -698,7 +700,7 @@ char        metis_source_by_cursor  (char a_dir, tSOURCE **r_source);
 char*       metis_source_entry      (int n);
 /*---(program)--------------*/
 char        metis_source_init       (void);
-char        metis_source_wrap       (void);
+char        metis_source_cleanse    (void);
 /*---(done)-----------------*/
 
 
@@ -714,11 +716,14 @@ char        metis_task_free         (tTASK **r_old);;
 int         metis_task_count        (void);
 char        metis_task_by_index     (int n, tTASK **r_task);
 char        metis_task_by_cursor    (char a_dir, tTASK **r_task);
+char        metis_epoch_by_index    (int n, tTASK **r_task);
+char        metis_epoch_by_cursor   (char a_dir, tTASK **r_task);
+char        metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor);
 int         metis_task_by_regex     (char *a_regex, tTASK **r_task);
 char*       metis_task_entry        (int n);
 /*---(program)--------------*/
 char        metis_task_init         (void);
-char        metis_task_wrap         (void);
+char        metis_task_purge_all    (void);
 /*---(done)-----------------*/
 
 
@@ -744,7 +749,7 @@ char        metis_opengl__urg       (char a_value, int z);
 char        metis_opengl__imp       (char a_value, int z);
 char        metis_opengl__est       (char a_value, int z);
 char        metis_opengl__prg       (char a_value, int z);
-char        metis_opengl__age       (int  a_value, int z);
+char        metis_opengl__age       (char *a_epoch, int z);
 char        metis_opengl__bullets   (void);
 char        metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text);
 char        metis_opengl__cats      (char a_urg, char a_imp, char a_est);

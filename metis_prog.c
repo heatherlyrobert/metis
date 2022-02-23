@@ -2,16 +2,11 @@
 #include   "metis.h"
 
 /*
- * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
- * metis § tn4#Ï § metis is not terminating properly leaving zombie processes               § 1645047883 § 1645055000 §
- * metis § tn2dÏ § put back data refresh feature to avoid kill/init cycle                   § 1645047883 § 1645055000 §
- * metis § tn2·· § bring the opengl command bar in as a float                               § 1645162237 § ·········· §
- * metis § tv2·· § update the opengl menu and get it to work                                § 1645162238 § ·········· § T2FP91 § 200217231001 § 20.02.17.23.10.01.2.07.041 §
+ * metis § tn4#Ï § metis is not terminating properly leaving zombie processes             § M1FDih §
+ * metis § tn2dÏ § put back data refresh feature to avoid kill/init cycle                 § M1FDij §
+ * metis § tn2·· § bring the opengl command bar in as a float                             § M1GLUb §
+ * metis § tv2·· § update the opengl menu and get it to work                              § M1GLUc §
  *
- * 0·········1·········2·········3·········4·········5·········6
- * 123456789-123456789-123456789-123456789-123456789-123456789-123456789-
- *
- * 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
  *
  */
 
@@ -117,6 +112,7 @@ PROG__init              (void)
    /*---(set globals)--------------------*/
    FILTER_clear ();
    my.daemon  = 'y';
+   my.quick   = '-';
    my.lines   = '-';
    my.sort    = '-';
    my.order   = 'a';
@@ -159,6 +155,7 @@ PROG__args              (int a_argc, char *a_argv [])
    int         l           = 0;            /* argument length                     */
    int         x_total     = 0;
    int         x_args      = 0;
+   char        x_mongo     [LEN_TERSE] = "";
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    if (a_argv > 0)  yJOBS_runas (&(my.run_as), a_argv [0]);
@@ -186,6 +183,20 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strncmp (a, "-i"          ,  2) == 0 && l == 3)  my.cimp  = a[2];
       else if (strncmp (a, "-e"          ,  2) == 0 && l == 3)  my.cest  = a[2];
       else if (strncmp (a, "-f"          ,  2) == 0 && l == 3)  my.cflg  = a[2];
+      /*---(source lines)----------------*/
+      else if (strcmp  (a, "--code"          ) == 0)  my.quick  = 'c';
+      else if (strcmp  (a, "--unit"          ) == 0)  my.quick  = 'u';
+      else if (strcmp  (a, "--date"          ) == 0) {
+         if (b == NULL) {
+            DEBUG_TOPS  yLOG_note  ("no epoch value included with data");
+            DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
+            return rce;
+         }
+         str2mongo (atoi (b), x_mongo);
+         printf ("%s\n", x_mongo);
+         DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
+         return rce;
+      }
       /*---(initial format)--------------*/
       else if (strcmp  (a, "--ticker"        ) == 0)  my.format = FORMAT_TICKER;
       else if (strcmp  (a, "--baseline"      ) == 0)  my.format = FORMAT_BASELINE;
@@ -199,7 +210,7 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strcmp  (a, "--extra"         ) == 0)  my.format = FORMAT_EXTRA;
       /*---(task/data source)------------*/
       else if (strcmp  (a, "--master"        ) == 0)  my.source = DATA_MASTER;
-      else if (strcmp  (a, "--code"          ) == 0)  my.source = DATA_SOURCES;
+      else if (strcmp  (a, "--sources"       ) == 0)  my.source = DATA_SOURCES;
       /*---(control)---------------------*/
       else if (strcmp  (a, "--pngonly"       ) == 0)  my.png    = 'y';
       else if (strcmp  (a, "--pngalso"       ) == 0)  my.png    = '+';
@@ -230,10 +241,25 @@ PROG__args              (int a_argc, char *a_argv [])
 char             /* [------] drive program setup activities ------------------*/
 PROG__begin             (void)
 {
+   /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
+   long        x_now       =    0;
+   char        x_mongo     [LEN_TERSE] = "";
+   long        x_back      =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
+   /*---(quick line creation)------------*/
+   --rce;  if (my.quick != '-') {
+      x_now = time (NULL);
+      str2mongo (x_now, x_mongo);
+      if      (my.quick == 'u')  printf ("#> ");
+      else                       printf (" * ");
+      /*> str4mongo (x_mongo, &x_back);                                               <*/
+      printf ("metis § ····· § tbd                                                                    § %6s §\n", x_mongo);
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(process data)-------------------*/
    rc = metis_data_refresh   ();
    DEBUG_PROG   yLOG_value    ("data"      , rc);
@@ -444,10 +470,10 @@ PROG__end               (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   metis_task_wrap   ();
-   metis_source_wrap ();
-   metis_minor_wrap  ();
-   metis_major_wrap  ();
+   metis_task_purge_all ();
+   metis_source_cleanse ();
+   metis_minor_cleanse  ();
+   metis_major_cleanse  ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }

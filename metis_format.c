@@ -2,12 +2,11 @@
 
 
 /*
- * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901- § ---beg---- § ---end---- §
- * metis § ww4-· § add --lstreamer (two screen) vs -streamer (one screen)                   § 1645047884 § ·········· §
- * metis § ww4-· § bring back menu items and commands for formatting                        § 1645047885 § ·········· §
- * metis § dn2·· § data refresh needs to update card count and format                       § 1645162543 § ·········· §
+ * metis § ww4-· § add --lstreamer (two screen) vs -streamer (one screen)                 § M1FDil §
+ * metis § ww4-· § bring back menu items and commands for formatting                      § M1FDim §
+ * metis § dn2·· § data refresh needs to update card count and format                     § M1GLZh §
  *
- * metis § mn*·· § format that has four indenpendently chosen and scrolled columns          § 1645438354 § ·········· §
+ * metis § mn*·· § format that has four indenpendently chosen and scrolled columns        § M1K2CY §
  *
  */
 

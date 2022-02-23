@@ -21,18 +21,16 @@
 
 
 /*
+ * metis § dw4#Ï § fix artifacting in OPENGL__polygon which looks like dashes at edges    § M1FDip §
+ * metis § dw2xÏ § fit urgency letter in urgency area -- less confusing                   § M1FDiq §
+ * metis § dw2xÏ § fit estimate letter in estimate area -- less confusing                 § M1FDir §
+ * metis § dw2#Ï § fit progress letter in progress area -- less confusing                 § M1FDis §
+ * metis § sn4#Ï § get texture drawn to match yMAP position                               § M1FDit §
+ * metis § ww1#Ï § lighten normal blue as it dulls text too much                          § M1FDiu §
  *
- * 12345 § 12345 § 12345678901-12345678901-12345678901-12345678901-12345678901-12345678901-   § ---beg---- § ---end---- §
- * metis § dw4#Ï § fix artifacting in OPENGL__polygon which looks like dashes at edges        § 1645047884 § 1645055000 §
- * metis § dw2xÏ § fit urgency letter in urgency area -- less confusing                       § 1645047885 § 1645055000 §
- * metis § dw2xÏ § fit estimate letter in estimate area -- less confusing                     § 1645047886 § 1645055000 §
- * metis § dw2#Ï § fit progress letter in progress area -- less confusing                     § 1645047887 § 1645055000 §
- * metis § sn4#Ï § get texture drawn to match yMAP position                                   § 1645047888 § 1645055000 §
- * metis § ww1#Ï § lighten normal blue as it dulls text too much                              § 1645047889 § 1645055000 §
- *
- * metis § dw2·· § when filtered to zero cards, display blank card                            § 1645047890 § ·········· §
- * metis § dw4·· § use yCOLOR to establish pallete and color selection                        § 1645047891 § ·········· §
- * metis § wv4·· § continuation header-footer that show top/more and bot/more                 § 1645437866 § ·········· §
+ * metis § dw2·· § when filtered to zero cards, display blank card                        § M1FDiv §
+ * metis § dw4·· § use yCOLOR to establish pallete and color selection                    § M1FDiw §
+ * metis § wv4·· § continuation header-footer that show top/more and bot/more             § M1K24Q §
  */
 
 float     g_alpha     = 0.0;
@@ -567,13 +565,15 @@ metis_opengl__prg       (char a_value, int z)
 }
 
 char
-metis_opengl__age       (int  a_value, int z)
+metis_opengl__age       (char *a_epoch, int z)
 {
+   long        v           =    0;
    int         x_age       =    0;
    char        x_unit      =  '-';
    char        t           [LEN_TERSE] = "";
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
-   strlage (a_value, t);
+   str4mongo (a_epoch, &v);
+   strlage (v, t);
    /*> if (a_value == 0)  {                                                           <* 
     *>    strcpy (t, "??");                                                           <* 
     *> } else {                                                                       <* 
@@ -734,7 +734,7 @@ metis_opengl__card      (int a_index)
    metis_opengl__est     (x_task->est, 10);
    metis_opengl__imp     (x_task->imp, 20);
    metis_opengl__prg     (x_task->prg, 20);
-   metis_opengl__age     (x_task->beg, 20);
+   metis_opengl__age     (x_task->epoch, 20);
    metis_opengl__bullets ();
    metis_opengl__text    (a_index, x_task->minor->major->name, x_task->minor->name, x_task->txt);
    metis_opengl__cats    (x_task->urg, x_task->imp, x_task->est);

@@ -313,7 +313,7 @@ metis_source_init        (void)
 }
 
 char
-metis_source_wrap        (void)
+metis_source_cleanse    (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
