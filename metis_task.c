@@ -36,6 +36,7 @@ metis_task_wipe         (tTASK *a_dst)
    a_dst->key [0]  = '\0';
    /*---(btree)-----------------------*/
    a_dst->ysort     = NULL;
+   a_dst->unique    = NULL;
    /*---(complete)--------------------*/
    return 0;
 }
@@ -203,6 +204,8 @@ static void  o___SEARCH__________o () { return; }
 int  metis_task_count        (void)                            { return ySORT_count     (B_TASK); }
 char metis_task_by_index     (int n, tTASK **r_task)           { return ySORT_by_index  (B_TASK, n, r_task); }
 char metis_task_by_cursor    (char a_dir, tTASK **r_task)      { return ySORT_by_cursor (B_TASK, a_dir, r_task); }
+
+int  metis_epoch_count       (void)                            { return ySORT_count     (B_UNIQUE); }
 char metis_epoch_by_index    (int n, tTASK **r_task)           { return ySORT_by_index  (B_UNIQUE, n, r_task); }
 char metis_epoch_by_cursor   (char a_dir, tTASK **r_task)      { return ySORT_by_cursor (B_UNIQUE, a_dir, r_task); }
 char metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor) { return ySORT_by_name   (B_UNIQUE, a_name, r_minor); }

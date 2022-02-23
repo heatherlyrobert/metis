@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5f"
-#define     P_VERTXT    "built and tested purging tasks from majors and minors"
+#define     P_VERNUM    "1.5g"
+#define     P_VERTXT    "really worked on data reading from files and unit testing"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -270,13 +270,13 @@ struct      cTASK  {
    tMINOR     *minor;
    short       seq;                         /* original order (to unsort)     */
    /*---(master data)-------*/
-   char        urg;                         /* urgency code                   */
-   char        imp;                         /* importance code                */
-   char        est;                         /* estimated work                 */
-   char        prg;                         /* progress flag                  */
-   char        shr;                         /* sharing flag                   */
-   char        txt         [LEN_HUND];      /* text of task                   */
-   char        epoch       [LEN_TERSE];     /* date/unique id of task         */
+   uchar       urg;                         /* urgency code                   */
+   uchar       imp;                         /* importance code                */
+   uchar       est;                         /* estimated work                 */
+   uchar       prg;                         /* progress flag                  */
+   uchar       shr;                         /* sharing flag                   */
+   uchar       txt         [LEN_HUND];      /* text of task                   */
+   uchar       epoch       [LEN_TERSE];     /* date/unique id of task         */
    /*---(in minor)----------*/
    tTASK      *m_prev;
    tTASK      *m_next;
@@ -286,9 +286,9 @@ struct      cTASK  {
    tTASK      *s_next;
    short       line;                        /* source line in file             */
    /*---(filtering)---------*/
-   char        show;                        /* filtering mark                  */
-   char        note;                        /* none (-), regex (r)             */
-   char        key         [LEN_HUND];
+   uchar       show;                        /* filtering mark                  */
+   uchar       note;                        /* none (-), regex (r)             */
+   uchar       key         [LEN_HUND];
    /*---(btree)-------------*/
    tSORT      *ysort;
    tSORT      *unique;
@@ -529,6 +529,7 @@ char       prog_signals      (void);
 /*===[[ metis_data.c ]]=======================================================*/
 /*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
 /*---(program)--------------*/
+char        metis_data_purge_all    (void);
 char        metis_data_init         (void);
 /*---(parse)----------------*/
 char        metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel, char *a_desc);
@@ -536,7 +537,7 @@ char        metis_data_stats        (tTASK *a_task, char *a_stats);
 char        metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor);
 char        metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a_recd);
 /*---(source)---------------*/
-char        metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name);
+char        metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type);
 char        metis_data_directory    (tMAJOR *a_major, char *a_home);
 char        metis_data_project      (void);
 /*---(other)----------------*/
@@ -716,6 +717,7 @@ char        metis_task_free         (tTASK **r_old);;
 int         metis_task_count        (void);
 char        metis_task_by_index     (int n, tTASK **r_task);
 char        metis_task_by_cursor    (char a_dir, tTASK **r_task);
+int         metis_epoch_count       (void);
 char        metis_epoch_by_index    (int n, tTASK **r_task);
 char        metis_epoch_by_cursor   (char a_dir, tTASK **r_task);
 char        metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor);

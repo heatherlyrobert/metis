@@ -104,9 +104,9 @@ const tDECODE g_decode   [] = {
    { 'p', 'd', "duplicate"   , "covered by another task, but maybe additional detail"         },
    /*---(share)--------------------------*/
    { 's', '!', "primary"     , "keep on primary task list"                                    },
-   { 's', 'p', "private"     , "do not allow into shared database"                            },
+   { 's', ' ', "private"     , "do not allow into shared database"                            },
    { 's', '-', "shared"      , "allow to be picked up by shared database"                     },
-   { 's', 'Ï', "archived"    , "final check before deleting in source"                        },
+   { 's', '³', "archived"    , "final check before deleting in source"                        },
    /*---(done)---------------------------*/
    {  0 ,  0 , ""            , ""                                                             },
 };
@@ -121,6 +121,33 @@ static char      s_two [LEN_LABEL] = "blank";    /* group two  (save)           
 /*===----                           utility                            ----===*/
 /*====================------------------------------------====================*/
 static void      o___UTILITY_________________o (void) {;}
+
+char
+metis_data_purge_all    (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   rc = metis_task_purge_all ();
+   DEBUG_DATA   yLOG_value    ("tasks"     , rc);
+   rc = metis_source_cleanse ();
+   DEBUG_DATA   yLOG_value    ("sources"   , rc);
+   rc = metis_minor_cleanse  ();
+   DEBUG_DATA   yLOG_value    ("minors"    , rc);
+   rc = metis_major_cleanse  ();
+   DEBUG_DATA   yLOG_value    ("majors"    , rc);
+   /*---(feedback)-----------------------*/
+   DEBUG_DATA   yLOG_value    ("majors"    , metis_major_count  ());
+   DEBUG_DATA   yLOG_value    ("minors"    , metis_minor_count  ());
+   DEBUG_DATA   yLOG_value    ("tasks"     , metis_task_count   ());
+   DEBUG_DATA   yLOG_value    ("sources"   , metis_source_count ());
+   DEBUG_DATA   yLOG_value    ("unique"    , metis_epoch_count  ());
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
 
 
 
@@ -138,7 +165,7 @@ metis_data_init         (void)
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(purge tasks)--------------------*/
-   metis_task_purge_all ();
+   metis_data_purge_all ();
    /*---(create validation strings)------*/
    strlcpy (my.urgs, "", LEN_LABEL);
    strlcpy (my.imps, "", LEN_LABEL);
@@ -351,15 +378,26 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    tTASK      *x_task      = NULL;
    tTASK      *x_exist     = NULL;
    char        x_mongo     [LEN_TERSE] = "";
+   long        x_date      =    0;
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
-   DEBUG_INPT   yLOG_value    ("g_ntask"   , g_ntask);
-   DEBUG_INPT   yLOG_info     ("a_recd"    , a_recd);
    /*---(defenses)----------------------*/
-   --rce;  if (a_recd     == NULL) {
+   DEBUG_INPT   yLOG_point    ("a_minor"   , a_minor);
+   --rce;  if (a_minor == NULL) {
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
+   DEBUG_INPT   yLOG_point    ("a_source"  , a_source);
+   --rce;  if (a_source == NULL) {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
+   DEBUG_INPT   yLOG_point    ("a_recd"    , a_recd);
+   --rce;  if (a_recd  == NULL) {
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
+   DEBUG_INPT   yLOG_info     ("a_recd"    , a_recd);
    strlcpy (x_recd, a_recd, LEN_RECD);
    x_len = strlen (x_recd);
    DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
@@ -417,14 +455,53 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       return  rce;
    }
    strltrim (p, ySTR_BOTH, LEN_LABEL);
-   if (strlen (p) == 6)  strlcpy (x_task->epoch, p, LEN_TERSE);
-   else {
+   x_len = strlen (p);
+   DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
+   --rce; if (x_len ==  0) {
+      metis_task_free (&x_task);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
+   }
+   --rce;  if (x_len ==  6) {
+      DEBUG_INPT   yLOG_note     ("date/epoch in mongo form");
+      str4mongo (p, &x_date);
+      if (x_date > time (NULL) + 86400 * 3) {
+         DEBUG_INPT   yLOG_note     ("date in future more than 3 days, illegal");
+         metis_task_free (&x_task);
+         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+         return  rce;
+      }
+      if (x_date < time (NULL) - 86400 * 100) {
+         DEBUG_INPT   yLOG_note     ("date older than 100 days, illegal");
+         metis_task_free (&x_task);
+         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+         return  rce;
+      }
+      strlcpy (x_task->epoch, p, LEN_TERSE);
+   } else if   (x_len == 10) {
+      DEBUG_INPT   yLOG_note     ("date/epoch in epoch form");
+      if (atoi (p) > time (NULL) + 86400 * 3) {
+         DEBUG_INPT   yLOG_note     ("date in future more than 3 days, illegal");
+         metis_task_free (&x_task);
+         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+         return  rce;
+      }
+      if (atoi (p) < time (NULL) - 86400 * 100) {
+         DEBUG_INPT   yLOG_note     ("date older than 100 days");
+         metis_task_free (&x_task);
+         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+         return  rce;
+      }
       str2mongo (atoi (p), x_mongo);
       strlcpy (x_task->epoch, x_mongo, LEN_TERSE);
+   } else {
+      metis_task_free (&x_task);
+      DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
+      return  rce;
    }
    metis_epoch_by_name (x_task->epoch, &x_exist);
    DEBUG_DATA   yLOG_point   ("x_exist"   , x_exist);
-   if (x_exist != NULL) {
+   --rce;  if (x_exist != NULL) {
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
@@ -464,7 +541,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
 static void      o___SOURCE__________________o (void) {;}
 
 char
-metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name)
+metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -477,7 +554,7 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name)
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(open)---------------------------*/
-   f = fopen (a_name, "r");
+   f = fopen (a_source->path, "r");
    --rce;  if (f == NULL) {
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
@@ -488,10 +565,7 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name)
       fgets (x_recd, LEN_RECD, f);
       ++a;
       DEBUG_INPT   yLOG_value    ("a"         , a);
-      if (feof (f))  {
-         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
-         return rce;
-      }
+      if (feof (f))    break;
       /*---(filter)----------------------*/
       strldchg (x_recd, '', '§', LEN_RECD);
       strltrim (x_recd, ySTR_SINGLE, LEN_RECD);
@@ -502,21 +576,21 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char *a_name)
       if (x_recd [x_len - 1] == '\n')  x_recd [--x_len] = '\0';
       DEBUG_INPT   yLOG_info     ("x_recd"    , x_recd);
       /*---(check prefix)----------------*/
-      if        (strncmp (x_recd, "/* metis "   ,  9) == 0) {
+      if        (strchr ("ch", a_type) != NULL && strncmp (x_recd, "/* metis "   ,  9) == 0) {
          if (strncmp (x_recd + 9, "§ ", 2) == 0) {
             DEBUG_INPT   yLOG_note     ("FOUND single-line or open comment (1) version");
          } else {
             DEBUG_INPT   yLOG_note     ("prefixed as single-line or open comment, but no field separator");
             continue;
          }
-      } else if (strncmp (x_recd, "* metis "    ,  8) == 0) {
+      } else if (strchr ("ch", a_type) != NULL && strncmp (x_recd, "* metis "    ,  8) == 0) {
          if (strncmp (x_recd + 8, "§ ", 2) == 0) {
             DEBUG_INPT   yLOG_note     ("FOUND continuing comment (2) version");
          } else {
             DEBUG_INPT   yLOG_note     ("prefixed as continuing comment, but no field separator");
             continue;
          }
-      } else if (strncmp (x_recd, "#> metis "   ,  9) == 0) {
+      } else if (a_type == 'u'                 && strncmp (x_recd, "#> metis "   ,  9) == 0) {
          if (strncmp (x_recd + 9, "§ ", 2) == 0) {
             DEBUG_INPT   yLOG_note     ("FOUND traditional non-code comment (3) version");
          } else {
@@ -549,7 +623,6 @@ metis_data_directory    (tMAJOR *a_major, char *a_home)
    tDIRENT    *x_file      = NULL;          /* directory entry pointer        */
    char        x_name      [LEN_TITLE];      /* file name                      */
    int         x_len       =    0;
-   char        x_type      =  '-';
    int         x_read      =    0;          /* count of entries reviewed      */
    int         x_good      =    0;          /* count of entries processed     */
    tMINOR     *x_minor     = NULL;
@@ -589,18 +662,18 @@ metis_data_directory    (tMAJOR *a_major, char *a_home)
             x_pass = '-';
          } else {
             DEBUG_INPT   yLOG_note    ("normal c source file");
-            x_pass = 'y';
+            x_pass = 'c';
          }
       }
       if (x_len >= 3 && strncmp (x_name + x_len - 2, ".h"     , 2) == 0) {
          DEBUG_INPT   yLOG_note    ("normal c header file");
-         x_pass = 'y';
+         x_pass = 'h';
       }
       if (x_len >= 6 && strncmp (x_name + x_len - 5, ".unit"  , 5) == 0) {
          DEBUG_INPT   yLOG_note    ("koios unit testing file");
-         x_pass = 'y';
+         x_pass = 'u';
       }
-      if (x_pass != 'y') {
+      if (x_pass == '-') {
          DEBUG_INPT   yLOG_note    ("not an acceptible metis line source");
          continue;
       }
@@ -624,7 +697,7 @@ metis_data_directory    (tMAJOR *a_major, char *a_home)
       }
       DEBUG_INPT   yLOG_info    ("->path"    , x_source->path);
       /*---(save)------------------------*/
-      metis_data_file (x_minor, x_source, x_name);
+      metis_data_file (x_minor, x_source, x_pass);
       ++x_good;
       DEBUG_INPT   yLOG_note    ("added to inventory");
       /*---(done)------------------------*/

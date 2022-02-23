@@ -470,10 +470,7 @@ PROG__end               (void)
 {
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   metis_task_purge_all ();
-   metis_source_cleanse ();
-   metis_minor_cleanse  ();
-   metis_major_cleanse  ();
+   metis_data_purge_all ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
