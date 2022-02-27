@@ -2,10 +2,10 @@
 #include   "metis.h"
 
 /*
- * metis § tn4#Ï § metis is not terminating properly leaving zombie processes             § M1FDih §
- * metis § tn2dÏ § put back data refresh feature to avoid kill/init cycle                 § M1FDij §
- * metis § tn2·· § bring the opengl command bar in as a float                             § M1GLUb §
- * metis § tv2·· § update the opengl menu and get it to work                              § M1GLUc §
+ * metis § tn4#³ § metis is not terminating properly leaving zombie processes             § M1FDih §
+ * metis § tn2r³ § put back data refresh feature to avoid kill/init cycle                 § M1FDij §
+ * metis § tn2#· § bring the opengl command bar in as a float                             § M1GLUb §
+ * metis § tv2#· § update the opengl menu and get it to work                              § M1GLUc §
  *
  *
  */
@@ -110,12 +110,11 @@ PROG__init              (void)
    my.runtime     = time (NULL);
    DEBUG_TOPS  yLOG_char    ("run_as"    , my.run_as);
    /*---(set globals)--------------------*/
-   FILTER_clear ();
+   metis_filter_clear ();
    my.daemon  = 'y';
    my.quick   = '-';
    my.lines   = '-';
-   my.sort    = '-';
-   my.order   = 'a';
+   my.sort    = METIS_ORIG;
    NCOLS      = 0;
    NROWS      = 0;
    my.s_wide  = 1366;  /* temp default for my iconia */
@@ -136,8 +135,8 @@ PROG__init              (void)
    metis_source_init ();
    /*---(yvikeys config)-----------------*/
    metis_data_init ();
-   FILTER_init ();
-   FORMAT_init ();
+   metis_filter_init ();
+   metis_format_init ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -182,7 +181,8 @@ PROG__args              (int a_argc, char *a_argv [])
       if      (strncmp (a, "-u"          ,  2) == 0 && l == 3)  my.curg  = a[2];
       else if (strncmp (a, "-i"          ,  2) == 0 && l == 3)  my.cimp  = a[2];
       else if (strncmp (a, "-e"          ,  2) == 0 && l == 3)  my.cest  = a[2];
-      else if (strncmp (a, "-f"          ,  2) == 0 && l == 3)  my.cflg  = a[2];
+      else if (strncmp (a, "-f"          ,  2) == 0 && l == 3)  my.cprg  = a[2];
+      else if (strncmp (a, "-s"          ,  2) == 0 && l == 3)  my.cshr  = a[2];
       /*---(source lines)----------------*/
       else if (strcmp  (a, "--code"          ) == 0)  my.quick  = 'c';
       else if (strcmp  (a, "--unit"          ) == 0)  my.quick  = 'u';
@@ -231,7 +231,6 @@ PROG__args              (int a_argc, char *a_argv [])
          }
       }
    }
-   yJOBS_final (my.run_uid);
    FORMAT_refresh ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
@@ -261,7 +260,7 @@ PROG__begin             (void)
       return rce;
    }
    /*---(process data)-------------------*/
-   rc = metis_data_refresh   ();
+   /*> rc = metis_data_refresh   ();                                                  <*/
    DEBUG_PROG   yLOG_value    ("data"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
@@ -269,7 +268,7 @@ PROG__begin             (void)
    }
    /*> rc = SORT_refresh   ();                                                        <*/
    DEBUG_PROG   yLOG_value    ("sort"      , rc);
-   /*> rc = FILTER_refresh ();                                                        <*/
+   /*> rc = metis_filter_set ();                                                        <*/
    DEBUG_PROG   yLOG_value    ("filter"    , rc);
    /*> --rce;  if (g_ntask <= 0) {                                                    <* 
     *>    DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);                             <* 
@@ -353,6 +352,8 @@ PROG_dawn          (void)
    yCMD_direct (":details disable");
    yCMD_direct (":ribbon  disable");
    yCMD_direct (":keys    disable");
+   yCMD_direct (":menus   k");
+   yCMD_direct (":float   t");
    metis_opengl_init  ();
    metis_opengl_draw  ();
    metis_opengl_show  ();
@@ -364,6 +365,10 @@ PROG_dawn          (void)
     *> yVIKEYS_menu_add ("µv?p", "progress"  , ":help p¦");                           <* 
     *> yVIKEYS_menu_add ("µv?f", "full"      , ":help f¦");                           <* 
     *> yVIKEYS_map_refresh ();                                                        <*/
+   /*---(load commands/menus)-------------------*/
+   metis_data_vikeys   ();
+   metis_filter_vikeys ();
+   metis_format_vikeys ();
    /*---(ready display)-------------------------*/
    /*> OPENGL_resize (my.w_wide, my.w_tall);                                            <*/
    prog_signals();
@@ -388,6 +393,48 @@ PROG_dusk               (void)
 }
 
 char
+PROG__verify            (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   yURG_msg ('>', "  option --vverify, check current project suitability for usage");
+   yURG_msg (' ', "");
+   /*---(call action)--------------------*/
+   rc = metis_data_refresh ();
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_live ();
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg ('>', "FAILURE, source contains hard failures, run --vverify to identify reasons");
+      if (my.run_mode == ACT_VVERIFY )   yURG_msg ('>', "FAILURE, source contains hard failures, the reasons are shown above");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(warning)------------------------*/
+   if (rc > 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_live ();
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg ('>', "WARNING, source can be used with minor issues, run --vverify to identify warnings");
+      if (my.run_mode == ACT_VVERIFY )   yURG_msg ('>', "WARNING, source can be used with minor issues, the warnings are shown above");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(success)------------------------*/
+   yURG_msg (' ', "");
+   IF_CONFIRM  yURG_msg_live ();
+   yURG_msg ('>', "SUCCESS, source is suitable for inclusion in database");
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return rc;
+}
+
+char
 PROG_dispatch           (void)
 {
    /*---(locals)-----------+-----+-----+-*/
@@ -395,6 +442,8 @@ PROG_dispatch           (void)
    char        rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(prepare)------------------------*/
+   yJOBS_final (my.run_uid);
    /*---(title)--------------------------*/
    IF_VERBOSE   yURG_msg ('>', "%s", P_ONELINE);
    /*---(route action)-------------------*/
@@ -405,7 +454,7 @@ PROG_dispatch           (void)
       break;
       /*---(incomming)-------------------*/
    case CASE_VERIFY     :
-      /*> rc = PROG__verify   ();                                                     <*/
+      rc = PROG__verify   ();
       break;
    case CASE_REGISTER   :
       /*> rc = PROG__register ();                                                     <*/

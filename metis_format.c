@@ -2,11 +2,11 @@
 
 
 /*
- * metis § ww4-· § add --lstreamer (two screen) vs -streamer (one screen)                 § M1FDil §
- * metis § ww4-· § bring back menu items and commands for formatting                      § M1FDim §
+ * metis § wg4-· § add --lstreamer (two screen) vs -streamer (one screen)                 § M1FDil §
+ * metis § wg4-· § bring back menu items and commands for formatting                      § M1FDim §
  * metis § dn2·· § data refresh needs to update card count and format                     § M1GLZh §
  *
- * metis § mn*·· § format that has four indenpendently chosen and scrolled columns        § M1K2CY §
+ * metis § mn+·· § format that has four indenpendently chosen and scrolled columns        § M1K2CY §
  *
  */
 
@@ -22,21 +22,28 @@ static int  s_map [MAX_COLS][MAX_ROWS];
 static void      o___POLYMORPH_______________o (void) {;}
 
 char
-FORMAT_init        (void)
+metis_format_init        (void)
+{
+   return 0;
+}
+
+char
+metis_format_vikeys      (void)
 {
    yCMD_add (YCMD_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );
-   /*> yVIKEYS_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");                   <* 
-    *> yVIKEYS_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");                  <* 
-    *> yVIKEYS_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");                   <* 
-    *> yVIKEYS_menu_add ("µvwL", "long/lef"  , ":window long_lef¦");                  <* 
-    *> yVIKEYS_menu_add ("µvwS", "streamer"  , ":window streamer¦");                  <* 
-    *> yVIKEYS_menu_add ("µvwt", "ticker"    , ":window ticker¦");                    <* 
-    *> yVIKEYS_menu_add ("µvwb", "baseline"  , ":window baseline¦");                  <* 
-    *> yVIKEYS_menu_add ("µvwp", "project"   , ":window project¦");                   <* 
-    *> yVIKEYS_menu_add ("µvww", "wideview"  , ":window wide¦");                      <* 
-    *> yVIKEYS_menu_add ("µvwx", "extra"     , ":window extra¦");                     <* 
-    *> yVIKEYS_menu_add ("µvws", "sticky"    , ":window sticky¦");                    <* 
-    *> yVIKEYS_menu_add ("µvwn", "nonstick"  , ":window nonstick¦");                  <*/
+   yCMD_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");
+   yCMD_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");
+   yCMD_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");
+   yCMD_menu_add ("µvwL", "long/lef"  , ":window long_lef¦");
+   yCMD_menu_add ("µvwS", "streamer"  , ":window streamer¦");
+   yCMD_menu_add ("µvwt", "ticker"    , ":window ticker¦");
+   yCMD_menu_add ("µvwb", "baseline"  , ":window baseline¦");
+   yCMD_menu_add ("µvwp", "project"   , ":window project¦");
+   yCMD_menu_add ("µvww", "wideview"  , ":window wide¦");
+   yCMD_menu_add ("µvwx", "extra"     , ":window extra¦");
+   yCMD_menu_add ("µvws", "sticky"    , ":window sticky¦");
+   yCMD_menu_add ("µvwn", "nonstick"  , ":window nonstick¦");
+   return 0;
 }
 
 char

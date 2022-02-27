@@ -2,7 +2,8 @@
 
 
 /*
- * metis § dn2#Ï § get positioning working with wmctrl again                              § M1FDii §
+ * metis § dn2#³ § get positioning working with wmctrl again                              § M1FDii §
+ * metis § dv2·· § get yVIOPENGL to change colors when editing text                       § M1Q5lC §
  *
  */
 
@@ -218,19 +219,19 @@ api_yvikeys_sort        (char *a_how)
 {
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    if (a_how == NULL) return -1;
-   if      (strcmp (a_how, "clear"   ) == 0) { my.sort  = 'o'; my.order = 'a'; }
-   else if (strcmp (a_how, "urg"     ) == 0)   my.sort  = 'u';
-   else if (strcmp (a_how, "imp"     ) == 0)   my.sort  = 'i';
-   else if (strcmp (a_how, "est"     ) == 0)   my.sort  = 'e';
-   else if (strcmp (a_how, "flg"     ) == 0)   my.sort  = 'f';
-   else if (strcmp (a_how, "names"   ) == 0)   my.sort  = 'n';
-   else if (strcmp (a_how, "ascend"  ) == 0)   my.order = 'a';
-   else if (strcmp (a_how, "descend" ) == 0)   my.order = 'd';
+   if      (strcmp (a_how, "clear"   ) == 0)   my.sort  = METIS_ORIG;
+   else if (strcmp (a_how, "urg"     ) == 0)   my.sort  = METIS_URG;
+   else if (strcmp (a_how, "imp"     ) == 0)   my.sort  = METIS_IMP;
+   else if (strcmp (a_how, "est"     ) == 0)   my.sort  = METIS_EST;
+   else if (strcmp (a_how, "prg"     ) == 0)   my.sort  = METIS_PRG;
+   else if (strcmp (a_how, "shr"     ) == 0)   my.sort  = METIS_SHR;
+   else if (strcmp (a_how, "orig"    ) == 0)   my.sort  = METIS_ORIG;
+   else if (strcmp (a_how, "date"    ) == 0)   my.sort  = METIS_DATE;
    else                                        return -2;
    /*> metis_data_refresh   ();                                                             <*/
-   SORT_refresh   ();
-   /*> FILTER_refresh ();                                                             <*/
-   /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
+   metis_filter_sort  ();
+   metis_filter_set   ();
+   yMAP_refresh_full ();
    metis_opengl_draw ();
    metis_opengl_mask();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
@@ -246,16 +247,15 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    if      (strcmp (a_which, "urg"     ) == 0)   my.curg  = a_string [0];
    else if (strcmp (a_which, "imp"     ) == 0)   my.cimp  = a_string [0];
    else if (strcmp (a_which, "est"     ) == 0)   my.cest  = a_string [0];
-   else if (strcmp (a_which, "flg"     ) == 0)   my.cflg  = a_string [0];
-   else if (strcmp (a_which, "one"     ) == 0)   strlcpy (my.cone, a_string, LEN_LABEL);
-   else if (strcmp (a_which, "two"     ) == 0)   strlcpy (my.ctwo, a_string, LEN_LABEL);
-   else if (strcmp (a_which, "txt"     ) == 0)   strlcpy (my.ctxt, a_string, LEN_HUND);
-   else if (strcmp (a_which, "clear"   ) == 0)   FILTER_clear ();
+   else if (strcmp (a_which, "prg"     ) == 0)   my.cprg  = a_string [0];
+   else if (strcmp (a_which, "shr"     ) == 0)   my.cshr  = a_string [0];
+   else if (strcmp (a_which, "regex"   ) == 0)   strlcpy (my.ctxt, a_string, LEN_HUND);
+   else if (strcmp (a_which, "clear"   ) == 0)   metis_filter_clear ();
    else                                        return -3;
    /*> metis_data_refresh   ();                                                             <*/
-   /*> SORT_refresh   ();                                                             <*/
-   FILTER_refresh ();
-   /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
+   metis_filter_sort ();
+   metis_filter_set ();
+   yMAP_refresh_full ();
    metis_opengl_draw ();
    metis_opengl_mask();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
@@ -293,13 +293,12 @@ api_yvikeys_window      (char *a_format)
       return 0;
    }
    /*---(update)-------------------------*/
-   SORT_refresh   ();
-   FILTER_refresh ();
+   metis_filter_sort ();
+   metis_filter_set ();
    x_save = my.format;
    FORMAT_refresh ();
    api_yvikeys__resize ('-');
-   /*> yVIKEYS_map_refresh ();                                                        <*/
-   /*> api_yvikeys_mapper  (YVIKEYS_INIT);                                            <*/
+   yMAP_refresh_full ();
    metis_opengl_draw ();
    metis_opengl_mask();
    /*---(complete)-----------------------*/
@@ -312,11 +311,11 @@ api_yvikeys_refresh     (void)
 {
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    metis_data_refresh   ();
-   SORT_refresh   ();
-   FILTER_refresh ();
+   metis_filter_sort ();
+   metis_filter_set ();
    FORMAT_refresh ();
    api_yvikeys__resize ('-');
-   /*> api_yvikeys_mapper (YVIKEYS_INIT);                                             <*/
+   yMAP_refresh_full ();
    metis_opengl_draw    ();
    metis_opengl_mask    ();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);

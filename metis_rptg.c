@@ -1,6 +1,11 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
+
+/*
+ * metis § dn1-· § report <list>, maybe any report, does not read data first              § M1Q5f3 §
+ *
+ */
 #define    METIS_REPORT   'r'
 #define    METIS_FORMAT   'f'
 #define    METIS_DUMP     'd'
@@ -126,8 +131,12 @@ metis_rptg_matrix       (void)
    char        s [10][10][5];
    int         q [ 2][ 2];
    char        t [ 2][ 2][5];
-   char       *u = "-ymwdst!";
-   char       *i = "anvcwlm-";
+   char        u           [LEN_LABEL] = "";
+   char        i           [LEN_LABEL] = "";
+   /*> char       *u = "-ymwdst!";                                                    <* 
+    *> char       *i = "anvcgli-";                                                    <*/
+   strlrev (u, METIS_URGS, LEN_LABEL);
+   strlcpy (i, METIS_IMPS, LEN_LABEL);
    tTASK      *x_task      = NULL;
    q [0][0] = q [0][1] = q [1][0] = q [1][1] = 0;
    for (x = 0; x < 10; ++x) {
@@ -179,11 +188,11 @@ metis_rptg_matrix       (void)
    /*  */ printf ("  p           Œ              Œ                      \n");
    y = 3; printf ("  o  c %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s c %3s crave   \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
    /*  */ printf ("  r    ‡€€€€€€€Š€€€€€€€Š€€€€€€€Š€€€€€€€†               \n");
-   y = 4; printf ("  t  w %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s w %3s want    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   y = 4; printf ("  t  w %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s g %3s good    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
    /*  */ printf ("  a           Œ              Œ                      \n");
    y = 5; printf ("  n  l %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s l %3s like    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
    /*  */ printf ("  c    ‡·······Š·······Š·······Š·······†               \n");
-   y = 6; printf ("  e  m %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s m %3s might   \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   y = 6; printf ("  e  m %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s i %3s idea    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
    /*  */ printf ("        dump  Œ              Œ  weed                \n");
    y = 7; printf ("     - %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s - %3s backlog \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
    /*  */ printf ("       „€€€€€€€ˆ€€€€€€€ˆ€€€€€€€ˆ€€€€€€€…               \n");

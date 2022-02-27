@@ -5,17 +5,19 @@
 
 /*
  *
- * metis ß dw2#œ ß add data refresh command and check                                     ß M1FDid ß
+ * metis ß dg2#≥ ß add data refresh command and check                                     ß M1FDid ß
  *
- * metis ß dw2∑∑ ß add data refresh to menus                                              ß M1FDie ß
- * metis ß ww4-∑ ß add mark to tasks so that they can be selected to a short list         ß M1FDif ß
- * metis ß ww4-∑ ß allow forced voids for appearance, like row 18 or col 2 or 2x/4y       ß M1FDig ß
- * metis ß ww4-∑ ß add sharing flag to control database usage and marking                 ß M1FDik ß
- * metis ß wl4-∑ ß switch beg and end dates to pseudo-mongo (6 chars)                     ß M1GLUa ß
+ * metis ß dg2∑∑ ß add data refresh to menus                                              ß M1FDie ß
+ * metis ß wg4-∑ ß add mark to tasks so that they can be selected to a short list         ß M1FDif ß
+ * metis ß wg4-∑ ß allow forced voids for appearance, like row 18 or col 2 or 2x/4y       ß M1FDig ß
+ * metis ß wg4-∑ ß add sharing flag to control database usage and marking                 ß M1FDik ß
+ * metis ß wl4#∑ ß switch beg and end dates to pseudo-mongo (6 chars)                     ß M1GLUa ß
  * metis ß dv2∑∑ ß when data is refreshed, the number of cards shown must be updated      ß M1K29T ß
  * metis ß mv4∑∑ ß add a metis field for extra data, text, and notes (variable length)    ß M1K2EC ß
- * metis ß wno∑∑ ß build central database capability                                      ß M1K2GJ ß
+ * metis ß wn+∑∑ ß build central database capability                                      ß M1K2GJ ß
  *
+ * metis ß wg4∑∑ ß update macros to create (,mm), close (,mq), and reformat (,mf) lines   ß M1Q5m5 ß
+ * metis ß dv2∑∑ ß change metis format to have closing date or elapsed days (0-99)        ß M1Q5nM ß
  *
  */
 
@@ -32,11 +34,11 @@
  *  p    Å       å       Å       å       Å
  *  o  c Å       å       Å       å       Å c  crave
  *  r    áÄÄÄÄÄÄÄäÄÄÄÄÄÄÄäÄÄÄÄÄÄÄäÄÄÄÄÄÄÄÜ
- *  t  w Å       å       Å       å       Å w  want
+ *  t  w Å       å       Å       å       Å g  good
  *  a    Å       å       Å       å       Å
  *  n  l Å       å       Å       å       Å l  like
  *  c    á∑∑∑∑∑∑∑ä∑∑∑∑∑∑∑ä∑∑∑∑∑∑∑ä∑∑∑∑∑∑∑Ü
- *  e  m Å       å       Å       å       Å m  might
+ *  e  m Å       å       Å       å       Å i  idea 
  *       Å       å       Å       å       Å
  *     - Å dump  å       Å       å weeds Å -  backlog
  *       ÑÄÄÄÄÄÄÄàÄÄÄÄÄÄÄàÄÄÄÄÄÄÄàÄÄÄÄÄÄÄÖ
@@ -67,53 +69,59 @@ struct cDECODE {
 };
 const tDECODE g_decode   [] = {
    /*---(urgency)------------------------*/
-   { 'u', '!', "now-now"     , "drop everything and get it done before anything else"         },
-   { 'u', 't', "today"       , "need it by end-of-day, or worst before work starts tomorrow"  },
-   { 'u', 's', "soonest"     , "do your best to get it done soon, don't get distracted"       },
-   { 'u', 'd', "days"        , "complete in a couple of days, or at least this week"          },
-   { 'u', 'w', "weeks"       , "complete in a couple weeks, or at least this month"           },
-   { 'u', 'm', "months"      , "complete in a couple months, or at least under a year"        },
-   { 'u', 'y', "years"       , "this task is long-term and is expected to by over a year"     },
-   { 'u', '-', "backlog"     , "not been assigned an urgency"                                 },
+   { METIS_URG, '!', "now-now"     , "drop everything and get it done before anything else"         },
+   { METIS_URG, 't', "today"       , "need it by end-of-day, or worst before work starts tomorrow"  },
+   { METIS_URG, 's', "soonest"     , "do your best to get it done soon, don't get distracted"       },
+   { METIS_URG, 'd', "days"        , "complete in a couple of days, or at least this week"          },
+   { METIS_URG, 'w', "weeks"       , "complete in a couple weeks, or at least this month"           },
+   { METIS_URG, 'm', "months"      , "complete in a couple months, or at least under a year"        },
+   { METIS_URG, 'y', "years"       , "this task is long-term and is expected to by over a year"     },
+   { METIS_URG, '-', "backlog"     , "not been assigned an urgency"                                 },
    /*---(importance)---------------------*/
-   { 'i', 'a', "absolute"    , "this is a true life or death for project, app, or me"         },
-   { 'i', 'n', "need"        , "must be completed, fact it is required to meeet objective"    },
-   { 'i', 'v', "value"       , "adds solid, logic additional value to the objective"          },
-   { 'i', 'c', "crave"       , "very strong want, true belief that this is necessary"         },
-   { 'i', 'w', "want"        , "desired, but not absolutely needed, in the final product"     },
-   { 'i', 'l', "like"        , "nice to have, but only if it comes unforced/naturally"        },
-   { 'i', 'm', "might"       , "plausable, could be done, but there is no real push"          },
-   { 'i', '-', "backlog"     , "not been assigned an importance"                              },
+   { METIS_IMP, 'a', "absolute"    , "this is a true life or death for project, app, or me"         },
+   { METIS_IMP, 'n', "need"        , "must be completed, fact it is required to meeet objective"    },
+   { METIS_IMP, 'v', "value"       , "adds solid, logic additional value to the objective"          },
+   { METIS_IMP, 'c', "crave"       , "very strong want, true belief that this is necessary"         },
+   { METIS_IMP, 'g', "good"        , "good idea, but not absolutely needed, in the final product"   },
+   { METIS_IMP, 'l', "like"        , "nice to have, but only if it comes unforced/naturally"        },
+   { METIS_IMP, 'i', "idea"        , "plausable, could be done, but there is no real push"          },
+   { METIS_IMP, '-', "backlog"     , "not been assigned an importance"                              },
    /*---(estimate)-----------------------*/
-   { 'e', '!', "huge"        , "longer than a full day of work"                               },
-   { 'e', '8', "480m"        , "full day of work, or possibly until start of the next day"    },
-   { 'e', '4', "240m"        , "half day of work, which means serious focus and dedication"   },
-   { 'e', '2', "120m"        , "couple hours, meaning dedicated focus and continuous time"    },
-   { 'e', '1', "60m"         , "full hour of work is a moderate task that needs focus"        },
-   { 'e', 'h', "30m"         , "half hour of work is usually smaller, but needs attention"    },
-   { 'e', 'q', "15m"         , "quick task that likely takes a little thought and prep"       },
-   { 'e', '-', "backlog"     , "not been assigned an estimate yet"                            },
+   { METIS_EST, '+', "huge"        , "longer than a full day of work"                               },
+   { METIS_EST, '8', "480m"        , "full day of work, or possibly until start of the next day"    },
+   { METIS_EST, '4', "240m"        , "half day of work, which means serious focus and dedication"   },
+   { METIS_EST, '2', "120m"        , "couple hours, meaning dedicated focus and continuous time"    },
+   { METIS_EST, '1', "60m"         , "full hour of work is a moderate task that needs focus"        },
+   { METIS_EST, 'h', "30m"         , "half hour of work is usually smaller, but needs attention"    },
+   { METIS_EST, 'q', "15m"         , "quick task that likely takes a little thought and prep"       },
+   { METIS_EST, '-', "backlog"     , "not been assigned an estimate yet"                            },
    /*---(progress)-----------------------*/
-   { 'p', '-', "backlog"     , "work that has not been prepared or acted upon yet"            },
-   { 'p', '¥', "waiting"     , "waiting on change, something is holding this task up"         },
-   { 'p', '<', "starting"    , "on longer tasks, indicates pre-work complete and task ready"  },
-   { 'p', 'o', "active"      , "selected for today and/or working it right now"               },
-   { 'p', '>', "checking"    , "on longer tasks, indicates post-work confirmation required"   },
-   { 'p', '#', "done"        , "successfully completed and any checking done"                 },
-   { 'p', 'x', "cancelled"   , "detiremened this effort is no longer necessary"               },
-   { 'p', 'd', "duplicate"   , "covered by another task, but maybe additional detail"         },
+   { METIS_PRG, '-', "backlog"     , "work that has not been prepared or acted upon yet"            },
+   { METIS_PRG, '<', "starting"    , "on longer tasks, indicates pre-work complete and task ready"  },
+   { METIS_PRG, 'o', "active"      , "selected for today and/or working it right now"               },
+   { METIS_PRG, 'u', "paused"      , "waiting on change, something is holding this task up"         },
+   { METIS_PRG, '>', "checking"    , "on longer tasks, indicates post-work confirmation required"   },
+   { METIS_PRG, '#', "done"        , "successfully completed and any checking done"                 },
+   { METIS_PRG, 'x', "cancelled"   , "detiremened this effort is no longer necessary"               },
+   { METIS_PRG, 'r', "reduntant"   , "covered by another task, but maybe additional detail"         },
    /*---(share)--------------------------*/
-   { 's', '!', "primary"     , "keep on primary task list"                                    },
-   { 's', '†', "private"     , "do not allow into shared database"                            },
-   { 's', '-', "shared"      , "allow to be picked up by shared database"                     },
-   { 's', '≥', "archived"    , "final check before deleting in source"                        },
+   { METIS_SHR, '§', "focus"       , "keep on focus/primary task list"                              },
+   { METIS_SHR, '†', "private"     , "do not allow into shared database"                            },
+   { METIS_SHR, '-', "shared"      , "allow to be picked up by shared database"                     },
+   { METIS_SHR, '≥', "kept"        , "kept in archive"                                              },
    /*---(done)---------------------------*/
-   {  0 ,  0 , ""            , ""                                                             },
+   {  0       ,  0 , ""            , ""                                                             },
 };
 
+static   s_total   =  0;
+static   s_tries   =  0;
+static   s_good    =  0;
+static   s_warn    =  0;
+static   s_badd    =  0;
 
-static char      s_one [LEN_LABEL] = "blank";    /* group one  (save)                   */
-static char      s_two [LEN_LABEL] = "blank";    /* group two  (save)                   */
+/*> static char      s_one [LEN_LABEL] = "blank";    /+ group one  (save)                   +/   <*/
+/*> static char      s_two [LEN_LABEL] = "blank";    /+ group two  (save)                   +/   <*/
+
 
 
 
@@ -167,27 +175,40 @@ metis_data_init         (void)
    /*---(purge tasks)--------------------*/
    metis_data_purge_all ();
    /*---(create validation strings)------*/
-   strlcpy (my.urgs, "", LEN_LABEL);
-   strlcpy (my.imps, "", LEN_LABEL);
-   strlcpy (my.ests, "", LEN_LABEL);
-   strlcpy (my.prgs, "", LEN_LABEL);
-   strlcpy (my.shrs, "", LEN_LABEL);
+   strlcpy (METIS_URGS, "", LEN_LABEL);
+   strlcpy (METIS_IMPS, "", LEN_LABEL);
+   strlcpy (METIS_ESTS, "", LEN_LABEL);
+   strlcpy (METIS_PRGS, "", LEN_LABEL);
+   strlcpy (METIS_SHRS, "", LEN_LABEL);
    for (i = 0; i < MAX_DECODE; ++i) {
       if (g_decode [i].cat == 0)                   break;
       sprintf (t, "%c", g_decode [i].sub);
       switch (g_decode [i].cat) {
-      case 'u' : strlcat (my.urgs, t, LEN_LABEL);   break;
-      case 'i' : strlcat (my.imps, t, LEN_LABEL);   break;
-      case 'e' : strlcat (my.ests, t, LEN_LABEL);   break;
-      case 'p' : strlcat (my.prgs, t, LEN_LABEL);   break;
-      case 's' : strlcat (my.shrs, t, LEN_LABEL);   break;
+      case METIS_URG : strlcat (METIS_URGS, t, LEN_LABEL);   break;
+      case METIS_IMP : strlcat (METIS_IMPS, t, LEN_LABEL);   break;
+      case METIS_EST : strlcat (METIS_ESTS, t, LEN_LABEL);   break;
+      case METIS_PRG : strlcat (METIS_PRGS, t, LEN_LABEL);   break;
+      case METIS_SHR : strlcat (METIS_SHRS, t, LEN_LABEL);   break;
       }
    }
-   DEBUG_INPT   yLOG_info     ("my.urgs"   , my.urgs);
-   DEBUG_INPT   yLOG_info     ("my.imps"   , my.imps);
-   DEBUG_INPT   yLOG_info     ("my.ests"   , my.ests);
-   DEBUG_INPT   yLOG_info     ("my.prgs"   , my.prgs);
-   DEBUG_INPT   yLOG_info     ("my.shrs"   , my.shrs);
+   DEBUG_INPT   yLOG_info     ("my.urgs"   , METIS_URGS);
+   DEBUG_INPT   yLOG_info     ("my.imps"   , METIS_IMPS);
+   DEBUG_INPT   yLOG_info     ("my.ests"   , METIS_ESTS);
+   DEBUG_INPT   yLOG_info     ("my.prgs"   , METIS_PRGS);
+   DEBUG_INPT   yLOG_info     ("my.shrs"   , METIS_SHRS);
+   /*---(complete)-----------------------*/
+   DEBUG_INPT   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_data_vikeys       (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        i           =    0;
+   char        t           [LEN_LABEL];
+   /*---(header)-------------------------*/
+   DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(add commands and menus)---------*/
    yCMD_add (YCMD_M_FILE   , "refresh"     , "r"   , ""     , api_yvikeys_refresh , ""                   );
    /*---(complete)-----------------------*/
@@ -219,11 +240,11 @@ metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel,
    /*---(take care of cat)---------------*/
    if (a_clabel != NULL) {
       switch (a_cat) {
-      case 'u' : strlcpy (a_clabel, "urgency"     , LEN_LABEL); break;
-      case 'i' : strlcpy (a_clabel, "importance"  , LEN_LABEL); break;
-      case 'e' : strlcpy (a_clabel, "estimate"    , LEN_LABEL); break;
-      case 'p' : strlcpy (a_clabel, "progress"    , LEN_LABEL); break;
-      case 's' : strlcpy (a_clabel, "sharing"     , LEN_LABEL); break;
+      case METIS_URG : strlcpy (a_clabel, "urgency"     , LEN_LABEL); break;
+      case METIS_IMP : strlcpy (a_clabel, "importance"  , LEN_LABEL); break;
+      case METIS_EST : strlcpy (a_clabel, "estimate"    , LEN_LABEL); break;
+      case METIS_PRG : strlcpy (a_clabel, "progress"    , LEN_LABEL); break;
+      case METIS_SHR : strlcpy (a_clabel, "sharing"     , LEN_LABEL); break;
       }
    }
    /*---(walk thru subs)-----------------*/
@@ -265,32 +286,47 @@ metis_data_stats   (tTASK *a_task, char *a_stats)
    /*---(urgency)-------------------------*/
    if      (x_len < 1)                              a_task->urg = '-';
    else if (a_stats [0] == '∑')                     a_task->urg = '-';
-   else if (strchr (my.urgs, a_stats [0]) != NULL)  a_task->urg = a_stats [0];
-   else                                             a_task->urg = '?';
+   else if (strchr (METIS_URGS, a_stats [0]) != NULL)  a_task->urg = a_stats [0];
+   else {
+      yURG_err ('w', "urgency (%c) not in Â%sÊ, therefore replaced with ?", a_stats [0], METIS_URGS);
+      a_task->urg = '?';
+   }
    DEBUG_INPT   yLOG_char     ("urg"       , a_task->urg);
    /*---(importance)----------------------*/
    if      (x_len < 2)                              a_task->imp = '-';
    else if (a_stats [1] == '∑')                     a_task->imp = '-';
-   else if (strchr (my.imps, a_stats [1]) != NULL)  a_task->imp = a_stats [1];
-   else                                             a_task->imp = '?';
+   else if (strchr (METIS_IMPS, a_stats [1]) != NULL)  a_task->imp = a_stats [1];
+   else  {
+      yURG_err ('w', "importance (%c) not in Â%sÊ, therefore replaced with ?", a_stats [1], METIS_IMPS);
+      a_task->imp = '?';
+   }
    DEBUG_INPT   yLOG_char     ("imp"       , a_task->imp);
-   /*---(progress)------------------------*/
+   /*---(estimate)------------------------*/
    if      (x_len < 3)                              a_task->est = '-';
    else if (a_stats [2] == '∑')                     a_task->est = '-';
-   else if (strchr (my.ests, a_stats [2]) != NULL)  a_task->est = a_stats [2];
-   else                                             a_task->est = '?';
+   else if (strchr (METIS_ESTS, a_stats [2]) != NULL)  a_task->est = a_stats [2];
+   else {
+      yURG_err ('w', "estimate (%c) not in Â%sÊ, therefore replaced with ?", a_stats [2], METIS_ESTS);
+      a_task->est = '?';
+   }
    DEBUG_INPT   yLOG_char     ("est"       , a_task->est);
-   /*---(tick/flag)-----------------------*/
+   /*---(progress)------------------------*/
    if      (x_len < 4)                              a_task->prg = '-';
    else if (a_stats [3] == '∑')                     a_task->prg = '-';
-   else if (strchr (my.prgs, a_stats [3]) != NULL)  a_task->prg = a_stats [3];
-   else                                             a_task->prg = '?';
+   else if (strchr (METIS_PRGS, a_stats [3]) != NULL)  a_task->prg = a_stats [3];
+   else  {
+      yURG_err ('w', "progress (%c) not in Â%sÊ, therefore replaced with ?", a_stats [3], METIS_PRGS);
+      a_task->prg = '?';
+   }
    DEBUG_INPT   yLOG_char     ("prg"       , a_task->prg);
    /*---(shares)--------------------------*/
    if      (x_len < 5)                              a_task->shr = '-';
    else if (a_stats [4] == '∑')                     a_task->shr = '-';
-   else if (strchr (my.shrs, a_stats [4]) != NULL)  a_task->shr = a_stats [4];
-   else                                             a_task->shr = '?';
+   else if (strchr (METIS_SHRS, a_stats [4]) != NULL)  a_task->shr = a_stats [4];
+   else  {
+      yURG_err ('w', "shared (%c) not in Â%sÊ, therefore replaced with ?", a_stats [4], METIS_SHRS);
+      a_task->shr = '?';
+   }
    DEBUG_INPT   yLOG_char     ("shr"       , a_task->shr);
    /*---(complete)-----------------------*/
    DEBUG_INPT   yLOG_exit     (__FUNCTION__);
@@ -404,6 +440,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
+   yURG_msg ('-', "line %3d parsing %dÂ%sÊ ", a_line, x_len, x_recd);
    /*---(cut front off)-----------------*/
    p = strtok  (x_recd, q);
    --rce;  if (p == NULL) {
@@ -435,12 +472,14 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    /*---(text)--------------------------*/
    p = strtok  (NULL, q);
    if (p == NULL) {
+      yURG_err ('f', "record contains no text for task");
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
    strltrim (p, ySTR_BOTH, LEN_HUND);
    if (strlen (p) <= 0) {
+      yURG_err ('f', "record contains no text for task");
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
@@ -449,6 +488,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    /*---(unique/start)------------------*/
    p = strtok  (NULL, q);
    if (p == NULL) {
+      yURG_err ('f', "record contains no unique epoch/date");
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
@@ -457,6 +497,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    x_len = strlen (p);
    DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
    --rce; if (x_len ==  0) {
+      yURG_err ('f', "record contains no unique epoch/date");
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
@@ -466,12 +507,14 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       str4mongo (p, &x_date);
       if (x_date > time (NULL) + 86400 * 3) {
          DEBUG_INPT   yLOG_note     ("date in future more than 3 days, illegal");
+         yURG_err ('f', "time code Â%sÊÂ%dÊ more than three days in future", p, x_date);
          metis_task_free (&x_task);
          DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
          return  rce;
       }
       if (x_date < time (NULL) - 86400 * 100) {
          DEBUG_INPT   yLOG_note     ("date older than 100 days, illegal");
+         yURG_err ('f', "time code Â%sÊÂ%dÊ more than 100 days in past", p, x_date);
          metis_task_free (&x_task);
          DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
          return  rce;
@@ -481,12 +524,14 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       DEBUG_INPT   yLOG_note     ("date/epoch in epoch form");
       if (atoi (p) > time (NULL) + 86400 * 3) {
          DEBUG_INPT   yLOG_note     ("date in future more than 3 days, illegal");
+         yURG_err ('f', "time code (epoch) Â%sÊÂ%sÊ more than three days in future", p, x_mongo);
          metis_task_free (&x_task);
          DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
          return  rce;
       }
       if (atoi (p) < time (NULL) - 86400 * 100) {
          DEBUG_INPT   yLOG_note     ("date older than 100 days");
+         yURG_err ('f', "time code (epoch) Â%sÊÂ%sÊ more than 100 days in past", p, x_mongo);
          metis_task_free (&x_task);
          DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
          return  rce;
@@ -494,6 +539,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       str2mongo (atoi (p), x_mongo);
       strlcpy (x_task->epoch, x_mongo, LEN_TERSE);
    } else {
+      yURG_err ('f', "unique epoch/date is neither an epoch or mongo date");
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
@@ -501,6 +547,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    metis_epoch_by_name (x_task->epoch, &x_exist);
    DEBUG_DATA   yLOG_point   ("x_exist"   , x_exist);
    --rce;  if (x_exist != NULL) {
+      yURG_err ('f', "time code Â%sÊ matches another task (illegal)", x_task->epoch);
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
@@ -523,6 +570,11 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    }
    /*---(source)------------------------*/
    x_task->line = a_line;
+   /*---(update sort)-------------------*/
+   metis_filter_key (x_task);
+   snprintf (x_task->srch, LEN_FULL, "%c%c%c%c%c %-20.20s %-30.30s %s",
+         x_task->urg, x_task->imp, x_task->est, x_task->prg, x_task->shr,
+         x_task->minor->major->name, x_task->minor->name, x_task->txt);
    /*---(stats)--------------------------*/
    DEBUG_INPT   yLOG_value    ("majors"    , metis_major_count ());
    DEBUG_INPT   yLOG_value    ("minors"    , metis_minor_count ());
@@ -544,11 +596,16 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
+   char        rc          =    0;
    char       *p           = NULL;
    char        x_proj      [LEN_LABEL];
    char        x_recd      [LEN_RECD];
    int         x_len       =    0;
-   int         a           =    0;
+   int         x_line      =    0;
+   int         x_try       =    0;
+   int         x_good      =    0;
+   int         x_warn      =    0;
+   int         x_badd      =    0;
    int         x_off       =    0;
    FILE       *f           = NULL;
    /*---(header)-------------------------*/
@@ -559,12 +616,13 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
+   yURG_msg ('>', "source %dÂ%sÊ ", strlen (a_source->path), a_source->path);
    /*---(walk the entries)---------------*/
    --rce;  while (1) {
       /*---(read)------------------------*/
       fgets (x_recd, LEN_RECD, f);
-      ++a;
-      DEBUG_INPT   yLOG_value    ("a"         , a);
+      ++x_line;
+      DEBUG_INPT   yLOG_value    ("x_line"    , x_line);
       if (feof (f))    break;
       /*---(filter)----------------------*/
       strldchg (x_recd, '', 'ß', LEN_RECD);
@@ -599,9 +657,24 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
          }
       } else continue;
       /*---(check metis tag)-------------*/
-      metis_data_parsing (a_minor, a_source, a, x_recd);
+      rc = metis_data_parsing (a_minor, a_source, x_line, x_recd);
+      ++x_try;
+      if (rc >  0)  ++x_warn;
+      if (rc == 0)  ++x_good;
+      if (rc <  0)  ++x_badd;
    }
    fclose(f);
+   if      (x_try  == 0)  yURG_msg ('-', "%d lines checked, no metis entries found", x_line);
+   else if (x_badd >  0)  yURG_msg ('-', "failure, %d lines checked, %d parsing attempted, %d failed, %d warned, %d passed", x_line, x_try, x_badd, x_warn, x_good);
+   else if (x_warn >  0)  yURG_msg ('-', "warning, %d lines checked, %d parsing attempted, %d warned, %d passed", x_line, x_try, x_warn, x_good);
+   else                   yURG_msg ('-', "success, %d lines checked, %d parsing attempted, %d passed", x_line, x_try, x_good);
+   yURG_msg (' ', "");
+   /*---(stats)--------------------------*/
+   s_total += x_line;
+   s_tries += x_try;
+   s_good  += x_good;
+   s_warn  += x_warn;
+   s_badd  += x_badd;
    /*---(stats)--------------------------*/
    DEBUG_INPT   yLOG_value    ("majors"    , metis_major_count ());
    DEBUG_INPT   yLOG_value    ("minors"    , metis_minor_count ());
@@ -744,6 +817,7 @@ metis_data_project      (void)
    }
    DEBUG_INPT   yLOG_info    ("->name"    , x_major->name);
    /*---(run files)----------------------*/
+   s_total = s_tries = s_good  = s_warn  = s_badd  = 0;
    rc = metis_data_directory (x_major, x_home);
    /*---(purge empties)------------------*/
    metis_source_cleanse ();
@@ -755,6 +829,8 @@ metis_data_project      (void)
    DEBUG_INPT   yLOG_value    ("tasks"     , metis_task_count ());
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
+   if      (s_badd > 0)  return -1;
+   else if (s_warn > 0)  return  1;
    return 0;
 }
 
@@ -898,10 +974,7 @@ metis_data_refresh      (void)
       DEBUG_INPT   yLOG_exit    (__FUNCTION__);
       return 0;
    }
-   metis_data_init ();
-   /*---(update)-------------------------*/
-   --rce;  if (my.source == DATA_SOURCES) {
-   }
+   metis_data_purge_all ();
    /*---(update)-------------------------*/
    --rce;  switch (my.source) {
    case DATA_SOURCES :
@@ -921,12 +994,12 @@ metis_data_refresh      (void)
    /*---(add placeholder)----------------*/
    DATA__blankcard ();
    /*---(refresh others)-----------------*/
-   FILTER_refresh  ();
+   metis_filter_set  ();
    FORMAT_refresh  ();
    CROW = CCOL = 0;
    yMAP_refresh_full ();
-   /*> metis_opengl_draw ();                                                          <* 
-    *> metis_opengl_mask ();                                                          <*/
+   metis_opengl_draw ();
+   metis_opengl_mask ();
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return rc;
@@ -967,11 +1040,11 @@ DATA__unit         (char *a_question, int a_num)
          snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg -, imp -, est -, prog -     -", a_num);
       }
    }
-   else if (strcmp (a_question, "header"        ) == 0) {
-      sprintf  (s, "[%.20s]", s_one);
-      sprintf  (t, "[%.20s]", s_two);
-      snprintf (unit_answer, LEN_FULL, "DATA header      : %2d%-22.22s %2d%s", strlen (s) - 2, s, strlen (t) - 2, t);
-   }
+   /*> else if (strcmp (a_question, "header"        ) == 0) {                                                               <* 
+    *>    sprintf  (s, "[%.20s]", s_one);                                                                                   <* 
+    *>    sprintf  (t, "[%.20s]", s_two);                                                                                   <* 
+    *>    snprintf (unit_answer, LEN_FULL, "DATA header      : %2d%-22.22s %2d%s", strlen (s) - 2, s, strlen (t) - 2, t);   <* 
+    *> }                                                                                                                    <*/
    else if (strcmp (a_question, "cats"          ) == 0) {
       if (a_num < g_ntask) {
          sprintf  (s, "[%.20s]", g_tasks [a_num].one);

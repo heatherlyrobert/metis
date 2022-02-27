@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5h"
-#define     P_VERTXT    "cleaned up and unit tested task file reading"
+#define     P_VERNUM    "1.5i"
+#define     P_VERTXT    "metis displaying sweet with menus and floats"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -211,11 +211,32 @@ extern     char      g_print     [LEN_RECD];
 
 
 
-#define    B_MAJOR   'M'
-#define    B_MINOR   'm'
-#define    B_SOURCE  's'
-#define    B_TASK    't'
-#define    B_UNIQUE  'u'
+/*---(statistics)-----------*/
+#define     METIS_URG      'u'
+#define     METIS_IMP      'i'
+#define     METIS_EST      'e'
+#define     METIS_PRG      'p'
+#define     METIS_SHR      's'
+/*---(other sorts)----------*/
+#define     METIS_ORIG     'o'
+#define     METIS_DATE     'd'
+/*---(validations)----------*/
+#define     METIS_URGS     my.urgs
+#define     METIS_IMPS     my.imps
+#define     METIS_ESTS     my.ests
+#define     METIS_PRGS     my.prgs
+#define     METIS_SHRS     my.shrs
+#define     METIS_STATS    "uieps"
+#define     METIS_SORTS    "uiepsod"
+/*---(btress)---------------*/
+#define     B_MAJOR        'M'
+#define     B_MINOR        'm'
+#define     B_SOURCE       's'
+#define     B_TASK         't'
+#define     B_UNIQUE       'u'
+/*---(done)-----------------*/
+
+
 
 typedef     struct   cMAJOR   tMAJOR;
 typedef     struct   cMINOR   tMINOR;
@@ -289,6 +310,7 @@ struct      cTASK  {
    uchar       show;                        /* filtering mark                  */
    uchar       note;                        /* none (-), regex (r)             */
    uchar       key         [LEN_HUND];
+   uchar       srch        [LEN_FULL];
    /*---(btree)-------------*/
    tSORT      *ysort;
    tSORT      *unique;
@@ -385,15 +407,13 @@ struct cMY {
    char        shrs        [LEN_LABEL];     /* all valid status flags         */
    /*---(filtering)----------------------*/
    int         nact;                        /* number of active tasks         */
-   char        curg;                        /* current urgency filter         */
-   char        cimp;                        /* current importance filter      */
-   char        cest;                        /* current estimating filter      */
-   char        cflg;                        /* current status filter          */
-   char        cone        [LEN_LABEL];     /* current cat one filter         */
-   char        ctwo        [LEN_LABEL];     /* current cat two filter         */
-   char        ctxt        [LEN_HUND];      /* current text filter            */
-   char        sort;                        /* sorting request                */
-   char        order;                       /* sorting order request          */
+   uchar       curg;                        /* current urgency filter         */
+   uchar       cimp;                        /* current importance filter      */
+   uchar       cest;                        /* current estimating filter      */
+   uchar       cprg;                        /* current progress filter        */
+   uchar       cshr;                        /* current progress filter        */
+   uchar       ctxt        [LEN_HUND];      /* current text filter            */
+   uchar       sort;                        /* sorting request                */
    /*---(window)-------------------------*/
    char        format;                   /* display style                     */
    char        sighup;                   /* force a refresh/redraw            */
@@ -531,6 +551,7 @@ char       prog_signals      (void);
 /*---(program)--------------*/
 char        metis_data_purge_all    (void);
 char        metis_data_init         (void);
+char        metis_data_vikeys       (void);
 /*---(parse)----------------*/
 char        metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel, char *a_desc);
 char        metis_data_stats        (tTASK *a_task, char *a_stats);
@@ -553,7 +574,8 @@ char*       DATA__unit              (char *a_question, int a_num);
 
 
 
-char        FORMAT_init             (void);
+char        metis_format_init       (void);
+char        metis_format_vikeys     (void);
 int         format_check            (int a_col, int a_row);
 char        format_column           (void);
 char        format_ticker           (void);
@@ -585,14 +607,14 @@ char        PROG__unit_loud         (void);
 char        PROG__unit_end          (void);
 /*---(done)-----------------*/
 
-char        FILTER_init             (void);
-char        FILTER_clear            (void);
-char        FILTER_refresh          (void);
+char        metis_filter_init       (void);
+char        metis_filter_vikeys     (void);
+char        metis_filter_clear      (void);
+char        metis_filter_set        (void);
+char        metis_filter_search     (char *a_search);
+char        metis_filter_key        (tTASK *a_task);
+char        metis_filter_sort       (void);
 char*       FILTER__unit            (char *a_question, int a_num);
-char        SORT_stats              (char a_type);
-char        SORT_names              (void);
-char        SORT_unsort             (void);
-char        SORT_refresh            (void);
 
 
 char*       FORMAT__unit            (char *a_question, int a_num);
@@ -721,6 +743,7 @@ int         metis_epoch_count       (void);
 char        metis_epoch_by_index    (int n, tTASK **r_task);
 char        metis_epoch_by_cursor   (char a_dir, tTASK **r_task);
 char        metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor);
+char        metis_task_active_index (int n, tTASK**r_task);
 int         metis_task_by_regex     (char *a_regex, tTASK **r_task);
 char*       metis_task_entry        (int n);
 /*---(program)--------------*/

@@ -92,7 +92,7 @@ metis_task_new         (tMINOR *a_minor, char a_force, tTASK **r_new)
    /*---(populate)-----------------------*/
    sprintf (x_exist->txt, "#%04d", ySORT_count (B_TASK));
    x_exist->seq = a_minor->count;
-   sprintf (x_exist->key, "%-20s %-20s %3d", a_minor->major->name, a_minor->name, x_exist->seq);
+   /*> sprintf (x_exist->key, "%-20s %-20s %3d", a_minor->major->name, a_minor->name, x_exist->seq);   <*/
    /*---(hook)---------------------------*/
    rc = ySORT_hook (B_TASK, x_exist, x_exist->key, &(x_exist->ysort));
    DEBUG_DATA   yLOG_value   ("hook"      , rc);
@@ -210,6 +210,43 @@ char metis_epoch_by_index    (int n, tTASK **r_task)           { return ySORT_by
 char metis_epoch_by_cursor   (char a_dir, tTASK **r_task)      { return ySORT_by_cursor (B_UNIQUE, a_dir, r_task); }
 char metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor) { return ySORT_by_name   (B_UNIQUE, a_name, r_minor); }
 
+char
+metis_task_active_index      (int n, tTASK**r_task)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   tTASK      *x_task      = NULL;
+   int         c           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   /*---(compile)------------------------*/
+   DEBUG_DATA   yLOG_point   ("r_task"    , r_task);
+   --rce;  if (r_task == NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   if (r_task != NULL)  *r_task = NULL;
+   /*---(walk)---------------------------*/
+   rc = metis_task_by_cursor (YDLST_HEAD, &x_task);
+   while (x_task != NULL) {
+      if (x_task->show == 'y') {
+         if (n == c) {
+            DEBUG_DATA   yLOG_info    ("found in"  , x_task->txt);
+            *r_task = x_task;
+            DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+            return 0;
+         }
+         ++c;
+      }
+      rc = metis_task_by_cursor (YDLST_NEXT, &x_task);
+   }
+   /*---(complete)-----------------------*/
+   --rce;
+   DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
+   return rce;
+}
+
 int
 metis_task_by_regex     (char *a_regex, tTASK **r_task)
 {
@@ -244,7 +281,7 @@ metis_task_by_regex     (char *a_regex, tTASK **r_task)
          x_task->note = 'r';
          ++c;
       }
-      rc = metis_task_by_cursor (YDLST_HEAD, &x_task);
+      rc = metis_task_by_cursor (YDLST_NEXT, &x_task);
    }
    DEBUG_DATA   yLOG_value   ("c"         , c);
    /*---(complete)-----------------------*/
@@ -258,14 +295,20 @@ metis_task_entry       (int n)
    tTASK      *x_task      = NULL;
    char        t           [LEN_HUND]  = " -åæ";
    char        s           [LEN_LABEL] = "·";
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    metis_task_by_index (n, &x_task);
-   if (x_task == NULL)  return "n/a";
-   sprintf (t, "%2då%.25sæ", strlen (x_task->txt), x_task->txt);
-   if (strlen (x_task->epoch) == 6) sprintf (s, "%6.6s", x_task->epoch);
-   sprintf (g_print, "%-2d %-20.20s %-20.20s %2d %-29.29s %c %c %c %c %c  %c %c  %s",
-         n, x_task->minor->major->name, x_task->minor->name, x_task->seq, t,
-         x_task->urg, x_task->imp, x_task->est, x_task->prg, x_task->shr,
-         x_task->show, x_task->note, s);
+   if (x_task == NULL) {
+      strcpy (g_print, "n/a");
+   } else {
+      sprintf (t, "%2då%.25sæ", strlen (x_task->txt), x_task->txt);
+      if (strlen (x_task->epoch) == 6) sprintf (s, "%6.6s", x_task->epoch);
+      sprintf (g_print, "%-2d %-20.20s %-20.20s %2d %-29.29s %c %c %c %c %c  %c %c  %s",
+            n, x_task->minor->major->name, x_task->minor->name, x_task->seq, t,
+            x_task->urg, x_task->imp, x_task->est, x_task->prg, x_task->shr,
+            x_task->show, x_task->note, s);
+   }
+   DEBUG_PROG   yLOG_info    ("task"      , g_print);
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return g_print;
 }
 

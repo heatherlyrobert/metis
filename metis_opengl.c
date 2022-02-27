@@ -21,15 +21,15 @@
 
 
 /*
- * metis § dw4#Ï § fix artifacting in OPENGL__polygon which looks like dashes at edges    § M1FDip §
- * metis § dw2xÏ § fit urgency letter in urgency area -- less confusing                   § M1FDiq §
- * metis § dw2xÏ § fit estimate letter in estimate area -- less confusing                 § M1FDir §
- * metis § dw2#Ï § fit progress letter in progress area -- less confusing                 § M1FDis §
- * metis § sn4#Ï § get texture drawn to match yMAP position                               § M1FDit §
- * metis § ww1#Ï § lighten normal blue as it dulls text too much                          § M1FDiu §
+ * metis § dg4#³ § fix artifacting in OPENGL__polygon which looks like dashes at edges    § M1FDip §
+ * metis § dg2x³ § fit urgency letter in urgency area -- less confusing                   § M1FDiq §
+ * metis § dg2x³ § fit estimate letter in estimate area -- less confusing                 § M1FDir §
+ * metis § dg2#³ § fit progress letter in progress area -- less confusing                 § M1FDis §
+ * metis § sn4#³ § get texture drawn to match yMAP position                               § M1FDit §
+ * metis § wg1#³ § lighten normal blue as it dulls text too much                          § M1FDiu §
  *
- * metis § dw2·· § when filtered to zero cards, display blank card                        § M1FDiv §
- * metis § dw4·· § use yCOLOR to establish pallete and color selection                    § M1FDiw §
+ * metis § !n2·· § when filtered to zero cards, display blank card                        § M1FDiv §
+ * metis § dg4·· § use yCOLOR to establish pallete and color selection                    § M1FDiw §
  * metis § wv4·· § continuation header-footer that show top/more and bot/more             § M1K24Q §
  */
 
@@ -368,28 +368,33 @@ metis_opengl_show  (void)
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    DEBUG_GRAF   yLOG_char     ("format"    , my.format);
-   /*> x_mode = yVIKEYS_mode ();                                                      <*/
+   x_mode = yMODE_curr ();
    DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("x_modesave", x_modesave);
-   /*> x_stat = yVIEW_showing (YVIEW_STATUS);                                         <*/
+   x_stat = yVIEW_showing (YVIEW_STATUS);
    DEBUG_GRAF   yLOG_char     ("x_stat"    , x_stat);
    DEBUG_GRAF   yLOG_char     ("x_statsave", x_statsave);
    /*---(force mask redraw)--------------*/
+   metis_opengl_mask ();
    /*> if (x_mode != x_modesave) {                                                    <* 
     *>    switch (x_mode) {                                                           <* 
     *>    case SMOD_MENUS   : metis_opengl_mask ();  break;                           <* 
     *>    case UMOD_HISTORY : metis_opengl_mask ();  break;                           <* 
+    *>    case MODE_COMMAND : metis_opengl_mask ();  break;                           <* 
+    *>    case MODE_SEARCH  : metis_opengl_mask ();  break;                           <* 
     *>    }                                                                           <* 
+    *>    if (strchr (MODES_EDITING, x_mode) != NULL)  metis_opengl_mask ();          <* 
     *>    switch (x_modesave) {                                                       <* 
     *>    case SMOD_MENUS   : metis_opengl_mask ();  break;                           <* 
     *>    case UMOD_HISTORY : metis_opengl_mask ();  break;                           <* 
     *>    }                                                                           <* 
+    *>    if (strchr (MODES_EDITING, x_modesave) == NULL)  metis_opengl_mask ();      <* 
     *> }                                                                              <* 
     *> if (x_stat != x_statsave) {                                                    <* 
     *>    metis_opengl_mask ();                                                       <* 
-    *> }                                                                              <* 
-    *> x_modesave = x_mode;                                                           <* 
-    *> x_statsave = x_stat;                                                           <*/
+    *> }                                                                              <*/
+   x_modesave = x_mode;
+   x_statsave = x_stat;
    /*---(tickers)------------------------*/
    if (strchr (FORMAT_TICKERS, my.format) != 0) {
       /*> metis_opengl__tickers (&x_cur, &y_cur);                                     <*/
@@ -430,7 +435,7 @@ metis_opengl__base      (char  a_value)
       glVertex3f (      0.0, -my.r_tall,  -10.0);
    } glEnd();
    /*---(aesthetic tint)-----------------*/
-   metis_opengl_color  (my.urgs, a_value, 0.3);
+   metis_opengl_color  (METIS_URGS, a_value, 0.3);
    glBegin(GL_POLYGON); {
       glVertex3f (      0.0,        0.0,  -10.0);
       glVertex3f (my.c_wide,        0.0,  -10.0);
@@ -453,7 +458,7 @@ metis_opengl__urg       (char a_value, int z)
       glVertex3f (300.0, -17.0, z + 0.0);
       glVertex3f (  0.0, -17.0, z + 0.0);
    } glEnd();
-   metis_opengl_color  (my.urgs, a_value, 1.0);
+   metis_opengl_color  (METIS_URGS, a_value, 1.0);
    glBegin(GL_POLYGON); {
       glVertex3f (  2.0,  -2.0, z + 5.0);
       glVertex3f (298.0,  -2.0, z + 5.0);
@@ -476,7 +481,7 @@ metis_opengl__imp       (char a_value, int z)
       glVertex3f ( 20.0, -45.0, z + 0.0);
       glVertex3f (  0.0, -25.0, z + 0.0);
    } glEnd();
-   metis_opengl_color  (my.imps, a_value, 1.0);
+   metis_opengl_color  (METIS_IMPS, a_value, 1.0);
    glBegin(GL_POLYGON); {
       glVertex3f (  2.0,  -2.0, z + 5.0);
       glVertex3f ( 23.0,  -2.0, z + 5.0);
@@ -498,7 +503,7 @@ metis_opengl__est       (char a_value, int z)
       glVertex3f ( 57.0, -45.0, z + 0.0);
       glVertex3f (  0.0, -45.0, z + 0.0);
    } glEnd();
-   metis_opengl_color  (my.ests, a_value, 1.0);
+   metis_opengl_color  (METIS_ESTS, a_value, 1.0);
    glBegin(GL_POLYGON); {
       glVertex3f (  2.0, -17.0, z + 5.0);
       glVertex3f ( 55.0, -17.0, z + 5.0);
@@ -715,6 +720,23 @@ metis_opengl__borders   (void)
 }
 
 char
+metis_opengl__search    (char a_note)
+{
+   if (a_note == '-')  return 0;
+   switch (a_note) {
+   case 'r' : glColor4f (  0.800,  0.000,  0.000, 1.000);  break;
+   case 'm' : glColor4f (  0.800,  0.800,  0.000, 1.000);  break;
+   }
+   glBegin(GL_POLYGON); {
+      glVertex3f (  17.0,  -35.0,   80.0);
+      glVertex3f (  23.0,  -29.0,   80.0);
+      glVertex3f (  29.0,  -35.0,   80.0);
+      glVertex3f (  23.0,  -41.0,   80.0);
+   } glEnd();
+   return 0;
+}
+
+char
 metis_opengl__card      (int a_index)
 {
    /*---(locals)-----------+-----+-----+-*/
@@ -738,6 +760,7 @@ metis_opengl__card      (int a_index)
    metis_opengl__bullets ();
    metis_opengl__text    (a_index, x_task->minor->major->name, x_task->minor->name, x_task->txt);
    metis_opengl__cats    (x_task->urg, x_task->imp, x_task->est);
+   metis_opengl__search  (x_task->note);
    metis_opengl__borders ();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -767,7 +790,7 @@ metis_opengl__colrow    (int a_max, short a_xinc, short a_yinc)
          metis_task_by_index (i, &x_task);
          /*---(filter)-------------------*/
          DEBUG_GRAF   yLOG_complex  ("card"      , "%2d, %c %s", i, x_task->show, x_task->txt);
-         /*> if (x_task->show != 'y')     continue;                                   <*/
+         if (x_task->show != 'y')     continue;
          if (c >= a_max)              break;      
          /*---(draw)---------------------*/
          metis_opengl__card (i);
@@ -896,19 +919,27 @@ metis_opengl_mask             (void)
    Pixmap    bounds;
    GC        gc;
    int       x_col      = 0;
-   int         x_max       =    0;
    float       x_inc       =    0;
    char        x_mode      =  '-';
    char        x_status    =  '-';
    char        x_help      =  '-';
    char        x_abbr      =  '-';
    char        x_types     [LEN_LABEL] = "uiep";
+   short       x_min       =    0;
+   short       x_max       =    0;
+   short       x_dif       =    0;
+   short       y_min       =    0;
+   short       y_max       =    0;
+   short       y_dif       =    0;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(prepare)------------------------*/
-   bounds    = XCreatePixmap (YX_DISP, YX_BASE, my.w_wide, my.w_ftall, 1);
+   /*> if (yVIEW_showing (YVIEW_STATUS)) {                                                       <* 
+    *>    yVIEW_bounds (YVIEW_STATUS, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &y_dif);   <* 
+    *> }                                                                                         <*/
+   bounds    = XCreatePixmap (YX_DISP, YX_BASE, my.w_wide, my.w_ftall + y_dif, 1);
    gc        = XCreateGC     (YX_DISP, bounds, 0, NULL);
-   /*> x_mode = yVIKEYS_mode ();                                                      <*/
+   x_mode = yMODE_curr ();
    DEBUG_GRAF   yLOG_char     ("x_mode"    , x_mode);
    DEBUG_GRAF   yLOG_char     ("g_major"   , g_major);
    DEBUG_GRAF   yLOG_char     ("g_minor"   , g_minor);
@@ -916,8 +947,6 @@ metis_opengl_mask             (void)
    DEBUG_GRAF   yLOG_value    ("WCOLS"  , WCOLS);
    DEBUG_GRAF   yLOG_value    ("WROWS"  , WROWS);
    DEBUG_GRAF   yLOG_value    ("my.nact"   , my.nact);
-   /*> x_status = yVIKEYS_view_size     (YVIKEYS_STATUS, NULL, NULL, NULL, NULL, NULL);   <*/
-   DEBUG_GRAF   yLOG_char     ("x_status"  , x_status);
    XSetForeground (YX_DISP, gc, 0);
    XFillRectangle (YX_DISP, bounds, gc, 0, 0, my.w_wide, my.w_ftall);
    XSetForeground (YX_DISP, gc, 1);
@@ -926,10 +955,10 @@ metis_opengl_mask             (void)
    DEBUG_GRAF   yLOG_char     ("x_help"    , x_help);
    if (strchr (x_types, x_help) != NULL) {
       switch (x_help) {
-      case 'u' : x_max = strlen (my.urgs);  break;
-      case 'i' : x_max = strlen (my.imps);  break;
-      case 'e' : x_max = strlen (my.ests);  break;
-      case 'p' : x_max = strlen (my.prgs);  break;
+      case METIS_URG : x_max = strlen (METIS_URGS);  break;
+      case METIS_IMP : x_max = strlen (METIS_IMPS);  break;
+      case METIS_EST : x_max = strlen (METIS_ESTS);  break;
+      case METIS_PRG : x_max = strlen (METIS_PRGS);  break;
       }
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       for (i = 0; i < x_max; ++i) {
@@ -940,10 +969,10 @@ metis_opengl_mask             (void)
       for (j = 0; j < 4; ++j) {
          x_abbr = x_types [j];
          switch (x_abbr) {
-         case 'u' : x_max = strlen (my.urgs);  break;
-         case 'i' : x_max = strlen (my.imps);  break;
-         case 'e' : x_max = strlen (my.ests);  break;
-         case 'p' : x_max = strlen (my.prgs);  break;
+         case METIS_URG : x_max = strlen (METIS_URGS);  break;
+         case METIS_IMP : x_max = strlen (METIS_IMPS);  break;
+         case METIS_EST : x_max = strlen (METIS_ESTS);  break;
+         case METIS_PRG : x_max = strlen (METIS_PRGS);  break;
          }
          for (i = 0; i < x_max; ++i) {
             XFillRectangle (YX_DISP, bounds, gc, j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
@@ -986,11 +1015,24 @@ metis_opengl_mask             (void)
    /*---(check for menu)-----------------*/
    if (x_mode == SMOD_MENUS) {
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
-      XFillRectangle (YX_DISP, bounds, gc, my.w_wide / 2 - 140, 40, 280, 200);
+      yVIEW_bounds (YVIEW_MENUS, NULL, NULL, NULL, &x_min, &x_max, &x_dif, &y_min, &y_max, &y_dif);
+      DEBUG_GRAF   yLOG_complex ("menus"  ,"x_min %4d, x_max %4d, x_dif %4d, y_min %4d, y_max %4d, y_dif %4d", x_min, x_max, x_dif, y_min, y_max, y_dif);
+      XFillRectangle (YX_DISP, bounds, gc, x_min, -y_max, x_dif, y_dif);
    }
    /*---(check for status bar)-----------*/
    if (yVIEW_showing (YVIEW_STATUS)) {
-      XFillRectangle (YX_DISP, bounds, gc, 0.0, my.w_ftall - 15, my.w_wide, 15);
+      DEBUG_GRAF   yLOG_note     ("draw the status bar mask");
+      yVIEW_bounds (YVIEW_STATUS, NULL, NULL, NULL, &x_min, &x_max, &x_dif, &y_min, &y_max, &y_dif);
+      DEBUG_GRAF   yLOG_complex ("status" , "x_min %4d, x_max %4d, x_dif %4d, y_min %4d, y_max %4d, y_dif %4d", x_min, x_max, x_dif, y_min, y_max, y_dif);
+      XFillRectangle (YX_DISP, bounds, gc, x_min, -y_max, x_dif, y_dif);
+   }
+   /*---(check for status bar)-----------*/
+   if (strchr (MODES_EDITING, x_mode) != NULL) {
+      DEBUG_GRAF   yLOG_note     ("draw the float mask");
+      yVIEW_bounds (YVIEW_FLOAT, NULL, NULL, NULL, &x_min, &x_max, &x_dif, &y_min, &y_max, &y_dif);
+      DEBUG_GRAF   yLOG_complex ("float"  , "x_min %4d, x_max %4d, x_dif %4d, y_min %4d, y_max %4d, y_dif %4d", x_min, x_max, x_dif, y_min, y_max, y_dif);
+      /*> XFillRectangle (YX_DISP, bounds, gc, x_min, y_max, x_dif, y_dif);           <*/
+      XFillRectangle (YX_DISP, bounds, gc, x_min - 2, -y_max - 2, x_dif + 4, y_dif + 4);
    }
    /*---(set mask)-----------------------*/
    XShapeCombineMask (YX_DISP, YX_BASE, ShapeBounding, 0, 0, bounds, ShapeSet);

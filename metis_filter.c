@@ -14,12 +14,30 @@
 
 /*===[[ METIS BACKLOG ]]======================================================*
  *
+ * metis § !n2-· § update yMAP with active tasks, not all (NROW vs nact)                  § M1Q5aR §
+ *
  */
 
 #include   "metis.h"
 
 char
-FILTER_init             (void)
+metis_filter_init       (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        i           =    0;
+   char        t           [LEN_LABEL];
+   /*---(header)-------------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   /*---(defaults)-----------------------*/
+   my.sort = METIS_ORIG;
+   metis_filter_clear ();
+   /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_filter_vikeys     (void)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        i           =    0;
@@ -27,42 +45,43 @@ FILTER_init             (void)
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    /*---(commands)-----------------------*/
-   /*> yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "sort"        , ""    , "s"    , api_yvikeys_sort    , "sort metis data"    );     <* 
-    *> yVIKEYS_menu_add ("µdsc", "clear"     , ":sort clear¦");                                                                <* 
-    *> yVIKEYS_menu_add ("µdsu", "by urg"    , ":sort urg¦");                                                                  <* 
-    *> yVIKEYS_menu_add ("µdsi", "by imp"    , ":sort imp¦");                                                                  <* 
-    *> yVIKEYS_menu_add ("µdse", "by est"    , ":sort est¦");                                                                  <* 
-    *> yVIKEYS_menu_add ("µdsf", "by flg"    , ":sort flg¦");                                                                  <* 
-    *> yVIKEYS_menu_add ("µdsn", "by names"  , ":sort names¦");                                                                <* 
-    *> yVIKEYS_menu_add ("µdsa", "ascend"    , ":sort ascend¦");                                                               <* 
-    *> yVIKEYS_menu_add ("µdsd", "descend"   , ":sort descend¦");                                                              <* 
-    *> yVIKEYS_cmds_add (YVIKEYS_M_DATASET, "filter"      , ""    , "ss"   , api_yvikeys_filter  , "filter metis data"    );   <* 
-    *> yVIKEYS_menu_add ("µdfc", "clear"     , ":filter clear¦");                                                              <* 
-    *> yVIKEYS_menu_add ("µdfu", "by urg"    , ":filter urg ");                                                                <* 
-    *> yVIKEYS_menu_add ("µdfi", "by imp"    , ":filter imp ");                                                                <* 
-    *> yVIKEYS_menu_add ("µdfe", "by est"    , ":filter est ");                                                                <* 
-    *> yVIKEYS_menu_add ("µdff", "by flg"    , ":filter flg ");                                                                <* 
-    *> yVIKEYS_menu_add ("µdf1", "by one"    , ":filter one ");                                                                <* 
-    *> yVIKEYS_menu_add ("µdf2", "by two"    , ":filter two ");                                                                <* 
-    *> yVIKEYS_menu_add ("µdft", "by txt"    , ":filter txt ");                                                                <*/
+   yCMD_add (YCMD_M_DATASET, "sort"        , ""    , "s"    , api_yvikeys_sort    , "sort metis data"    );
+   yCMD_menu_add ("µdsc", "clear"     , ":sort clear¦");
+   yCMD_menu_add ("µdso", "original"  , ":sort orig¦");
+   yCMD_menu_add ("µdsu", "by urg"    , ":sort urg¦");
+   yCMD_menu_add ("µdsi", "by imp"    , ":sort imp¦");
+   yCMD_menu_add ("µdse", "by est"    , ":sort est¦");
+   yCMD_menu_add ("µdsp", "by prg"    , ":sort prg¦");
+   yCMD_menu_add ("µdss", "by shr"    , ":sort shr¦");
+   yCMD_menu_add ("µdsd", "by date"   , ":sort date¦");
+   yCMD_add (YCMD_M_DATASET, "filter"      , ""    , "ss"   , api_yvikeys_filter  , "filter metis data"    );
+   yCMD_menu_add ("µdfc", "clear"     , ":filter clear¦");
+   yCMD_menu_add ("µdfu", "by urg"    , ":filter urg ");
+   yCMD_menu_add ("µdfi", "by imp"    , ":filter imp ");
+   yCMD_menu_add ("µdfe", "by est"    , ":filter est ");
+   yCMD_menu_add ("µdfp", "by prg"    , ":filter prg ");
+   yCMD_menu_add ("µdfs", "by shr"    , ":filter shr ");
+   yCMD_menu_add ("µdft", "by txt"    , ":filter txt ");
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char
-FILTER_clear            (void)
+metis_filter_clear      (void)
 {
-   my.curg   = my.cimp = my.cest = my.cflg = ' ';
-   my.cone [0] = my.ctwo [0] = my.ctxt [0] = '\0';
+   my.curg   = my.cimp = my.cest = my.cprg = my.cshr = ' ';
+   my.ctxt [0] = '\0';
    return 0;
 }
 
 char
-FILTER_refresh          (void)
+metis_filter_set        (void)
 {
-   /*---(locals)-----------+-----------+-*/
-   int         i           = 0;
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   int         c           =    0;
    char        x_show      =  'y';
    tTASK      *x_task      = NULL;
    /*---(header)-------------------------*/
@@ -70,18 +89,28 @@ FILTER_refresh          (void)
    DEBUG_DATA   yLOG_char     ("my.curg"    , my.curg);
    DEBUG_DATA   yLOG_char     ("my.cimp"    , my.cimp);
    DEBUG_DATA   yLOG_char     ("my.cest"    , my.cest);
-   DEBUG_DATA   yLOG_char     ("my.cflg"    , my.cflg);
+   DEBUG_DATA   yLOG_char     ("my.cprg"    , my.cprg);
+   DEBUG_DATA   yLOG_char     ("my.cshr"    , my.cshr);
    /*---(prepare)------------------------*/
    my.nact = 0;
+   if (my.ctxt [0] != '\0') {
+      rc = yREGEX_comp (my.ctxt);
+      DEBUG_DATA   yLOG_value   ("comp"      , rc);
+      --rce;  if (rc < 0) {
+         DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
+   }
    /*---(display)------------------------*/
    metis_task_by_cursor (YDLST_HEAD, &x_task);
    while (x_task != NULL) {
-      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", i, x_task->urg, x_task->imp, x_task->est, x_task->prg);
+      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", c, x_task->urg, x_task->imp, x_task->est, x_task->prg);
       /*---(default)---------------------*/
       x_task->show  = 'y';
-      /*> if (my.nact > NROWS)  continue;                                         <*/
+      x_task->note  = '-';
+      ++c;
       /*---(urgency)---------------------*/
-      if ((my.curg != ' ' && x_task->urg != my.curg)) {
+      if      ((my.curg != ' ' && x_task->urg != my.curg)) {
          DEBUG_DATA   yLOG_note     ("skip as urgent does not match filter");
          x_task->show = '-';
       }
@@ -95,26 +124,21 @@ FILTER_refresh          (void)
          DEBUG_DATA   yLOG_note     ("skip as estimate does not match filter");
          x_task->show = '-';
       }
-      /*---(status)----------------------*/
-      else if ((my.cflg != ' ' && x_task->prg != my.cflg)) {
-         DEBUG_DATA   yLOG_note     ("skip as flag/status does not match filter");
+      /*---(progress)--------------------*/
+      else if ((my.cprg != ' ' && x_task->prg != my.cprg)) {
+         DEBUG_DATA   yLOG_note     ("skip as progress does not match filter");
          x_task->show = '-';
       }
-      /*---(one)-------------------------*/
-      /*> if (my.cone [0] != '\0' && strstr (x_task->one, my.cone) == NULL) {          <* 
-       *>    DEBUG_DATA   yLOG_note     ("skip as cat one does not contain filter");   <* 
-       *>    continue;                                                                 <* 
-       *> }                                                                            <*/
-      /*---(two)-------------------------*/
-      /*> if (my.ctwo [0] != '\0' && strstr (x_task->two, my.ctwo) == NULL) {          <* 
-       *>    DEBUG_DATA   yLOG_note     ("skip as cat two does not contain filter");   <* 
-       *>    continue;                                                                 <* 
-       *> }                                                                            <*/
+      /*---(sharing)---------------------*/
+      else if ((my.cshr != ' ' && x_task->shr != my.cshr)) {
+         DEBUG_DATA   yLOG_note     ("skip as sharing does not match filter");
+         x_task->show = '-';
+      }
       /*---(text)------------------------*/
-      /*> if (my.ctxt [0] != '\0' && strstr (x_task->txt, my.ctxt) == NULL) {         <* 
-       *>    DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");      <* 
-       *>    continue;                                                                <* 
-       *> }                                                                           <*/
+      else if (my.ctxt [0] != '\0' && yREGEX_filter (x_task->txt) <= 0) {
+         DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");
+         x_task->show = '-';
+      }
       /*---(increment)-------------------*/
       if (x_task->show == 'y')  ++my.nact;
       metis_task_by_cursor (YDLST_NEXT, &x_task);
@@ -132,219 +156,176 @@ FILTER_refresh          (void)
    return 0;
 }
 
-
-static  s_swaps      = 0;
-static  s_notes      = 0;
-static  s_comps      = 0;
-static  s_teles      = 0;
-
 char
-SORT__show              (tCARD *a_cur)
-{
-}
-
-char
-SORT__swap              (tCARD *a_one, tCARD *a_two)
+metis_filter_search     (char *a_search)
 {
    /*---(locals)-----------+-----+-----+-*/
-   tCARD       x_temp;
-   /*---(one to temp)--------------------*/
-   strlcpy (x_temp.one, a_one->one, LEN_LABEL);
-   strlcpy (x_temp.two, a_one->two, LEN_LABEL);
-   x_temp.urg        = a_one->urg;
-   x_temp.imp        = a_one->imp;
-   x_temp.est        = a_one->est;
-   x_temp.prg        = a_one->prg;
-   strlcpy (x_temp.txt, a_one->txt, LEN_HUND);
-   x_temp.seq        = a_one->seq;
-   x_temp.line       = a_one->line;
-   x_temp.act        = a_one->act;
-   strlcpy (x_temp.key, a_one->key, LEN_HUND);
-   /*---(two to one)---------------------*/
-   strlcpy (a_one->one, a_two->one, LEN_LABEL);
-   strlcpy (a_one->two, a_two->two, LEN_LABEL);
-   a_one->urg        = a_two->urg;
-   a_one->imp        = a_two->imp;
-   a_one->est        = a_two->est;
-   a_one->prg        = a_two->prg;
-   strlcpy (a_one->txt, a_two->txt, LEN_HUND);
-   a_one->seq        = a_two->seq;
-   a_one->line       = a_two->line;
-   a_one->act        = a_two->act;
-   strlcpy (a_one->key, a_two->key, LEN_HUND);
-   /*---(temp to two)--------------------*/
-   strlcpy (a_two->one, x_temp.one, LEN_LABEL);
-   strlcpy (a_two->two, x_temp.two, LEN_LABEL);
-   a_two->urg        = x_temp.urg;
-   a_two->imp        = x_temp.imp;
-   a_two->est        = x_temp.est;
-   a_two->prg        = x_temp.prg;
-   strlcpy (a_two->txt, x_temp.txt, LEN_HUND);
-   a_two->seq        = x_temp.seq;
-   a_two->line       = x_temp.line;
-   a_two->act        = x_temp.act;
-   strlcpy (a_two->key, x_temp.key, LEN_HUND);
-   /*---(complete)-----------------------*/
-   return 0;
-}
-
-char
-SORT__gnome             (void)
-{
-   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
    char        rc          =    0;
-   int         i           =    0;          /* current index                  */
-   int         t           =    0;          /* teleport index                 */
-   int         x_tmp;
+   int         c           =    0;
+   char        x_show      =  'y';
+   tTASK      *x_task      = NULL;
    /*---(header)-------------------------*/
-   DEBUG_SORT   yLOG_enter   (__FUNCTION__);
-   /*---(gnome)--------------------------*/
-   i = 0;
-   while (i < g_ntask) {
-      if (i > t)  t = i;
-      /*---(beginning)-------------------*/
-      if (i <= 0) {
-         DEBUG_SORT   yLOG_note    ("bounce off beginning");
-         ++s_teles;
-         i = t + 1;
-         continue;
-      }
-      /*---(compare)---------------------*/
-      ++s_comps;
-      rc = strcmp (g_tasks [i - 1].key, g_tasks [i].key);
-      if (my.order == 'd')   rc *= -1;
-      if (rc <= 0) {
-         DEBUG_SORT   yLOG_complex ("correct"   , "%3d %-20.20s v %3d %-20.20s   %c %4d   %5d %5d %5d", i - 1, g_tasks [i - 1].key, i, g_tasks [i].key, (rc <= 0) ? 'y' : '-', rc, s_comps, s_swaps, s_teles);
-         ++s_teles;
-         i = t + 1;
-         continue;
-      }
-      /*---(swap)------------------------*/
-      ++s_notes;
-      DEBUG_SORT   yLOG_complex ("swapped"   , "%3d %-20.20s # %3d %-20.20s   %c %4d   %5d %5d %5d", i - 1, g_tasks [i - 1].key, i, g_tasks [i].key, (rc <= 0) ? 'y' : '-', rc, s_comps, s_swaps, s_teles);
-      SORT__swap (&(g_tasks [i - 1]), &(g_tasks [i]));
-      /*---(next)------------------------*/
-      --i;
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   /*---(prepare)------------------------*/
+   rc = yREGEX_comp (a_search);
+   DEBUG_DATA   yLOG_value   ("comp"      , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
    }
    /*---(display)------------------------*/
-   DEBUG_SORT   yLOG_value   ("size"       , g_ntask);
-   DEBUG_SORT   yLOG_value   ("compares"   , s_comps);
-   DEBUG_SORT   yLOG_value   ("notes"      , s_notes);
-   DEBUG_SORT   yLOG_value   ("swaps"      , s_swaps);
-   DEBUG_SORT   yLOG_value   ("teleports"  , s_teles);
+   metis_task_by_cursor (YDLST_HEAD, &x_task);
+   while (x_task != NULL) {
+      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", c, x_task->urg, x_task->imp, x_task->est, x_task->prg);
+      /*---(default)---------------------*/
+      x_task->show  = 'y';
+      x_task->note  = '-';
+      ++c;
+      /*---(text)------------------------*/
+      rc = yREGEX_filter (x_task->srch);
+      if (rc > 0) {
+         DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");
+         x_task->note = 'r';
+      }
+      /*---(increment)-------------------*/
+      if (x_task->show == 'y')  ++my.nact;
+      metis_task_by_cursor (YDLST_NEXT, &x_task);
+      /*---(done)------------------------*/
+   }
+   DEBUG_DATA   yLOG_value    ("my.nact"  , my.nact);
    /*---(complete)-----------------------*/
-   DEBUG_SORT   yLOG_exit    (__FUNCTION__);
+   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
+
+
+/*====================------------------------------------====================*/
+/*===----                      sort ordering                           ----===*/
+/*====================------------------------------------====================*/
+static void  o___ORDER___________o () { return; }
+
 char
-SORT_stats              (char a_type)
+metis_filter_key        (tTASK *a_task)
 {
    /*---(locals)-----------+-----+-----+-*/
-   int         i           =    0;
+   char        rce         =  -10;
    char        x_urg       =    0;
    char        x_imp       =    0;
    char        x_est       =    0;
-   char        x_flg       =    0;
+   char        x_prg       =    0;
+   char        x_shr       =    0;
    char        t           [LEN_LABEL];
    /*---(header)-------------------------*/
-   DEBUG_SORT   yLOG_enter   (__FUNCTION__);
-   /*---(prepare keys)-------------------*/
-   for (i = 0; i < g_ntask; ++i) {
+   DEBUG_DATA   yLOG_enter   (__FUNCTION__);
+   DEBUG_DATA   yLOG_char    ("my.sort"   , my.sort);
+   /*---(defense)------------------------*/
+   DEBUG_DATA   yLOG_point   ("a_task"    , a_task);
+   --rce;  if (a_task == NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(original order)--------------*/
+   if (my.sort == METIS_ORIG) {
+      DEBUG_DATA   yLOG_note    ("original/natural sort order");
+      snprintf (a_task->key, LEN_HUND, "%-20s %-20s %3d", a_task->minor->major->name, a_task->minor->name, a_task->seq);
+   }
+   /*---(statistic sorts)-------------*/
+   else if (strchr (METIS_STATS, my.sort) != NULL) {
+      DEBUG_DATA   yLOG_note    ("statistical sort order");
       /*---(convert to scale)------------*/
-      x_urg = strchr (my.urgs, g_tasks [i].urg) - my.urgs + 'a';
-      x_imp = strchr (my.imps, g_tasks [i].imp) - my.imps + 'a';
-      x_est = strchr (my.ests, g_tasks [i].est) - my.ests + 'a';
-      x_flg = strchr (my.prgs, g_tasks [i].prg) - my.prgs + 'a';
-      /*---(combine)---------------------*/
-      switch (a_type) {
-      case 'i' :  sprintf (t, "%c%c%c%c", x_imp, x_urg, x_est, x_flg);  break;
-      case 'e' :  sprintf (t, "%c%c%c%c", x_est, x_urg, x_imp, x_flg);  break;
-      case 'f' :  sprintf (t, "%c%c%c%c", x_flg, x_urg, x_imp, x_est);  break;
-      default  :
-      case 'u' :  sprintf (t, "%c%c%c%c", x_urg, x_imp, x_est, x_flg);  break;
+      x_urg = strchr (METIS_URGS, a_task->urg);
+      if (x_urg == NULL)  x_urg = '0';
+      else                x_urg = x_urg - (int) METIS_URGS + '1';
+      x_imp = strchr (METIS_IMPS, a_task->imp);
+      if (x_imp == NULL)  x_imp = '0';
+      else                x_imp = x_imp - (int) METIS_IMPS + '1';
+      x_est = strchr (METIS_ESTS, a_task->est);
+      if (x_est == NULL)  x_est = '0';
+      else                x_est = x_est - (int) METIS_ESTS + '1';
+      x_prg = strchr (METIS_PRGS, a_task->prg);
+      if (x_prg == NULL)  x_prg = '0';
+      else                x_prg = x_prg - (int) METIS_PRGS + '1';
+      x_shr = strchr (METIS_SHRS, a_task->shr);
+      if (x_shr == NULL)  x_shr = '0';
+      else                x_shr = x_shr - (int) METIS_SHRS + '1';
+      DEBUG_DATA   yLOG_complex ("scales"    , "%cÖ%c %cÖ%c %cÖ%c %cÖ%c %cÖ%c", a_task->urg, x_urg, a_task->imp, x_imp, a_task->est, x_est, a_task->prg, x_prg, a_task->shr, x_shr);
+      /*---(create prefix)---------------*/
+      switch (my.sort) {
+      case METIS_URG :
+         DEBUG_DATA   yLOG_note    ("urgency sort");
+         sprintf (t, "%c", x_urg);
+         break;
+      case METIS_IMP :
+         DEBUG_DATA   yLOG_note    ("importance sort");
+         sprintf (t, "%c", x_imp);
+         break;
+      case METIS_EST :
+         DEBUG_DATA   yLOG_note    ("estimate sort");
+         sprintf (t, "%c", x_est);
+         break;
+      case METIS_PRG :
+         DEBUG_DATA   yLOG_note    ("progress sort");
+         sprintf (t, "%c", x_prg);
+         break;
+      case METIS_SHR :
+         DEBUG_DATA   yLOG_note    ("sharing sort");
+         sprintf (t, "%c", x_shr);
+         break;
       }
       /*---(put in key)------------------*/
-      sprintf (g_tasks [i].key, "%-4.4s %-20.20s %-20.20s %s", t,
-            g_tasks [i].one, g_tasks [i].two, g_tasks [i].txt);
-      DEBUG_SORT   yLOG_bullet  (i            , g_tasks [i].key);
+      snprintf (a_task->key, LEN_HUND, "%s %-20.20s %-20.20s %3d",
+            t, a_task->minor->major->name, a_task->minor->name, a_task->seq);
+      DEBUG_DATA   yLOG_info    ("key"       , a_task->key);
+      /*---(done)------------------------*/
    }
-   /*---(sort)---------------------------*/
-   SORT__gnome ();
-   /*---(save sort type)-----------------*/
-   my.sort = a_type;
+   /*---(date order)------------------*/
+   else if (my.sort == METIS_DATE) {
+      DEBUG_DATA   yLOG_note    ("epoch/data order");
+      snprintf (a_task->key, LEN_HUND, "%-6.6s", a_task->epoch);
+   }
    /*---(complete)-----------------------*/
+   DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
-SORT_names              (void)
-{
-   char        rc          =    0;
-   int         i           =    0;
-   char        x_urg       =    0;
-   char        x_imp       =    0;
-   char        x_est       =    0;
-   char        x_flg       =    0;
+metis_filter_sort       (void)
+{  /*---(design notes)-------------------*/
+   /*
+    *  always start in original order to keep sort stable and predictable
+    */
+   /*---(locals)-----------+-----+-----+-*/
+   tTASK      *x_task      = NULL;
+   char        x_sort      =  '-';
    /*---(header)-------------------------*/
    DEBUG_SORT   yLOG_enter   (__FUNCTION__);
-   /*---(prepare key)--------------------*/
-   for (i = 0; i < g_ntask; ++i) {
-      x_urg = strchr (my.urgs, g_tasks [i].urg) - my.urgs + 'a';
-      x_imp = strchr (my.imps, g_tasks [i].imp) - my.imps + 'a';
-      x_est = strchr (my.ests, g_tasks [i].est) - my.ests + 'a';
-      x_flg = strchr (my.prgs, g_tasks [i].prg) - my.prgs + 'a';
-      sprintf (g_tasks [i].key, "%-20.20s %-20.20s %c%c%c%c %s",
-            g_tasks [i].one, g_tasks [i].two,
-            x_urg, x_imp, x_est, x_flg,
-            g_tasks [i].txt);
-      DEBUG_SORT   yLOG_bullet  (i            , g_tasks [i].key);
+   /*---(sort to original)---------------*/
+   x_sort = my.sort;
+   /*---(sort to original)---------------*/
+   my.sort = METIS_ORIG;
+   metis_task_by_cursor (YDLST_HEAD, &x_task);
+   while (x_task != NULL) {
+      metis_filter_key (x_task);
+      metis_task_by_cursor (YDLST_NEXT, &x_task);
    }
-   /*---(sort)---------------------------*/
-   rc = SORT__gnome ();
-   /*---(save sort type)-----------------*/
-   my.sort = 'n';
+   ySORT_prepare  (B_TASK);
+   /*---(sort to new order)--------------*/
+   if (x_sort != my.sort) {
+      my.sort = x_sort;
+      metis_task_by_cursor (YDLST_HEAD, &x_task);
+      while (x_task != NULL) {
+         metis_filter_key (x_task);
+         metis_task_by_cursor (YDLST_NEXT, &x_task);
+      }
+      ySORT_prepare  (B_TASK);
+   }
+   /*---(debugging)----------------------*/
+   ySORT_list     (B_TASK);
+   ySORT_treeform (B_TASK);
    /*---(complete)-----------------------*/
    DEBUG_SORT   yLOG_exit    (__FUNCTION__);
-   return rc;
-}
-
-char
-SORT_unsort             (void)
-{
-   char        rc          =    0;
-   int         i           =    0;
-   char        x_urg       =    0;
-   char        x_imp       =    0;
-   char        x_est       =    0;
-   char        x_flg       =    0;
-   /*---(header)-------------------------*/
-   DEBUG_SORT   yLOG_enter   (__FUNCTION__);
-   /*---(prepare key)--------------------*/
-   for (i = 0; i < g_ntask; ++i) {
-      sprintf (g_tasks [i].key, "%04d", g_tasks [i].seq);
-      DEBUG_SORT   yLOG_bullet  (i            , g_tasks [i].key);
-   }
-   /*---(sort)---------------------------*/
-   rc = SORT__gnome ();
-   /*---(save sort type)-----------------*/
-   my.sort = 'o';
-   /*---(complete)-----------------------*/
-   DEBUG_SORT   yLOG_exit    (__FUNCTION__);
-   return rc;
-}
-
-char
-SORT_refresh            (void)
-{
-   switch (my.sort) {
-   case 'u'  : SORT_stats  ('u');  break;
-   case 'i'  : SORT_stats  ('i');  break;
-   case 'e'  : SORT_stats  ('e');  break;
-   case 'f'  : SORT_stats  ('f');  break;
-   case 'n'  : SORT_names  ();     break;
-   case 'o'  : SORT_unsort ();     break;
-   }
    return 0;
 }
 
