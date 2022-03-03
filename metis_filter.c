@@ -14,7 +14,7 @@
 
 /*===[[ METIS BACKLOG ]]======================================================*
  *
- * metis § !n2-· § update yMAP with active tasks, not all (NROW vs nact)                  § M1Q5aR §
+ * metis § !n2#· § update yMAP with active tasks, not all (NROW vs nact)                  § M1Q5aR §  2 §
  *
  */
 
@@ -107,37 +107,51 @@ metis_filter_set        (void)
       DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", c, x_task->urg, x_task->imp, x_task->est, x_task->prg);
       /*---(default)---------------------*/
       x_task->show  = 'y';
-      x_task->note  = '-';
+      x_task->note  = '·';
       ++c;
       /*---(urgency)---------------------*/
       if      ((my.curg != ' ' && x_task->urg != my.curg)) {
          DEBUG_DATA   yLOG_note     ("skip as urgent does not match filter");
-         x_task->show = '-';
+         x_task->show = '·';
       }
       /*---(importance)------------------*/
-      else if ((my.cimp != ' ' && x_task->imp != my.cimp)) {
+      if ((my.cimp != ' ' && x_task->imp != my.cimp)) {
          DEBUG_DATA   yLOG_note     ("skip as importance does not match filter");
-         x_task->show = '-';
+         x_task->show = '·';
       }
       /*---(estimate)--------------------*/
-      else if ((my.cest != ' ' && x_task->est != my.cest)) {
+      if ((my.cest != ' ' && x_task->est != my.cest)) {
          DEBUG_DATA   yLOG_note     ("skip as estimate does not match filter");
-         x_task->show = '-';
+         x_task->show = '·';
       }
       /*---(progress)--------------------*/
-      else if ((my.cprg != ' ' && x_task->prg != my.cprg)) {
-         DEBUG_DATA   yLOG_note     ("skip as progress does not match filter");
-         x_task->show = '-';
+      if (my.cprg != ' ') {
+         if      (my.cprg == 'C') {
+            if (strchr ("-<ou>", x_task->prg) == NULL) {
+               DEBUG_DATA   yLOG_note     ("skip as progress not current å-<ou>æ");
+               x_task->show = '·';
+            }
+         }
+         else if (my.cprg == 'A') {
+            if (strchr ("<ou>", x_task->prg) == NULL) {
+               DEBUG_DATA   yLOG_note     ("skip as progress not active å<ou>æ");
+               x_task->show = '·';
+            }
+         }
+         else if (x_task->prg != my.cprg) {
+            DEBUG_DATA   yLOG_note     ("skip as progress does not match filter");
+            x_task->show = '·';
+         }
       }
       /*---(sharing)---------------------*/
-      else if ((my.cshr != ' ' && x_task->shr != my.cshr)) {
+      if ((my.cshr != ' ' && x_task->shr != my.cshr)) {
          DEBUG_DATA   yLOG_note     ("skip as sharing does not match filter");
-         x_task->show = '-';
+         x_task->show = '·';
       }
       /*---(text)------------------------*/
-      else if (my.ctxt [0] != '\0' && yREGEX_filter (x_task->txt) <= 0) {
+      if (my.ctxt [0] != '\0' && yREGEX_filter (x_task->txt) <= 0) {
          DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");
-         x_task->show = '-';
+         x_task->show = '·';
       }
       /*---(increment)-------------------*/
       if (x_task->show == 'y')  ++my.nact;
@@ -168,6 +182,7 @@ metis_filter_search     (char *a_search)
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    /*---(prepare)------------------------*/
+   my.nact = 0;
    rc = yREGEX_comp (a_search);
    DEBUG_DATA   yLOG_value   ("comp"      , rc);
    --rce;  if (rc < 0) {
@@ -180,7 +195,7 @@ metis_filter_search     (char *a_search)
       DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", c, x_task->urg, x_task->imp, x_task->est, x_task->prg);
       /*---(default)---------------------*/
       x_task->show  = 'y';
-      x_task->note  = '-';
+      x_task->note  = '·';
       ++c;
       /*---(text)------------------------*/
       rc = yREGEX_filter (x_task->srch);
@@ -229,7 +244,7 @@ metis_filter_key        (tTASK *a_task)
    /*---(original order)--------------*/
    if (my.sort == METIS_ORIG) {
       DEBUG_DATA   yLOG_note    ("original/natural sort order");
-      snprintf (a_task->key, LEN_HUND, "%-20s %-20s %3d", a_task->minor->major->name, a_task->minor->name, a_task->seq);
+      snprintf (a_task->key, LEN_HUND, "%-20.20s %-30.30s %3d", a_task->minor->major->name, a_task->minor->name, a_task->seq);
    }
    /*---(statistic sorts)-------------*/
    else if (strchr (METIS_STATS, my.sort) != NULL) {
@@ -275,7 +290,7 @@ metis_filter_key        (tTASK *a_task)
          break;
       }
       /*---(put in key)------------------*/
-      snprintf (a_task->key, LEN_HUND, "%s %-20.20s %-20.20s %3d",
+      snprintf (a_task->key, LEN_HUND, "%s %-20.20s %-30.30s %3d",
             t, a_task->minor->major->name, a_task->minor->name, a_task->seq);
       DEBUG_DATA   yLOG_info    ("key"       , a_task->key);
       /*---(done)------------------------*/
@@ -346,20 +361,20 @@ FILTER__unit       (char *a_question, int a_num)
    char        u           [LEN_HUND]   = "[]";
    /*---(overall)------------------------*/
    strcpy (unit_answer, "FILTER           : question not understood");
-   if      (strcmp (a_question, "count"         ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "FILTER count     : %d", my.nact);
-   }
-   else if (strcmp (a_question, "detail"        ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "FILTER detl (%2d) : %c   [%.10s]", a_num, g_tasks [a_num].act, g_tasks [a_num].txt);
-   }
-   else if (strcmp (a_question, "sorted"        ) == 0) {
-      sprintf (s, "[%.10s]", g_tasks [a_num].one);
-      sprintf (t, "[%.10s]", g_tasks [a_num].two);
-      sprintf (u, "[%.10s]", g_tasks [a_num].txt);
-      snprintf (unit_answer, LEN_FULL, "FILTER sort (%2d) : %c%c%c%c %c %-12.12s %-12.12s %-12.12s %3d", a_num,
-            g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].prg, 
-            g_tasks [a_num].act, s, t, u, g_tasks [a_num].seq);
-   }
+   /*> if      (strcmp (a_question, "count"         ) == 0) {                         <* 
+    *>    snprintf (unit_answer, LEN_FULL, "FILTER count     : %d", my.nact);         <* 
+    *> }                                                                              <*/
+   /*> else if (strcmp (a_question, "detail"        ) == 0) {                                                                      <* 
+    *>    snprintf (unit_answer, LEN_FULL, "FILTER detl (%2d) : %c   [%.10s]", a_num, g_tasks [a_num].act, g_tasks [a_num].txt);   <* 
+    *> }                                                                                                                           <*/
+   /*> else if (strcmp (a_question, "sorted"        ) == 0) {                                                         <* 
+    *>    sprintf (s, "[%.10s]", g_tasks [a_num].one);                                                                <* 
+    *>    sprintf (t, "[%.10s]", g_tasks [a_num].two);                                                                <* 
+    *>    sprintf (u, "[%.10s]", g_tasks [a_num].txt);                                                                <* 
+    *>    snprintf (unit_answer, LEN_FULL, "FILTER sort (%2d) : %c%c%c%c %c %-12.12s %-12.12s %-12.12s %3d", a_num,   <* 
+    *>          g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].prg,                   <* 
+    *>          g_tasks [a_num].act, s, t, u, g_tasks [a_num].seq);                                                   <* 
+    *> }                                                                                                              <*/
    /*---(complete)-----------------------*/
    return unit_answer;
 }

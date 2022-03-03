@@ -2,8 +2,8 @@
 
 
 /*
- * metis § dn2#³ § get positioning working with wmctrl again                              § M1FDii §
- * metis § dv2·· § get yVIOPENGL to change colors when editing text                       § M1Q5lC §
+ * metis § dn2#³ § get positioning working with wmctrl again                              § M1FDii §  2 §
+ * metis § dv2<· § get yVIOPENGL to change colors when editing text                       § M1Q5lC §  · §
  *
  */
 
@@ -174,9 +174,9 @@ static void  o___MAPPING_________o () { return; }
  *>    DEBUG_MAP    yLOG_value    ("gcur"      , a_map->gcur);                                            <* 
  *>    DEBUG_MAP    yLOG_value    ("gend"      , a_map->gend);                                            <* 
  *>    /+---(complete)-----------------------+/                                                           <* 
- *>    DEBUG_MAP    yLOG_exit     (__FUNCTION__);                                                         <* 
- *>    return  0;                                                                                         <* 
- *> }                                                                                                     <*/
+*>    DEBUG_MAP    yLOG_exit     (__FUNCTION__);                                                         <* 
+*>    return  0;                                                                                         <* 
+*> }                                                                                                     <*/
 
 char
 api_yvikeys_mapper      (char a_req)
@@ -207,6 +207,57 @@ api_yvikeys_mapper      (char a_req)
    return 0;
 }
 
+char
+metis_refresh_no_visual (void)
+{
+   char        rc          =    0;
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   rc = metis_filter_sort    ();
+   DEBUG_PROG   yLOG_value   ("sort"      , rc);
+   rc = metis_filter_set     ();
+   DEBUG_PROG   yLOG_value   ("filter"    , rc);
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_refresh           (void)
+{
+   char        rc          =    0;
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   rc = metis_filter_sort    ();
+   DEBUG_PROG   yLOG_value   ("sort"      , rc);
+   rc = metis_filter_set     ();
+   DEBUG_PROG   yLOG_value   ("filter"    , rc);
+   rc = metis_format_refresh ();
+   DEBUG_PROG   yLOG_value   ("format"    , rc);
+   api_yvikeys__resize       ('-');
+   DEBUG_PROG   yLOG_value   ("resize"    , rc);
+   rc = metis_place_assign   ();
+   DEBUG_PROG   yLOG_value   ("place"     , rc);
+   rc = yMAP_refresh_full    ();
+   DEBUG_PROG   yLOG_value   ("ymap"      , rc);
+   rc = metis_opengl_draw    ();
+   DEBUG_PROG   yLOG_value   ("draw"      , rc);
+   rc = metis_opengl_mask    ();
+   DEBUG_PROG   yLOG_value   ("mask"      , rc);
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_refresh_full      (void)
+{
+   char        rc          =    0;
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   rc = metis_data_refresh   ();
+   DEBUG_PROG   yLOG_value   ("data"      , rc);
+   rc = metis_refresh        ();
+   DEBUG_PROG   yLOG_value   ("refresh"   , rc);
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
 
 
 /*====================------------------------------------====================*/
@@ -228,12 +279,7 @@ api_yvikeys_sort        (char *a_how)
    else if (strcmp (a_how, "orig"    ) == 0)   my.sort  = METIS_ORIG;
    else if (strcmp (a_how, "date"    ) == 0)   my.sort  = METIS_DATE;
    else                                        return -2;
-   /*> metis_data_refresh   ();                                                             <*/
-   metis_filter_sort  ();
-   metis_filter_set   ();
-   yMAP_refresh_full ();
-   metis_opengl_draw ();
-   metis_opengl_mask();
+   metis_refresh ();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -249,15 +295,10 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    else if (strcmp (a_which, "est"     ) == 0)   my.cest  = a_string [0];
    else if (strcmp (a_which, "prg"     ) == 0)   my.cprg  = a_string [0];
    else if (strcmp (a_which, "shr"     ) == 0)   my.cshr  = a_string [0];
-   else if (strcmp (a_which, "regex"   ) == 0)   strlcpy (my.ctxt, a_string, LEN_HUND);
+   else if (strcmp (a_which, "txt"     ) == 0)   strlcpy (my.ctxt, a_string, LEN_HUND);
    else if (strcmp (a_which, "clear"   ) == 0)   metis_filter_clear ();
    else                                        return -3;
-   /*> metis_data_refresh   ();                                                             <*/
-   metis_filter_sort ();
-   metis_filter_set ();
-   yMAP_refresh_full ();
-   metis_opengl_draw ();
-   metis_opengl_mask();
+   metis_refresh ();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }
@@ -265,7 +306,7 @@ api_yvikeys_filter      (char *a_which, char *a_string)
 char
 api_yvikeys_window      (char *a_format)
 {
-   static      x_save      = '-';
+   static char x_save      = '-';
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    if (a_format == NULL) return -1;
    /*---(change format)------------------*/
@@ -292,15 +333,16 @@ api_yvikeys_window      (char *a_format)
       DEBUG_DATA   yLOG_exit    (__FUNCTION__);
       return 0;
    }
-   /*---(update)-------------------------*/
-   metis_filter_sort ();
-   metis_filter_set ();
    x_save = my.format;
-   FORMAT_refresh ();
-   api_yvikeys__resize ('-');
-   yMAP_refresh_full ();
-   metis_opengl_draw ();
-   metis_opengl_mask();
+   /*---(update)-------------------------*/
+   metis_refresh ();
+   /*> metis_filter_sort ();                                                          <* 
+    *> metis_filter_set ();                                                           <* 
+    *> metis_format_refresh ();                                                       <* 
+    *> api_yvikeys__resize ('-');                                                     <* 
+    *> yMAP_refresh_full ();                                                          <* 
+    *> metis_opengl_draw ();                                                          <* 
+    *> metis_opengl_mask();                                                           <*/
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -310,15 +352,24 @@ char
 api_yvikeys_refresh     (void)
 {
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
-   metis_data_refresh   ();
-   metis_filter_sort ();
-   metis_filter_set ();
-   FORMAT_refresh ();
-   api_yvikeys__resize ('-');
-   yMAP_refresh_full ();
-   metis_opengl_draw    ();
-   metis_opengl_mask    ();
+   metis_refresh_full ();
+   /*> metis_data_refresh   ();                                                       <* 
+    *> metis_filter_sort ();                                                          <* 
+    *> metis_filter_set ();                                                           <* 
+    *> metis_format_refresh ();                                                       <* 
+    *> api_yvikeys__resize ('-');                                                     <* 
+    *> yMAP_refresh_full ();                                                          <* 
+    *> metis_opengl_draw    ();                                                       <* 
+    *> metis_opengl_mask    ();                                                       <*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+api_yvikeys_png         (void)
+{
+   my.png = 'y';
+   metis_opengl_draw ();
    return 0;
 }
 

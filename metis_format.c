@@ -2,17 +2,16 @@
 
 
 /*
- * metis § wg4-· § add --lstreamer (two screen) vs -streamer (one screen)                 § M1FDil §
- * metis § wg4-· § bring back menu items and commands for formatting                      § M1FDim §
- * metis § dn2·· § data refresh needs to update card count and format                     § M1GLZh §
+ * metis § wg4x· § add --lstreamer (two screen) vs -streamer (one screen)                 § M1FDil § 13 §
+ * metis § wg4-· § bring back menu items and commands for formatting                      § M1FDim §  · §
+ * metis § dn2#· § data refresh needs to update card count and format                     § M1GLZh § 12 §
  *
- * metis § mn+·· § format that has four indenpendently chosen and scrolled columns        § M1K2CY §
+ * metis § mn+·· § format that has four indenpendently chosen and scrolled columns        § M1K2CY §  · §
  *
  */
 
 
 
-static int  s_map [MAX_COLS][MAX_ROWS];
 
 
 
@@ -24,6 +23,9 @@ static void      o___POLYMORPH_______________o (void) {;}
 char
 metis_format_init        (void)
 {
+   my.breaks = '-';
+   my.x_skip =  -1;
+   my.y_skip =  -1;
    return 0;
 }
 
@@ -47,97 +49,13 @@ metis_format_vikeys      (void)
 }
 
 char
-format__clear      (void)
-{
-   int         x_col, x_row;
-   for (x_col = 0; x_col < MAX_COLS; ++x_col) {
-      for (x_row = 0; x_row < MAX_ROWS; ++x_row) {
-         s_map [x_col][x_row] = -1;
-      }
-   }
-   NCOLS = NROWS = 0;
-   return 0;
-}
-
-int
-format__assign     (void)
-{
-   /*---(locals)-----------+-----+-----+-*/
-   int         x_col, x_row;
-   int         n           =    0;
-   int         c           =    0;
-   tTASK      *x_task      = NULL;
-   /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
-   /*---(prepare)------------------------*/
-   format__clear ();
-   n = metis_task_count ();
-   if (n < 0) {
-      DEBUG_DATA   yLOG_note     ("no data available");
-      DEBUG_DATA   yLOG_exit     (__FUNCTION__);
-      return 0;
-   }
-   /*---(walk tasks)---------------------*/
-   metis_task_by_cursor (YDLST_HEAD, &x_task);
-   for (x_col = 1; x_col <= TCOLS; ++x_col) {
-      for (x_row = 1; x_row <= TROWS; ++x_row) {
-         /*---(process)--------*/
-         ++c;
-         s_map [x_col][x_row] = n;
-         s_map [x_col][0    ] = x_row;
-         /*---(check maxes)----*/
-         if (NCOLS < x_col)  NCOLS = x_col;
-         if (NROWS < x_row)  NROWS = x_row;
-         /*---(output)---------*/
-         DEBUG_DATA   yLOG_complex  ("place"     , "%2dx ,%2dy, %2dc, %2d ncols, %2d nrows", x_col, x_row, c, NCOLS, NROWS);
-         /*---(next)-----------*/
-         metis_task_by_cursor (YDLST_NEXT, &x_task);
-         if (x_task == NULL) {
-            DEBUG_DATA   yLOG_note     ("done with existing data");
-            DEBUG_DATA   yLOG_exit     (__FUNCTION__);
-            return c;
-         }
-         /*---(done)-----------*/
-      }
-   }
-   /*---(complete)-----------------------*/
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
-   return c;
-}
-
-int
-format__show       (void)
-{
-   int         x_col, x_row;
-   printf ("\n");
-   printf ("col  tot ", x_col);
-   for (x_row = 1; x_row <= TROWS; ++x_row) {
-      printf (" %3d", x_row);
-   }
-   printf ("\n");
-   for (x_col = 1; x_col <= TCOLS; ++x_col) {
-      if (s_map [x_col][0] <= 0) break;
-      printf ("%3d (%3d)", x_col, s_map [x_col][0]);
-      for (x_row = 1; x_row <= TROWS; ++x_row) {
-         if (s_map [x_col][x_row] <= 0)  break;
-         printf (" %3d", s_map [x_col][x_row]);
-      }
-      printf ("\n");
-   }
-}
-
-int
-format_check            (int a_col, int a_row)
-{
-   return s_map [a_col][a_row];
-}
-
-char
 format__wintex     (void)
 {
    /*---(window)-------------------------*/
    my.w_wide   = (WCOLS + my.c_over) * my.c_offset;
+   if (my.w_wide > my.s_wide)  my.w_wide = my.s_wide;
    my.w_tall   = (WROWS + my.r_over) * my.r_offset + my.m_offset;
+   if (my.w_tall > my.s_tall)  my.w_tall = my.s_tall;
    my.w_ftall  = my.w_tall + 15.0;
    /*---(texture)------------------------*/
    my.t_wide   = TCOLS * my.c_offset;
@@ -182,7 +100,7 @@ format_streamer    (void)
    /*---(rows)---------------------------*/
    my.r_offset =  44;
    WROWS    =  my.s_tall / my.r_offset;
-   TROWS    =  60;
+   TROWS    =  82;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -203,7 +121,7 @@ format_ticker           (void)
    /*---(rows)---------------------------*/
    my.r_offset =  45;
    WROWS    =   1;
-   TROWS    =   1;
+   TROWS    =   5;
    /*---(columns)------------------------*/
    my.c_offset = 300;
    if (my.format != FORMAT_TICKER)  my.c_offset = 325;
@@ -211,7 +129,7 @@ format_ticker           (void)
    my.c_over   =   1;
    TCOLS    =  12;
    /*---(menu spacing)-------------------*/
-   my.m_offset = 195;
+   my.m_offset = 180 - my.r_offset;
    /*---(win/tex)------------------------*/
    my.w_left   =    0;
    format__wintex ();
@@ -268,7 +186,7 @@ format_wideview    (void)
    /*---(rows)---------------------------*/
    my.r_offset =  60;
    WROWS    =  12;
-   TROWS    =  12;
+   TROWS    =  60;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -293,7 +211,7 @@ format_projects    (void)
    /*---(rows)---------------------------*/
    my.r_offset =  60;
    WROWS    =  25;
-   TROWS    =  25;
+   TROWS    =  60;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -318,7 +236,7 @@ format_extra       (void)
    /*---(rows)---------------------------*/
    my.r_offset =  44;
    WROWS    =  my.s_tall / my.r_offset;
-   TROWS    =  WROWS + my.r_over;
+   TROWS    =  82;
    /*---(menu spacing)-------------------*/
    my.m_offset =   0;
    /*---(win/tex)------------------------*/
@@ -332,7 +250,7 @@ format_extra       (void)
 }
 
 char
-FORMAT_refresh          (void)
+metis_format_refresh    (void)
 {
    char        rc          =    0;
    /*---(header)-------------------------*/
@@ -379,11 +297,9 @@ FORMAT_refresh          (void)
    DEBUG_DATA   yLOG_value    ("WROWS"     , WROWS);
    yMAP_axis_avail (YMAP_YAXIS, WROWS);
    DEBUG_DATA   yLOG_value    ("format"    , rc);
-   rc = format__clear  ();
-   DEBUG_DATA   yLOG_value    ("clear"     , rc);
-   rc = format__assign ();
-   DEBUG_DATA   yLOG_value    ("assign"    , rc);
-   /*> format__show   ();                                                             <*/
+   /*> rc = metis_place_assign ();                                                    <*/
+   /*> DEBUG_DATA   yLOG_value    ("assign"    , rc);                                 <*/
+   /*> metis_place_show   ();                                                             <*/
    /*---(complete)------------------------------*/
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -406,24 +322,18 @@ FORMAT__unit       (char *a_question, int a_num)
    char        s           [LEN_LABEL]  = "";
    /*---(overall)------------------------*/
    strcpy (unit_answer, "FORMAT           : question not understood");
-   if      (strcmp (a_question, "count"         ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "DATA count       : %d", g_ntask);
-   }
-   else if (strcmp (a_question, "units"         ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "FORMAT unit  (%c) : wide %4dt %4dw %4do %4dn     - tall %4dt %4dw %4do %4dn     -", my.format, TCOLS, WCOLS, my.c_over, NCOLS, TROWS, WROWS, my.r_over, NROWS);
+   /*> if      (strcmp (a_question, "count"         ) == 0) {                         <* 
+    *>    snprintf (unit_answer, LEN_FULL, "DATA count       : %d", g_ntask);         <* 
+    *> }                                                                              <*/
+   if      (strcmp (a_question, "units"         ) == 0) {
+      snprintf (unit_answer, LEN_FULL, "FORMAT unit  (%c) : wide  ···- %4dt %4dw  ···- %4do %4dn § tall  ···- %4dt %4dw  ···- %4do %4dn  ···-", my.format,
+            TCOLS, WCOLS, my.c_over, NCOLS,
+            TROWS, WROWS, my.r_over, NROWS);
    }
    else if (strcmp (a_question, "window"        ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "FORMAT win   (%c) : wide %4ds %4dc %4do %4dl %4dw tall %4ds %4dr %4do %4dt %4dt %4df", my.format, my.s_wide, my.c_wide, my.c_offset, my.w_left, my.w_wide, my.s_tall, my.r_tall, my.r_offset, my.w_topp, my.w_tall, my.w_ftall);
-   }
-   else if (strcmp (a_question, "map"           ) == 0) {
-      sprintf (t, "%2d   ", s_map [a_num][0]);
-      for (i = 1; i <= 20; ++i) {
-         if (s_map [a_num][i] > -1)  sprintf (s, " %2d", s_map [a_num][i]);
-         else                        sprintf (s, "  -");
-         strlcat (t, s, LEN_HUND);
-      }
-      if (s_map [a_num][0] > 20)  strlcat (t, " >", LEN_HUND);
-      snprintf (unit_answer, LEN_FULL, "FORMAT map  (%2d) : %s", a_num, t);
+      snprintf (unit_answer, LEN_FULL, "FORMAT win   (%c) : wide %4ds %4dt %4dw %4dc %4do %4dl § tall %4ds %4dt %4dw %4dr %4do %4dt %4df", my.format,
+            my.s_wide, my.t_wide, my.w_wide, my.c_wide, my.c_offset, my.w_left,
+            my.s_tall, my.t_tall, my.w_tall, my.r_tall, my.r_offset, my.w_topp, my.w_ftall);
    }
    /*---(complete)-----------------------*/
    return unit_answer;

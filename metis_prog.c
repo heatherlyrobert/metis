@@ -2,10 +2,10 @@
 #include   "metis.h"
 
 /*
- * metis § tn4#³ § metis is not terminating properly leaving zombie processes             § M1FDih §
- * metis § tn2r³ § put back data refresh feature to avoid kill/init cycle                 § M1FDij §
- * metis § tn2#· § bring the opengl command bar in as a float                             § M1GLUb §
- * metis § tv2#· § update the opengl menu and get it to work                              § M1GLUc §
+ * metis § tn4#³ § metis is not terminating properly leaving zombie processes             § M1FDih §  1 §
+ * metis § tn2r³ § put back data refresh feature to avoid kill/init cycle                 § M1FDij §  · §
+ * metis § tn2#· § bring the opengl command bar in as a float                             § M1GLUb §  9 §
+ * metis § tv2#· § update the opengl menu and get it to work                              § M1GLUc §  9 §
  *
  *
  */
@@ -18,7 +18,6 @@ char        g_print     [LEN_RECD] = "";
 int         max_disp   = 16;
 
 
-char        one [20] = "all";
 
 uchar        g_mode    = ' ';
 uchar        g_major   = ' ';
@@ -134,13 +133,16 @@ PROG__init              (void)
    metis_task_init   ();
    metis_source_init ();
    /*---(yvikeys config)-----------------*/
-   metis_data_init ();
+   metis_data_init   ();
    metis_filter_init ();
    metis_format_init ();
+   metis_db_init     ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }
+
+#define  TWOARG  if (++i >= a_argc)  yURG_err (YURG_FATAL, "%s argument requires an additional string", a, --rc); else 
 
 char             /* [------] process the command line arguments --------------*/
 PROG__args              (int a_argc, char *a_argv [])
@@ -197,6 +199,10 @@ PROG__args              (int a_argc, char *a_argv [])
          DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
          return rce;
       }
+      /*---(configuration)---------------*/
+      else if (strcmp  (a, "--local"         ) == 0)  rc = metis_db_cli  ("metis_local.db", 'y');
+      else if (strcmp  (a, "--database"      ) == 0)  TWOARG rc = metis_db_cli      (a_argv [i], 'y');
+      /*> else if (strcmp  (a, "--world"         ) == 0)  TWOARG rc = poly_world_cli   (a_argv [i], 'y');   <*/
       /*---(initial format)--------------*/
       else if (strcmp  (a, "--ticker"        ) == 0)  my.format = FORMAT_TICKER;
       else if (strcmp  (a, "--baseline"      ) == 0)  my.format = FORMAT_BASELINE;
@@ -231,10 +237,10 @@ PROG__args              (int a_argc, char *a_argv [])
          }
       }
    }
-   FORMAT_refresh ();
+   metis_format_refresh ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
-   return 0;
+   return rc;
 }
 
 char             /* [------] drive program setup activities ------------------*/
@@ -255,7 +261,7 @@ PROG__begin             (void)
       if      (my.quick == 'u')  printf ("#> ");
       else                       printf (" * ");
       /*> str4mongo (x_mongo, &x_back);                                               <*/
-      printf ("metis § ····· § tbd                                                                    § %6s §\n", x_mongo);
+      printf ("metis § ····· § tbd                                                                    § %6s §  · §\n", x_mongo);
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
@@ -274,7 +280,7 @@ PROG__begin             (void)
     *>    DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);                             <* 
     *>    return rce;                                                                 <* 
     *> }                                                                              <*/
-   /*> rc = FORMAT_refresh ();                                                        <*/
+   /*> rc = metis_format_refresh ();                                                        <*/
    DEBUG_PROG   yLOG_value    ("format"    , rc);
    /*---(overall)------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
@@ -355,9 +361,9 @@ PROG_dawn          (void)
    yCMD_direct (":menus   k");
    yCMD_direct (":float   t");
    metis_opengl_init  ();
-   metis_opengl_draw  ();
-   metis_opengl_show  ();
-   metis_opengl_mask  ();
+   /*> metis_opengl_draw  ();                                                         <* 
+    *> metis_opengl_show  ();                                                         <* 
+    *> metis_opengl_mask  ();                                                         <*/
    /*> yVIKEYS_cmds_direct   (":window col_rig");                                     <* 
     *> yVIKEYS_menu_add ("µv?u", "urgent"    , ":help u¦");                           <* 
     *> yVIKEYS_menu_add ("µv?i", "important" , ":help i¦");                           <* 
@@ -372,9 +378,10 @@ PROG_dawn          (void)
    /*---(ready display)-------------------------*/
    /*> OPENGL_resize (my.w_wide, my.w_tall);                                            <*/
    prog_signals();
-   api_yvikeys_refresh ();
-   api_yvikeys__resize ('-');
+   metis_refresh_full  ();
+   /*> api_yvikeys__resize ('-');                                                     <*/
    yVIEW_debug_list ();
+   yCMD_add (YCMD_M_FILE   , "png"         , ""    , ""     , api_yvikeys_png     , "save a png file of texture"                   );
    /*---(complete)------------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -404,7 +411,7 @@ PROG__verify            (void)
    yURG_msg ('>', "  option --vverify, check current project suitability for usage");
    yURG_msg (' ', "");
    /*---(call action)--------------------*/
-   rc = metis_data_refresh ();
+   rc = metis_refresh_no_visual ();
    /*---(failure)------------------------*/
    if (rc < 0) {
       yURG_msg (' ', "");

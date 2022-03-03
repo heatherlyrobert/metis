@@ -5,19 +5,21 @@
 
 /*
  *
- * metis § dg2#³ § add data refresh command and check                                     § M1FDid §
+ * metis § dg2#³ § add data refresh command and check                                     § M1FDid §  1 §
  *
- * metis § dg2·· § add data refresh to menus                                              § M1FDie §
- * metis § wg4-· § add mark to tasks so that they can be selected to a short list         § M1FDif §
- * metis § wg4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y       § M1FDig §
- * metis § wg4-· § add sharing flag to control database usage and marking                 § M1FDik §
- * metis § wl4#· § switch beg and end dates to pseudo-mongo (6 chars)                     § M1GLUa §
- * metis § dv2·· § when data is refreshed, the number of cards shown must be updated      § M1K29T §
- * metis § mv4·· § add a metis field for extra data, text, and notes (variable length)    § M1K2EC §
- * metis § wn+·· § build central database capability                                      § M1K2GJ §
+ * metis § dg2<· § add data refresh to menus                                              § M1FDie §  · §
+ * metis § wg4#· § add mark to tasks so that they can be selected to a short list         § M1FDif § 11 §
+ * metis § wg4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y       § M1FDig §  · §
+ * metis § wg4#· § add sharing flag to control database usage and marking                 § M1FDik § 13 §
+ * metis § wl4#· § switch beg and end dates to pseudo-mongo (6 chars)                     § M1GLUa §  5 §
+ * metis § dv2#· § when data is refreshed, the number of cards shown must be updated      § M1K29T §  8 §
+ * metis § mv4·· § add a metis field for extra data, text, and notes (variable length)    § M1K2EC §  · §
+ * metis § wn+·· § build central database capability                                      § M1K2GJ §  · §
  *
- * metis § wg4·· § update macros to create (,mm), close (,mq), and reformat (,mf) lines   § M1Q5m5 §
- * metis § dv2·· § change metis format to have closing date or elapsed days (0-99)        § M1Q5nM §
+ * metis § wg4x· § update macros to create (,mm), close (,mq), and reformat (,mf) lines   § M1Q5m5 §  2 §
+ * metis § dv2#· § change metis format to have closing date or elapsed days (0-99)        § M1Q5nM §  1 §
+ *
+ * metis § tn1#· § create an active only filter, no closed, canceled, or redundant        § M1QGYq §  1 §
  *
  */
 
@@ -54,8 +56,6 @@
  *
  */
 
-tCARD       g_tasks [MAX_CARDS];
-int         g_ntask       =  0;
 
 
 
@@ -97,10 +97,10 @@ const tDECODE g_decode   [] = {
    { METIS_EST, '-', "backlog"     , "not been assigned an estimate yet"                            },
    /*---(progress)-----------------------*/
    { METIS_PRG, '-', "backlog"     , "work that has not been prepared or acted upon yet"            },
-   { METIS_PRG, '<', "starting"    , "on longer tasks, indicates pre-work complete and task ready"  },
+   { METIS_PRG, '<', "planned"     , "task is set for immediate focus and starting"                 },
    { METIS_PRG, 'o', "active"      , "selected for today and/or working it right now"               },
    { METIS_PRG, 'u', "paused"      , "waiting on change, something is holding this task up"         },
-   { METIS_PRG, '>', "checking"    , "on longer tasks, indicates post-work confirmation required"   },
+   { METIS_PRG, '>', "verify"      , "task awaiting some kind of verification or final check"       },
    { METIS_PRG, '#', "done"        , "successfully completed and any checking done"                 },
    { METIS_PRG, 'x', "cancelled"   , "detiremened this effort is no longer necessary"               },
    { METIS_PRG, 'r', "reduntant"   , "covered by another task, but maybe additional detail"         },
@@ -118,10 +118,6 @@ static   s_tries   =  0;
 static   s_good    =  0;
 static   s_warn    =  0;
 static   s_badd    =  0;
-
-/*> static char      s_one [LEN_LABEL] = "blank";    /+ group one  (save)                   +/   <*/
-/*> static char      s_two [LEN_LABEL] = "blank";    /+ group two  (save)                   +/   <*/
-
 
 
 
@@ -568,6 +564,12 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   /*---(check days)--------------------*/
+   p = strtok  (NULL, q);
+   if (p != NULL) {
+      strltrim (p, ySTR_BOTH, LEN_LABEL);
+      x_task->days = atoi (p);
+   }
    /*---(source)------------------------*/
    x_task->line = a_line;
    /*---(update sort)-------------------*/
@@ -844,37 +846,7 @@ static void      o___OTHER___________________o (void) {;}
 char             /* [G-----] read all tasks from the file --------------------*/
 DATA__stdin        (void)
 {
-   /*> /+---(locals)--------------------------------+/                                                <* 
-    *> char    rc = 0;                                                                                <* 
-    *> char    msg[100];                                                                              <* 
-    *> /+> char      card_file[200] = "";                                                 <+/         <* 
-    *> int         a            =    0;                                                               <* 
-    *> /+---(header)-------------------------+/                                                       <* 
-    *> DEBUG_INPT   yLOG_enter   (__FUNCTION__);                                                      <* 
-    *> /+---(identify file)------------------+/                                                       <* 
-    *> /+> snprintf(card_file, 190, "/home/member/g_hlosdo/metis_new.tasks", getenv("HOME"));   <+/   <* 
-    *> /+---(open)---------------------------+/                                                       <* 
-    *> while (1) {                                                                                    <* 
-    *>    DEBUG_INPT   yLOG_value   ("a"         , a);                                                <* 
-    *>    fgets (g_recd, MAXLINE, stdin);                                                             <* 
-    *>    if (feof(stdin))   break;                                                                   <* 
-    *>    /+---(get rid of the newline)-------------+/                                                <* 
-    *>    p = strchr(g_recd, '\n');              /+ look for a newline              +/                <* 
-    *>    if (p != NULL)   strcpy(p, "\0");    /+ if found, copy '\0' over it     +/                  <* 
-    *>    /+---(defenses)---------------------------+/                                                <* 
-    *>    if (strncmp(g_recd, "# end_of_visible", 16) == 0)   break;                                  <* 
-    *>    ++a;                                                                                        <* 
-    *>    if (g_recd [0] == '#')   continue;                                                          <* 
-    *>    if (g_recd [0] == '\0')  continue;                                                          <* 
-    *>    if (strncmp (g_recd, "  ", 2) == 0) rc = metis_data_parsing ("stdin", a, g_recd);           <* 
-    *>    else                                rc = metis_data_header (g_recd);                        <* 
-    *>    /+> rc = metis_data_parsing ();                                                       <+/   <* 
-    *>    /+> if (rc < 0)                         return 0;                               <*          <* 
-    *>     *> if (g_ntask >=  MAX_CARDS - 2)    break;                                     <+/        <* 
-    *> }                                                                                              <* 
-    *> /+---(complete)------------------------------+/                                                <* 
-    *> DEBUG_INPT   yLOG_exit    (__FUNCTION__);                                                      <* 
-    *> return 0;                                                                                      <*/
+   return 0;
 }
 
 char             /* [G-----] read all tasks from the file --------------------*/
@@ -886,8 +858,9 @@ metis_data_read         (char *a_file)
    tMAJOR     *x_major     = NULL;
    tMINOR     *x_minor     = NULL;
    tSOURCE    *x_source    = NULL;
-   char    msg[100];
    int         x_line      =    0;
+   char        x_prefix    [LEN_LABEL]  = "";
+   char        x_full      [LEN_RECD]   = "";
    FILE       *f           = NULL;
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
@@ -926,8 +899,19 @@ metis_data_read         (char *a_file)
       ++x_line;
       if (g_recd [0] == '#')   continue;
       if (g_recd [0] == '\0')  continue;
-      if (g_recd [0] == ' ')   rc = metis_data_parsing (x_minor, x_source, x_line, g_recd);
-      else                     rc = metis_data_header  (g_recd, &x_major, &x_minor);
+      /*---(handle real lines)-----------*/
+      if (g_recd [0] == ' ') {
+         strlcpy  (x_prefix, g_recd, LEN_LABEL);
+         strltrim (x_prefix, ySTR_BOTH, LEN_LABEL);
+         if (strncmp ("metis ", x_prefix, 6) == 0) {
+            rc = metis_data_parsing (x_minor, x_source, x_line, g_recd);
+         } else {
+            snprintf (x_full, LEN_RECD, "metis § %s", g_recd);
+            rc = metis_data_parsing (x_minor, x_source, x_line, x_full);
+         }
+      } else {
+         rc = metis_data_header  (g_recd, &x_major, &x_minor);
+      }
    }
    /*---(close)--------------------------*/
    fclose (f);
@@ -991,25 +975,16 @@ metis_data_refresh      (void)
       break;
    }
    ++c;
-   /*---(add placeholder)----------------*/
-   DATA__blankcard ();
    /*---(refresh others)-----------------*/
-   metis_filter_set  ();
-   FORMAT_refresh  ();
+   /*> metis_filter_set  ();                                                          <* 
+    *> metis_format_refresh ();                                                       <*/
    CROW = CCOL = 0;
-   yMAP_refresh_full ();
-   metis_opengl_draw ();
-   metis_opengl_mask ();
+   /*> yMAP_refresh_full ();                                                          <* 
+    *> metis_opengl_draw ();                                                          <* 
+    *> metis_opengl_mask ();                                                          <*/
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return rc;
-}
-
-char
-DATA__blankcard    (void)
-{
-   DEBUG_INPT   yLOG_bullet  (g_ntask     , "adding blank card");
-   return 0;
 }
 
 
@@ -1030,34 +1005,34 @@ DATA__unit         (char *a_question, int a_num)
    char        s           [LEN_HUND]   = "[]";
    /*---(overall)------------------------*/
    strcpy (unit_answer, "COL              : question not understood");
-   if      (strcmp (a_question, "count"         ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "DATA count       : %d", g_ntask);
-   }
-   else if (strcmp (a_question, "stats"         ) == 0) {
-      if (a_num < g_ntask) {
-         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg %c, imp %c, est %c, prog %c   %3d", a_num, g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].prg, g_tasks [a_num].line);
-      } else {
-         snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg -, imp -, est -, prog -     -", a_num);
-      }
-   }
+   /*> if      (strcmp (a_question, "count"         ) == 0) {                         <* 
+    *>    snprintf (unit_answer, LEN_FULL, "DATA count       : %d", g_ntask);         <* 
+    *> }                                                                              <*/
+   /*> else if (strcmp (a_question, "stats"         ) == 0) {                                                                                                                                                                  <* 
+    *>    if (a_num < g_ntask) {                                                                                                                                                                                               <* 
+    *>       snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg %c, imp %c, est %c, prog %c   %3d", a_num, g_tasks [a_num].urg, g_tasks [a_num].imp, g_tasks [a_num].est, g_tasks [a_num].prg, g_tasks [a_num].line);   <* 
+    *>    } else {                                                                                                                                                                                                             <* 
+    *>       snprintf (unit_answer, LEN_FULL, "DATA stats  (%2d) : urg -, imp -, est -, prog -     -", a_num);                                                                                                                 <* 
+    *>    }                                                                                                                                                                                                                    <* 
+    *> }                                                                                                                                                                                                                       <*/
    /*> else if (strcmp (a_question, "header"        ) == 0) {                                                               <* 
     *>    sprintf  (s, "[%.20s]", s_one);                                                                                   <* 
     *>    sprintf  (t, "[%.20s]", s_two);                                                                                   <* 
     *>    snprintf (unit_answer, LEN_FULL, "DATA header      : %2d%-22.22s %2d%s", strlen (s) - 2, s, strlen (t) - 2, t);   <* 
     *> }                                                                                                                    <*/
-   else if (strcmp (a_question, "cats"          ) == 0) {
-      if (a_num < g_ntask) {
-         sprintf  (s, "[%.20s]", g_tasks [a_num].one);
-         sprintf  (t, "[%.20s]", g_tasks [a_num].two);
-      }
-      snprintf (unit_answer, LEN_FULL, "DATA cats   (%2d) : %2d%-22.22s %2d%s", a_num, strlen (s) - 2, s, strlen (t) - 2, t);
-   }
-   else if (strcmp (a_question, "text"          ) == 0) {
-      if (a_num < g_ntask) {
-         sprintf  (s, "[%.35s]", g_tasks [a_num].txt);
-      }
-      snprintf (unit_answer, LEN_FULL, "DATA text   (%2d) : %2d%s", a_num, strlen (s) - 2, s);
-   }
+   /*> else if (strcmp (a_question, "cats"          ) == 0) {                                                                       <* 
+    *>    if (a_num < g_ntask) {                                                                                                    <* 
+    *>       sprintf  (s, "[%.20s]", g_tasks [a_num].one);                                                                          <* 
+    *>       sprintf  (t, "[%.20s]", g_tasks [a_num].two);                                                                          <* 
+    *>    }                                                                                                                         <* 
+    *>    snprintf (unit_answer, LEN_FULL, "DATA cats   (%2d) : %2d%-22.22s %2d%s", a_num, strlen (s) - 2, s, strlen (t) - 2, t);   <* 
+    *> }                                                                                                                            <*/
+   /*> else if (strcmp (a_question, "text"          ) == 0) {                                        <* 
+    *>    if (a_num < g_ntask) {                                                                     <* 
+    *>       sprintf  (s, "[%.35s]", g_tasks [a_num].txt);                                           <* 
+    *>    }                                                                                          <* 
+    *>    snprintf (unit_answer, LEN_FULL, "DATA text   (%2d) : %2d%s", a_num, strlen (s) - 2, s);   <* 
+    *> }                                                                                             <*/
    /*---(complete)-----------------------*/
    return unit_answer;
 }

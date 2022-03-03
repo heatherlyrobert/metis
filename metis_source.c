@@ -13,7 +13,8 @@ metis_source_wipe        (tSOURCE *a_dst)
 {
    if (a_dst == NULL)  return -1;
    /*---(overall)-----------*/
-   a_dst->path     [0] = '\0';
+   a_dst->path      [0] = '\0';
+   a_dst->ref       = 0;
    /*---(files)-------------*/
    a_dst->head      = NULL;
    a_dst->tail      = NULL;
@@ -282,7 +283,7 @@ metis_source_entry       (int n)
    if (x_source == NULL)  return "n/a";
    if (x_source->head != NULL)  sprintf (s, "%2då%.20sæ", strlen (x_source->head->txt), x_source->head->txt);
    if (x_source->tail != NULL)  sprintf (t, "%2då%.20sæ", strlen (x_source->tail->txt), x_source->tail->txt);
-   sprintf (g_print, "%-2d %-40.40s %2d %-24.24s %s", n, x_source->path, x_source->count, s, t);
+   sprintf (g_print, "%-2d %-40.40s  %2d %-24.24s %s", n, x_source->path, x_source->count, s, t);
    return g_print;
 }
 

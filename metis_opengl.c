@@ -21,16 +21,20 @@
 
 
 /*
- * metis § dg4#³ § fix artifacting in OPENGL__polygon which looks like dashes at edges    § M1FDip §
- * metis § dg2x³ § fit urgency letter in urgency area -- less confusing                   § M1FDiq §
- * metis § dg2x³ § fit estimate letter in estimate area -- less confusing                 § M1FDir §
- * metis § dg2#³ § fit progress letter in progress area -- less confusing                 § M1FDis §
- * metis § sn4#³ § get texture drawn to match yMAP position                               § M1FDit §
- * metis § wg1#³ § lighten normal blue as it dulls text too much                          § M1FDiu §
+ * metis § dg4#³ § fix artifacting in OPENGL__polygon which looks like dashes at edges    § M1FDip §  3 §
+ * metis § dg2x³ § fit urgency letter in urgency area -- less confusing                   § M1FDiq §  1 §
+ * metis § dg2x³ § fit estimate letter in estimate area -- less confusing                 § M1FDir §  1 §
+ * metis § dg2#³ § fit progress letter in progress area -- less confusing                 § M1FDis §  1 §
+ * metis § sn4#³ § get texture drawn to match yMAP position                               § M1FDit §  3 §
+ * metis § wg1#³ § lighten normal blue as it dulls text too much                          § M1FDiu §  1 §
  *
- * metis § !n2·· § when filtered to zero cards, display blank card                        § M1FDiv §
- * metis § dg4·· § use yCOLOR to establish pallete and color selection                    § M1FDiw §
- * metis § wv4·· § continuation header-footer that show top/more and bot/more             § M1K24Q §
+ * metis § !n2#· § when filtered to zero cards, display blank card                        § M1FDiv § 13 §
+ * metis § dg4·· § use yCOLOR to establish pallete and color selection                    § M1FDiw §  · §
+ * metis § wv4·· § continuation header-footer that show top/more and bot/more             § M1K24Q §  · §
+ *
+ * metis § dv2<· § ticker does not show tasks texture                                     § M207JN §  · §
+ * metis § dv4<· § ticker needs to revise to be able to show all five lines               § M207K9 §  · §
+ *
  */
 
 float     g_alpha     = 0.0;
@@ -45,11 +49,6 @@ char   face_pretty [30] = "sansation";
 char   face_fixed [30] = "hack";
 float  txf_off   = 0.00;
 float  txf_space = 1.15;
-
-
-
-
-
 
 
 
@@ -82,7 +81,7 @@ metis_opengl_color      (char *a_valid, char a_color, float a_alpha)
    case  5  : glColor4f (  0.300,  0.300,  1.000, a_alpha); break;
    case  6  : glColor4f (  0.800,  0.000,  0.800, a_alpha); break;
    case  7  : glColor4f (  0.700,  0.700,  0.700, a_alpha); break;
-   default  : glColor4f (  0.700,  0.700,  0.700, a_alpha); break;
+   default  : glColor4f (  0.000,  0.000,  0.000, a_alpha); break;
    }
    return 0;
 }
@@ -417,17 +416,73 @@ metis_opengl_show  (void)
 
 
 /*============================--------------------============================*/
+/*===----                         placeholders                         ----===*/
+/*============================--------------------============================*/
+static void      o___BLANK___________________o (void) {;}
+
+char
+metis_opengl_blank      (short a_warn)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   int         x           =    0;
+   char        t           [LEN_HUND]  = "";
+   /*---(header)-------------------------*/
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(draw base)----------------------*/
+   metis_opengl__base    (0);
+   /*---(prepare)------------------------*/
+   switch (a_warn) {
+   case WARN_NODATA :
+      glColor4f (  1.000,  0.000,  0.000,  1.000);
+      strlcpy (t, "no data is available"            , LEN_HUND);
+      break;
+   case WARN_FILTER :
+      glColor4f (  1.000,  1.000,  0.000,  1.000);
+      strlcpy (t, "no data matches current filter"  , LEN_HUND);
+      break;
+   case WARN_SPACER :
+      glColor4f (  0.750,  0.750,  0.750,  1.000);
+      strlcpy (t, "blank spacer"                    , LEN_HUND);
+      break;
+   }
+   DEBUG_GRAF   yLOG_info     ("t"         , t);
+   /*---(draw stripes)-------------------*/
+   for (x = -20; x < 300; x += 47) {
+      glBegin(GL_POLYGON); {
+         glVertex3f (x +  1.0,  -2.0, 20.0);
+         glVertex3f (x + 23.0,  -2.0, 20.0);
+         glVertex3f (x + 65.0, -43.0, 20.0);
+         glVertex3f (x + 43.0, -43.0, 20.0);
+      } glEnd();
+   }
+   /*---(finish borders)-----------------*/
+   metis_opengl__borders ();
+   /*---(add text)-----------------------*/
+   glPushMatrix(); {
+      glColor4f (0.0, 0.0, 0.0, 1.0);
+      glTranslatef ( 150.0, -20.0,  50.0);
+      yFONT_print  (my.pretty,  9, YF_MIDCEN, t);
+   } glPopMatrix();
+   /*---(complete)-----------------------*/
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
+   return 0;
+}
+
+
+
+/*============================--------------------============================*/
 /*===----                          draw tasks                          ----===*/
 /*============================--------------------============================*/
 static void      o___TASKS___________________o (void) {;}
 
 char          /*----: lay down the base color --------------------------------*/
-metis_opengl__base      (char  a_value)
+metis_opengl__base      (char  a_urg)
 {
    DEBUG_GRAF   yLOG_senter   (__FUNCTION__);
-   DEBUG_GRAF   yLOG_sint     (a_value);
+   DEBUG_GRAF   yLOG_sint     (a_urg);
    /*---(back)---------------------------*/
-   glColor4f (  1.000,  1.000,  1.000,  1.000);
+   if (a_urg != 0)  glColor4f (  1.000,  1.000,  1.000,  1.000);
+   else             glColor4f (  0.650,  0.650,  0.650,  1.000);
    glBegin(GL_POLYGON); {
       glVertex3f (      0.0,        0.0,  -10.0);
       glVertex3f (my.c_wide,        0.0,  -10.0);
@@ -435,20 +490,22 @@ metis_opengl__base      (char  a_value)
       glVertex3f (      0.0, -my.r_tall,  -10.0);
    } glEnd();
    /*---(aesthetic tint)-----------------*/
-   metis_opengl_color  (METIS_URGS, a_value, 0.3);
-   glBegin(GL_POLYGON); {
-      glVertex3f (      0.0,        0.0,  -10.0);
-      glVertex3f (my.c_wide,        0.0,  -10.0);
-      glVertex3f (my.c_wide, -my.r_tall,  -10.0);
-      glVertex3f (      0.0, -my.r_tall,  -10.0);
-   } glEnd();
+   if (a_urg != 0) {
+      metis_opengl_color  (METIS_URGS, a_urg, 0.3);
+      glBegin(GL_POLYGON); {
+         glVertex3f (      0.0,        0.0,  -10.0);
+         glVertex3f (my.c_wide,        0.0,  -10.0);
+         glVertex3f (my.c_wide, -my.r_tall,  -10.0);
+         glVertex3f (      0.0, -my.r_tall,  -10.0);
+      } glEnd();
+   }
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_sexit    (__FUNCTION__);
    return 0;
 }
 
 char
-metis_opengl__urg       (char a_value, int z)
+metis_opengl__urg       (uchar a_urg, int z)
 {
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (  0.000,  0.000,  0.000,  1.000);
@@ -458,7 +515,7 @@ metis_opengl__urg       (char a_value, int z)
       glVertex3f (300.0, -17.0, z + 0.0);
       glVertex3f (  0.0, -17.0, z + 0.0);
    } glEnd();
-   metis_opengl_color  (METIS_URGS, a_value, 1.0);
+   metis_opengl_color  (METIS_URGS, a_urg, 1.0);
    glBegin(GL_POLYGON); {
       glVertex3f (  2.0,  -2.0, z + 5.0);
       glVertex3f (298.0,  -2.0, z + 5.0);
@@ -470,7 +527,7 @@ metis_opengl__urg       (char a_value, int z)
 }
 
 char
-metis_opengl__imp       (char a_value, int z)
+metis_opengl__imp       (uchar a_imp, int z)
 {
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (  0.000,  0.000,  0.000,  1.000);
@@ -481,9 +538,9 @@ metis_opengl__imp       (char a_value, int z)
       glVertex3f ( 20.0, -45.0, z + 0.0);
       glVertex3f (  0.0, -25.0, z + 0.0);
    } glEnd();
-   metis_opengl_color  (METIS_IMPS, a_value, 1.0);
+   metis_opengl_color  (METIS_IMPS, a_imp, 1.0);
    glBegin(GL_POLYGON); {
-      glVertex3f (  2.0,  -2.0, z + 5.0);
+      glVertex3f (  1.0,  -2.0, z + 5.0);
       glVertex3f ( 23.0,  -2.0, z + 5.0);
       glVertex3f ( 65.0, -43.0, z + 5.0);
       glVertex3f ( 43.0, -43.0, z + 5.0);
@@ -493,7 +550,7 @@ metis_opengl__imp       (char a_value, int z)
 }
 
 char
-metis_opengl__est       (char a_value, int z)
+metis_opengl__est       (uchar a_est, int z)
 {
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    glColor4f (0.0, 0.0, 0.0, 1.0);
@@ -503,7 +560,7 @@ metis_opengl__est       (char a_value, int z)
       glVertex3f ( 57.0, -45.0, z + 0.0);
       glVertex3f (  0.0, -45.0, z + 0.0);
    } glEnd();
-   metis_opengl_color  (METIS_ESTS, a_value, 1.0);
+   metis_opengl_color  (METIS_ESTS, a_est, 1.0);
    glBegin(GL_POLYGON); {
       glVertex3f (  2.0, -17.0, z + 5.0);
       glVertex3f ( 55.0, -17.0, z + 5.0);
@@ -515,7 +572,7 @@ metis_opengl__est       (char a_value, int z)
 }
 
 char
-metis_opengl__prg       (char a_value, int z)
+metis_opengl__prg       (uchar a_prg, int z)
 {
    int         i           =    0;
    int         y           =    0;
@@ -532,7 +589,7 @@ metis_opengl__prg       (char a_value, int z)
          glVertex3f(    0.0,  -30.0, z + 0.0);
       } glEnd();
    } glPopMatrix();
-   switch (a_value) {
+   switch (a_prg) {
    case '·' :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
    case '-' :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
    case '<' :  glColor4f (0.60, 0.60, 0.60, 1.00);   break;
@@ -540,7 +597,7 @@ metis_opengl__prg       (char a_value, int z)
    case '>' :  glColor4f (0.25, 0.25, 0.25, 1.00);   break;
    case '#' :  glColor4f (0.00, 0.00, 0.00, 1.00);   break;
    case 'x' :  glColor4f (0.00, 0.00, 0.50, 1.00);   break;
-   case 'd' :  glColor4f (0.50, 0.00, 0.00, 1.00);   break;
+   case 'r' :  glColor4f (0.50, 0.00, 0.00, 1.00);   break;
    default  :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
    }
    glPushMatrix(); {
@@ -552,17 +609,17 @@ metis_opengl__prg       (char a_value, int z)
          glVertex3f(    0.0,  -26.0, z + 5.0);
       } glEnd();
    } glPopMatrix();
-   switch (a_value) {
+   switch (a_prg) {
    case '·' : case '-' : case '<' : case 'o' :
       glColor4f (0.00, 0.00, 0.00, 1.00);   break;
-   case '>' : case '#' : case 'x' :
+   case '>' : case '#' : case 'x' : case 'r' :
       glColor4f (1.00, 1.00, 1.00, 1.00);   break;
    default  :
       glColor4f (1.00, 1.00, 1.00, 1.00);   break;
    }
    glPushMatrix(); {
       glTranslatef( 292.0, -25.0, 80.0);
-      snprintf (t, 4, "%c", a_value);
+      snprintf (t, 4, "%c", a_prg);
       yFONT_print (my.pretty,  8, YF_BASCEN, t);
    } glPopMatrix();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
@@ -570,44 +627,29 @@ metis_opengl__prg       (char a_value, int z)
 }
 
 char
-metis_opengl__age       (char *a_epoch, int z)
+metis_opengl__age       (uchar a_prg, uchar *a_epoch, uchar a_days, short a_line, int z)
 {
    long        v           =    0;
    int         x_age       =    0;
    char        x_unit      =  '-';
    char        t           [LEN_TERSE] = "";
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
-   str4mongo (a_epoch, &v);
-   strlage (v, t);
-   /*> if (a_value == 0)  {                                                           <* 
-    *>    strcpy (t, "??");                                                           <* 
-    *> } else {                                                                       <* 
-    *>    x_age = 0;                                                                  <* 
-    *>    x_age = time (NULL) - a_value;                                              <* 
-    *>    if (x_age < 0)  x_age = 0;  /+ tasks added since start +/                   <* 
-    *>    x_unit = 's';                                                               <* 
-    *>    if (x_age >= 60) {                                                          <* 
-    *>       x_age /= 60; x_unit = 'm';                                               <* 
-    *>       if (x_age >= 60) {                                                       <* 
-    *>          x_age /= 60; x_unit = 'h';                                            <* 
-    *>          if (x_age >= 24) {                                                    <* 
-    *>             x_age /= 24; x_unit = 'd';                                         <* 
-    *>             if (x_age > 30) {                                                  <* 
-    *>                x_age /= 30; x_unit = 'm';                                      <* 
-    *>                if (x_age >= 12) {                                              <* 
-    *>                   x_age /= 12; x_unit = 'y';                                   <* 
-    *>                   if (x_age > 99) { x_age  = 99; x_unit = '!'; }               <* 
-    *>                }                                                               <* 
-    *>             }                                                                  <* 
-    *>          }                                                                     <* 
-    *>       }                                                                        <* 
-    *>    }                                                                           <* 
-    *>    sprintf (t, "%2d%c", x_age, x_unit);                                        <* 
-    *> }                                                                              <*/
+   if (strchr ("xr", a_prg) != NULL) {
+      sprintf (t, "---");
+   } else if (a_prg == '#') {
+      if (a_days > 0)  sprintf (t, "%dd", a_days);
+      else             sprintf (t, "???");
+   } else {
+      str4mongo (a_epoch, &v);
+      strlage (v, t);
+   }
    glColor4f (0.0, 0.0, 0.0, 1.0);
    glPushMatrix(); {
       glTranslatef( 282.0, -35.0, 80.0);
-      yFONT_print (my.pretty,  6, YF_BASRIG, t);
+      yFONT_print (my.pretty,  7, YF_BASRIG, t);
+      glTranslatef(   0.0,  15.0,  0.0);
+      sprintf (t, "%4d", a_line);
+      yFONT_print (my.pretty,  7, YF_BASRIG, t);
    } glPopMatrix();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -659,7 +701,7 @@ metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text
       glTranslatef (-160.0, -18.0,   0.0);
       glTranslatef (   0.0, txf_off - 1.0,   0.0);
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      yFONT_printw (my.pretty,  8, YF_TOPLEF, a_text, 195, 35, txf_space);
+      yFONT_printw (my.pretty,  8, YF_TOPLEF, a_text, 180, 35, txf_space);
    } glPopMatrix();
    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    return 0;
@@ -744,6 +786,7 @@ metis_opengl__card      (int a_index)
    tTASK      *x_task      = NULL;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   /*---(find card)----------------------*/
    DEBUG_GRAF   yLOG_value    ("a_index"   , a_index);
    metis_task_by_index (a_index, &x_task);
    DEBUG_GRAF   yLOG_point    ("x_task"    , x_task);
@@ -751,68 +794,49 @@ metis_opengl__card      (int a_index)
       DEBUG_GRAF   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
+   /*---(draw)---------------------------*/
    metis_opengl__base    (x_task->urg);
    metis_opengl__urg     (x_task->urg,  0);
    metis_opengl__est     (x_task->est, 10);
    metis_opengl__imp     (x_task->imp, 20);
    metis_opengl__prg     (x_task->prg, 20);
-   metis_opengl__age     (x_task->epoch, 20);
+   metis_opengl__age     (x_task->prg, x_task->epoch, x_task->days, x_task->line, 20);
    metis_opengl__bullets ();
    metis_opengl__text    (a_index, x_task->minor->major->name, x_task->minor->name, x_task->txt);
    metis_opengl__cats    (x_task->urg, x_task->imp, x_task->est);
    metis_opengl__search  (x_task->note);
    metis_opengl__borders ();
+   /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
 char         /*--> drawing single col or row --------[------ [---------------]*/
-metis_opengl__colrow    (int a_max, short a_xinc, short a_yinc)
+metis_opengl__layout    (void)
 {
-   /*---(locals)-----------+-----+-----+-*/
-   int         i           =    0;
+   int         n           =    0;
+   short       x_col       =    0;
+   short       y_row       =    0;
    short       x_pos       =    0;
    short       y_pos       =    0;
-   short       x_col       =    0;
-   short       x_row       =    0;
-   int         n           =    0;
-   int         c           =    0;
-   tTASK      *x_task      = NULL;
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
-   /*---(adjust max)---------------------*/
-   DEBUG_GRAF   yLOG_value    ("g_ntask"   , g_ntask);
-   DEBUG_GRAF   yLOG_value    ("a_max"     , a_max);
-   n = metis_task_count ();
-   DEBUG_GRAF   yLOG_value    ("n"         , n);
-   glPushMatrix(); {
-      for (i = 0; i < n; ++i) {
-         metis_task_by_index (i, &x_task);
-         /*---(filter)-------------------*/
-         DEBUG_GRAF   yLOG_complex  ("card"      , "%2d, %c %s", i, x_task->show, x_task->txt);
-         if (x_task->show != 'y')     continue;
-         if (c >= a_max)              break;      
-         /*---(draw)---------------------*/
-         metis_opengl__card (i);
-         /*---(update card)--------------*/
-         /*> g_tasks [i].pos = c++;                                                   <* 
-          *> g_tasks [i].x   = x_pos;                                                 <* 
-          *> g_tasks [i].y   = y_pos;                                                 <* 
-          *> g_tasks [i].col = x_pos;                                                 <* 
-          *> g_tasks [i].row = y_pos;                                                 <*/
-         /*---(update position)----------*/
-         x_pos += a_xinc;
-         y_pos += a_yinc;
-         if (a_xinc > 0)  x_col++;
-         if (a_yinc > 0)  x_row++;
-         glTranslatef (a_xinc, a_yinc, 0.0);
-         /*---(output)-------------------*/
-         DEBUG_GRAF   yLOG_complex  ("placed"    , "%4dp, %4dx, %4dy, %4dc, %4dr", g_tasks [i].pos, g_tasks [i].x, g_tasks [i].y, g_tasks [i].col, g_tasks [i].row);
-         ++c;
-         /*---(done)---------------------*/
+   /*---(run)----------------------------*/
+   for (x_col = 0; x_col < TCOLS; ++x_col) {
+      x_pos = x_col * my.c_offset;
+      for (y_row = 0; y_row < TROWS; ++y_row) {
+         y_pos = -(y_row * my.r_offset);
+         n = metis_place_get (x_col, y_row);
+         if (n <  0    )  continue;
+         DEBUG_GRAF   yLOG_complex  ("current"   , "%3dc, %3dr, %3dn", x_col, y_row, n);
+         glPushMatrix(); {
+            glTranslatef (x_pos, y_pos, 0.0);
+            if (n >= WARN_NODATA)   metis_opengl_blank (n);
+            else                    metis_opengl__card (n);
+         } glPopMatrix();
       }
-   } glPopMatrix();
-   /*---(complete)-------------------------*/
+   }
+   /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
@@ -862,39 +886,41 @@ metis_opengl_draw        (void)
    /*---(draw)---------------------------*/
    switch (my.format) {
    case FORMAT_TICKER   : case FORMAT_BASELINE :
-      metis_opengl__colrow (TCOLS, my.c_offset,   0.0);
+      metis_opengl__layout ();
       break;
    case FORMAT_RSHORT   : case FORMAT_LSHORT   :
    case FORMAT_RLONG    : case FORMAT_LLONG    :
    case FORMAT_STREAMER :
-      metis_opengl__colrow (TROWS,   0.0, -my.r_offset);
+      metis_opengl__layout ();
       break;
    case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
-      glPushMatrix(); {
-         for (j = 0; j < WCOLS; ++j) {
-            glPushMatrix(); {
-               for (i = 0; i < WROWS; ++i) {
-                  n = format_check (CCOL + j + 1, i + 1);
-                  if (n < 0)  continue;
-                  /*> g_tasks [n].pos = j * WROWS + i;                                <* 
-                   *> g_tasks [n].x   = x_pos;                                        <* 
-                   *> g_tasks [n].y   = y_pos;                                        <* 
-                   *> g_tasks [n].col = j;                                            <* 
-                   *> g_tasks [n].row = i;                                            <*/
-                  y_pos += my.r_offset;
-                  metis_opengl__card (n);
-                  glTranslatef(0.0, -my.r_offset,   0.0);
-               }
-            } glPopMatrix();
-            x_pos += my.c_offset;
-            glTranslatef (my.c_offset, 0.0, 0.0);
-         }
-      } glPopMatrix();
+      metis_opengl__layout ();
+      /*> glPushMatrix(); {                                                                     <* 
+       *>    for (j = 0; j < WCOLS; ++j) {                                                      <* 
+       *>       glPushMatrix(); {                                                               <* 
+       *>          for (i = 0; i < WROWS; ++i) {                                                <* 
+       *>             n = metis_place_get (CCOL + j + 1, i + 1);                                <* 
+       *>             if (n < 0)  continue;                                                     <* 
+       *>             /+> g_tasks [n].pos = j * WROWS + i;                                <*    <* 
+       *>              *> g_tasks [n].x   = x_pos;                                        <*    <* 
+       *>              *> g_tasks [n].y   = y_pos;                                        <*    <* 
+       *>              *> g_tasks [n].col = j;                                            <*    <* 
+       *>              *> g_tasks [n].row = i;                                            <+/   <* 
+       *>             y_pos += my.r_offset;                                                     <* 
+       *>             metis_opengl__card (n);                                                   <* 
+       *>             glTranslatef(0.0, -my.r_offset,   0.0);                                   <* 
+       *>          }                                                                            <* 
+       *>       } glPopMatrix();                                                                <* 
+       *>       x_pos += my.c_offset;                                                           <* 
+       *>       glTranslatef (my.c_offset, 0.0, 0.0);                                           <* 
+       *>    }                                                                                  <* 
+       *> } glPopMatrix();                                                                      <*/
       break;
    }
    /*---(mipmaps)------------------------*/
    if (strchr ("y+", my.png) != NULL) {
       yGLTEX_tex2png ("/tmp/metis.png", my.t_wide, my.t_tall);
+      my.png = '-';
    }
    yGLTEX_done    (my.g_tex);
    /*---(complete)-------------------------*/
@@ -952,65 +978,39 @@ metis_opengl_mask             (void)
    XSetForeground (YX_DISP, gc, 1);
    /*---(establish mask)-----------------*/
    /*> x_help = yVIKEYS_help ();                                                      <*/
-   DEBUG_GRAF   yLOG_char     ("x_help"    , x_help);
-   if (strchr (x_types, x_help) != NULL) {
-      switch (x_help) {
-      case METIS_URG : x_max = strlen (METIS_URGS);  break;
-      case METIS_IMP : x_max = strlen (METIS_IMPS);  break;
-      case METIS_EST : x_max = strlen (METIS_ESTS);  break;
-      case METIS_PRG : x_max = strlen (METIS_PRGS);  break;
-      }
+   switch (my.format) {
+   case FORMAT_TICKER   : case FORMAT_BASELINE :
+      x_max = WCOLS + my.c_over;
+      if (x_max >= my.nact)  x_max = my.nact;
+      if (x_max == 0)        x_max = 1;
+      for (i = 0; i < x_max; ++i)  XFillRectangle (YX_DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
+      break;
+   case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
+      x_max = WROWS;
+      if (x_max >= my.nact)  x_max = my.nact;
+      if (x_max == 0)        x_max = 1;
       DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
       for (i = 0; i < x_max; ++i) {
          XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
       }
-   }
-   else if (x_help == 'f') {
-      for (j = 0; j < 4; ++j) {
-         x_abbr = x_types [j];
-         switch (x_abbr) {
-         case METIS_URG : x_max = strlen (METIS_URGS);  break;
-         case METIS_IMP : x_max = strlen (METIS_IMPS);  break;
-         case METIS_EST : x_max = strlen (METIS_ESTS);  break;
-         case METIS_PRG : x_max = strlen (METIS_PRGS);  break;
-         }
-         for (i = 0; i < x_max; ++i) {
-            XFillRectangle (YX_DISP, bounds, gc, j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
+      break;
+   case FORMAT_STREAMER :
+      x_max = WROWS + my.r_over;
+      if (x_max >= my.nact)  x_max = my.nact;
+      if (x_max == 0)        x_max = 1;
+      DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
+      for (i = 0; i < x_max; ++i) {
+         XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
+      }
+      break;
+   case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
+      for (j = 0; j < (WCOLS + my.c_over); ++j) {
+         for (i = 0; i < (WROWS + my.r_over); ++i) {
+            if (metis_place_get (BCOL + j + 1, i + 1) < 0)  continue;
+            XFillRectangle(YX_DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
          }
       }
-   }
-   else {
-      switch (my.format) {
-      case FORMAT_TICKER   : case FORMAT_BASELINE :
-         x_max = WCOLS + my.c_over;
-         if (x_max >= my.nact)  x_max = my.nact;
-         for (i = 0; i < x_max; ++i)  XFillRectangle (YX_DISP, bounds, gc, i * my.c_offset, my.m_offset, my.c_wide, my.r_tall);
-         break;
-      case FORMAT_RSHORT   : case FORMAT_LSHORT   : case FORMAT_RLONG    : case FORMAT_LLONG    :
-         x_max = WROWS;
-         if (x_max >= my.nact)  x_max = my.nact;
-         DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
-         for (i = 0; i < x_max; ++i) {
-            XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
-         }
-         break;
-      case FORMAT_STREAMER :
-         x_max = WROWS + my.r_over;
-         if (x_max >= my.nact)  x_max = my.nact;
-         DEBUG_GRAF   yLOG_value    ("x_max"     , x_max);
-         for (i = 0; i < x_max; ++i) {
-            XFillRectangle (YX_DISP, bounds, gc,   0, i * my.r_offset, my.c_wide, my.r_tall);
-         }
-         break;
-      case FORMAT_WIDE     : case FORMAT_PROJECT  : case FORMAT_EXTRA    :
-         for (j = 0; j < (WCOLS + my.c_over); ++j) {
-            for (i = 0; i < (WROWS + my.r_over); ++i) {
-               if (format_check (BCOL + j + 1, i + 1) < 0)  continue;
-               XFillRectangle(YX_DISP, bounds, gc,  j * my.c_offset, i * my.r_offset, my.c_wide, my.r_tall);
-            }
-         }
-         break;
-      }
+      break;
    }
    /*---(check for menu)-----------------*/
    if (x_mode == SMOD_MENUS) {
@@ -1061,12 +1061,12 @@ OPENGL__unit       (char *a_question, int a_num)
    char        u           [LEN_HUND]   = "[]";
    /*---(overall)------------------------*/
    strcpy (unit_answer, "OPENGL           : question not understood");
-   if      (strcmp (a_question, "position"      ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "OPENGL pos  (%2d) : %c %4dp %4dx %4dy %4dc %4dr", a_num, g_tasks [a_num].act, g_tasks [a_num].pos, g_tasks [a_num].x, g_tasks [a_num].y, g_tasks [a_num].col, g_tasks [a_num].row);
-   }
-   else if (strcmp (a_question, "current"       ) == 0) {
-      snprintf (unit_answer, LEN_FULL, "OPENGL curr      : row %3db %3dc %3de, col %3db %3dc %3de", BROW, CROW, EROW, BCOL, CCOL, ECOL);
-   }
+   /*> if      (strcmp (a_question, "position"      ) == 0) {                                                                                                                                                                     <* 
+    *>    snprintf (unit_answer, LEN_FULL, "OPENGL pos  (%2d) : %c %4dp %4dx %4dy %4dc %4dr", a_num, g_tasks [a_num].act, g_tasks [a_num].pos, g_tasks [a_num].x, g_tasks [a_num].y, g_tasks [a_num].col, g_tasks [a_num].row);   <* 
+    *> }                                                                                                                                                                                                                          <*/
+   /*> else if (strcmp (a_question, "current"       ) == 0) {                                                                                  <* 
+    *>    snprintf (unit_answer, LEN_FULL, "OPENGL curr      : row %3db %3dc %3de, col %3db %3dc %3de", BROW, CROW, EROW, BCOL, CCOL, ECOL);   <* 
+    *> }                                                                                                                                       <*/
    /*---(complete)-----------------------*/
    return unit_answer;
 }

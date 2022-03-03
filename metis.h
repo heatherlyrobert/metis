@@ -33,9 +33,9 @@
 #define     P_CREATED   "2008-06"
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
-#define     P_VERMINOR  "1.5-, move to yJOBS interface and butch-up"
-#define     P_VERNUM    "1.5i"
-#define     P_VERTXT    "metis displaying sweet with menus and floats"
+#define     P_VERMINOR  "1.6-, adding central database capability"    
+#define     P_VERNUM    "1.6a"
+#define     P_VERTXT    "binary database integrated and unit tested"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -43,7 +43,7 @@
 
 
 /*
- * metis § wc8·· § write interactive-use manual for metis                                 § M1GDo1 §
+ * metis § wc8·· § write interactive-use manual for metis                                 § M1GDo1 §  · §
  *
  */
 
@@ -184,6 +184,7 @@
 #include   <stdlib.h>                  /* getenv()                            */
 #include   <string.h>
 #include   <sys/time.h>
+#include   <sys/stat.h>
 #include   <unistd.h>
 #include   <time.h>
 #include   <signal.h>                  /* signal(), sigalarm()                */
@@ -193,6 +194,7 @@
 
 typedef   unsigned int  uint;
 typedef     struct      dirent      tDIRENT;
+typedef     struct      stat        tSTAT;
 
 
 
@@ -234,6 +236,10 @@ extern     char      g_print     [LEN_RECD];
 #define     B_SOURCE       's'
 #define     B_TASK         't'
 #define     B_UNIQUE       'u'
+/*---(warnings)-------------*/
+#define     WARN_NODATA    32000
+#define     WARN_SPACER    32001
+#define     WARN_FILTER    32002
 /*---(done)-----------------*/
 
 
@@ -273,10 +279,9 @@ struct      cMINOR {
 };
 
 struct      cSOURCE {
-   /*---(parent)------------*/
-   tMAJOR     *major;
    /*---(master data)-------*/
    uchar       path        [LEN_PATH];      /* data source                    */
+   ushort      ref;                         /* pointer for re-linking task    */
    /*---(children)----------*/
    tTASK      *head;
    tTASK      *tail;
@@ -289,7 +294,8 @@ struct      cSOURCE {
 struct      cTASK  {
    /*---(parent)------------*/
    tMINOR     *minor;
-   short       seq;                         /* original order (to unsort)     */
+   ushort      seq;                         /* original order (to unsort)     */
+   ushort      ref;                         /* pointer for re-linking source  */
    /*---(master data)-------*/
    uchar       urg;                         /* urgency code                   */
    uchar       imp;                         /* importance code                */
@@ -298,6 +304,7 @@ struct      cTASK  {
    uchar       shr;                         /* sharing flag                   */
    uchar       txt         [LEN_HUND];      /* text of task                   */
    uchar       epoch       [LEN_TERSE];     /* date/unique id of task         */
+   uchar       days;                        /* days until closed              */
    /*---(in minor)----------*/
    tTASK      *m_prev;
    tTASK      *m_next;
@@ -320,48 +327,8 @@ struct      cTASK  {
 
 
 
-/*---(task data structure)------------*/
-typedef     struct cCARD   tCARD;
-#define     MAX_CARDS  1000            /* how many we can read                */
-struct      cCARD
-{
-   /*---(master data)--------------------*/
-   char        one         [LEN_LABEL];     /* major category                      */
-   char        two         [LEN_LABEL];     /* minor category                      */
-   char        urg;                         /* urgency code                        */
-   char        imp;                         /* importance code                     */
-   char        est;                         /* estimated work                      */
-   char        prg;                         /* progress flag                       */
-   char        shr;                         /* sharing flag                        */
-   char        txt         [LEN_HUND];      /* text of task                        */
-   int         beg;                         /* created on epoch                    */
-   int         end;                         /* completed on epoch                  */
-   /*> char        beg         [LEN_TERSE];     /+ created on epoch                    +/   <* 
-    *> char        end         [LEN_TERSE];     /+ completed on epoch                  +/   <*/
-   /*---(source data)--------------------*/
-   short       seq;                         /* original order (to unsort)          */
-   char        source      [LEN_HUND];      /* text of task                        */
-   short       line;                        /* source line in file                 */
-   /*---(filtering)---------*/
-   char        act;                         /* active (y/n)                        */
-   char        key         [LEN_HUND];
-   /*---(visualization)------------------*/
-   short       pos;
-   short       col;
-   short       row;
-   /*---(for unit testing)---------------*/
-   short       x;
-   short       y;
-   /*---(done)---------------------------*/
-};
-extern tCARD g_tasks [MAX_CARDS];
-extern int   g_ntask;                   /* number of tasks                     */
-
-
-
 /*---(task filtering)--------------------*/
 extern char  g_recd [LEN_RECD];
-extern char      one [20];
 
 #define     FILE_MASTER    "/home/member/g_hlosdo/metis.tasks"
 
@@ -372,6 +339,19 @@ extern char      one [20];
 #define     DATA_PIPE      'p'
 #define     DATA_ALL       "smcp"
 
+#define     F_DB           "/var/lib/metis/metis.db"
+#define     F_WORLD        "/var/lib/metis/world.txt"
+
+typedef struct cAUDIT  tAUDIT;
+struct cAUDIT {
+   char        name        [LEN_LABEL];
+   char        vernum      [LEN_SHORT];
+   ushort      major;
+   ushort      minor;
+   ushort      source;
+   ushort      task;
+};
+extern      tAUDIT      g_audit;
 
 typedef     struct cMY     tMY;
 struct cMY {
@@ -382,10 +362,14 @@ struct cMY {
    int         run_uid;                     /* uid of person who launched     */
    long        runtime;
    char        quick;                       /* generate metis source line     */
+   /*---(files)--------------------------*/
+   char        n_db        [LEN_RECD];      /* name of database file          */
+   FILE       *f_db;                        /* shared database of tasks       */
    /*---(counts)-------------------------*/
-   short       nmajor;
-   short       nminor;
-   short       ntask;
+   ushort      nmajor;
+   ushort      nminor;
+   ushort      nsource;
+   ushort      ntask;
    /*---(program wide)-------------------*/
    char        daemon;                      /* daemon vs foreground mode      */
    char        quit;                        /* stop the program               */
@@ -416,6 +400,9 @@ struct cMY {
    uchar       sort;                        /* sorting request                */
    /*---(window)-------------------------*/
    char        format;                   /* display style                     */
+   char        breaks;                   /* style of breaks                   */
+   char        x_skip;                   /* off limits col for display        */
+   char        y_skip;                   /* off limits row for display        */
    char        sighup;                   /* force a refresh/redraw            */
    char        sigusr2;                  /* cause a font jumble               */
    /*---(univ/tabs)----------------------*/
@@ -424,14 +411,14 @@ struct cMY {
    /*---(xpos/cols)----------------------*/
    ushort      wcols;                    /* number of cols in window          */
    ushort      tcols;                    /* number of cols on texture         */
-   ushort      ncols;                    /* number of cols                    */
+   ushort      ncols;                    /* number of cols of data            */
    ushort      bcol;                     /* beginning of screen               */
    ushort      ccol;                     /* current col                       */
    ushort      ecol;                     /* ending of screen                  */
    /*---(ypos/rows)----------------------*/
-   ushort      nrows;                    /* number of rows of data            */
    ushort      wrows;                    /* number of rows in window          */
    ushort      trows;                    /* number of rows on texture         */
+   ushort      nrows;                    /* number of rows of data            */
    ushort      brow;                     /* beginning of screen               */
    ushort      crow;                     /* current row                       */
    ushort      erow;                     /* ending of screen                  */
@@ -517,13 +504,18 @@ extern int   max_disp;
 #define   FORMAT_TICKERS      "tb"
 #define   FORMAT_LARGES       "wpx"
 
-#define   FORMAT_ALL          "tbrlRLSwpx"
-#define   FORMAT_HORZ         "tbwpx"
+#define   FORMAT_ALL          "tbrRlLSwpx"
+#define   FORMAT_VERTS        "rRlLSwpx"
+#define   FORMAT_HORZS        "tb"
 
 
 #define   MAX_COLS    15
 #define   MAX_ROWS    100
 #define   STOP        0.0000
+
+extern short g_map [MAX_COLS][MAX_ROWS];
+
+
 
 extern float     step;
 
@@ -569,21 +561,19 @@ char        DATA__custom            (void);
 char        metis_data_refresh      (void);
 
 
-char        DATA__blankcard         (void);
 char*       DATA__unit              (char *a_question, int a_num);
 
 
 
 char        metis_format_init       (void);
 char        metis_format_vikeys     (void);
-int         format_check            (int a_col, int a_row);
 char        format_column           (void);
 char        format_ticker           (void);
 char        format_streamer         (void);
 char        format_projects         (void);
 char        format_wideview         (void);
 char        format_extra            (void);
-char        FORMAT_refresh          (void);
+char        metis_format_refresh    (void);
 
 
 /*---(preinit)--------------*/
@@ -643,6 +633,7 @@ char        api_yvikeys_sort        (char *a_how);
 char        api_yvikeys_filter      (char *a_which, char *a_string);
 char        api_yvikeys_window      (char *a_format);
 char        api_yvikeys_refresh     (void);
+char        api_yvikeys_png         (void);
 
 
 char        metis_reporter          (void);
@@ -710,7 +701,7 @@ char        metis_minor_purge_tasks (tMINOR *a_minor);
 /*---(support)--------------*/
 char        metis_source_wipe       (tSOURCE *a_dst);
 /*---(memory)---------------*/
-char        metis_source_new        (char *a_name, char a_force, tSOURCE **r_new);
+char        metis_source_new        (char *a_path, char a_force, tSOURCE **r_new);
 char        metis_source_free       (tSOURCE **r_old);;
 /*---(hooking)--------------*/
 char        metis_source_hook       (tSOURCE *a_source, tTASK *a_task);
@@ -743,9 +734,9 @@ int         metis_epoch_count       (void);
 char        metis_epoch_by_index    (int n, tTASK **r_task);
 char        metis_epoch_by_cursor   (char a_dir, tTASK **r_task);
 char        metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor);
-char        metis_task_active_index (int n, tTASK**r_task);
 int         metis_task_by_regex     (char *a_regex, tTASK **r_task);
 char*       metis_task_entry        (int n);
+char        metis_task_by_aindex    (int n, tTASK**r_task);
 /*---(program)--------------*/
 char        metis_task_init         (void);
 char        metis_task_purge_all    (void);
@@ -769,23 +760,66 @@ char        metis_opengl__columns   (float *a_xcur, float *a_ycur);
 char        metis_opengl__larges    (float *a_xcur, float *a_ycur);
 char        metis_opengl__current   (float a_xcur, float a_ycur);
 char        metis_opengl_show       (void);
+/*---(place)----------------*/
+char        metis_opengl_blank      (short a_warn);
 /*---(draw)-----------------*/
-char        metis_opengl__urg       (char a_value, int z);
-char        metis_opengl__imp       (char a_value, int z);
-char        metis_opengl__est       (char a_value, int z);
-char        metis_opengl__prg       (char a_value, int z);
-char        metis_opengl__age       (char *a_epoch, int z);
+char        metis_opengl__base      (char  a_urg);
+char        metis_opengl__urg       (uchar a_urg, int z);
+char        metis_opengl__imp       (uchar a_imp, int z);
+char        metis_opengl__est       (uchar a_est, int z);
+char        metis_opengl__prg       (uchar a_prg, int z);
+char        metis_opengl__age       (uchar a_prg, uchar *a_epoch, uchar a_days, short a_line, int z);
 char        metis_opengl__bullets   (void);
 char        metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text);
 char        metis_opengl__cats      (char a_urg, char a_imp, char a_est);
 char        metis_opengl__borders   (void);
 char        metis_opengl__card      (int a_index);
-char        metis_opengl__colrow    (int a_max, short a_xinc, short a_yinc);
 char        metis_opengl__prep      (void);
 char        metis_opengl_draw       (void);
 /*---(mask)-----------------*/
 char        metis_opengl_mask       (void);
 /*---(done)-----------------*/
+
+
+char        metis_place_clear       (void);
+char        metis_place_assign      (void);
+char        metis_place_show        (void);
+short       metis_place_get         (short a_col, short a_row);
+char*       metis_place__unit       (char *a_question, int a_num);
+
+
+
+char        metis_refresh           (void);
+char        metis_refresh_full      (void);
+
+
+
+/*===[[ metis_db.c ]]=========================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(support)--------------*/
+char        metis_db_cli            (char *a_name, char a_loud);
+char        metis_db_init           (void);
+char        metis_db_verify         (uchar *a_name);
+/*---(file)-----------------*/
+char        metis_db__read_head     (char *a_name, ushort *a_var);
+char        metis_db__write_head    (char *a_name, ushort a_var);
+char        metis_db__open          (char a_mode, short *a_nmajor, short *a_nminor, short *a_nsource, short *a_ntask);
+char        metis_db__close         (void);
+/*---(write)----------------*/
+char        metis_db__write_sources (void);
+char        metis_db__write_task    (tMINOR *x_minor);
+char        metis_db__write_minor   (tMAJOR *x_major);
+char        metis_db_write          (void);
+/*---(read)-----------------*/
+char        metis_db__read_sources  (int n);
+char        metis_db__read_task     (tMINOR *a_minor, ushort n);
+char        metis_db__read_minor    (tMAJOR *a_major, ushort n);
+char        metis_db_read           (void);
+/*---(unittest)-------------*/
+char*       metis_db__unit          (char *a_question);
+/*---(done)-----------------*/
+
+
 
 
 #endif
