@@ -1,6 +1,12 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
+/*
+ * metis § wn2<· § delete tasks by source, or all related source for code entries         § M22NYO §  · §
+ *
+ *
+ *
+ */
 
 
 /*====================------------------------------------====================*/
@@ -14,11 +20,12 @@ metis_source_wipe        (tSOURCE *a_dst)
    if (a_dst == NULL)  return -1;
    /*---(overall)-----------*/
    a_dst->path      [0] = '\0';
-   a_dst->ref       = 0;
+   a_dst->ref       =    0;
+   a_dst->type      =  '-';
    /*---(files)-------------*/
    a_dst->head      = NULL;
    a_dst->tail      = NULL;
-   a_dst->count     = 0;
+   a_dst->count     =    0;
    /*---(btree)-------------*/
    a_dst->ysort     = NULL;
    /*---(tags)--------------*/
@@ -32,7 +39,7 @@ metis_source_wipe        (tSOURCE *a_dst)
 static void  o___MEMORY__________o () { return; }
 
 char
-metis_source_new         (char *a_path, char a_force, tSOURCE **r_new)
+metis_source_new         (char *a_path, char a_type, char a_force, tSOURCE **r_new)
 {  /*---(design notes)-------------------*/
    /*
     * a_force   '-' means r_new must be grounded (safefy), update btree
@@ -87,6 +94,7 @@ metis_source_new         (char *a_path, char a_force, tSOURCE **r_new)
    }
    /*---(populate)-----------------------*/
    strlcpy (x_exist->path, a_path, LEN_PATH);
+   x_exist->type = a_type;
    /*---(hook)---------------------------*/
    rc = ySORT_hook (B_SOURCE, x_exist, x_exist->path, &(x_exist->ysort));
    DEBUG_DATA   yLOG_value   ("hook"      , rc);
@@ -283,7 +291,7 @@ metis_source_entry       (int n)
    if (x_source == NULL)  return "n/a";
    if (x_source->head != NULL)  sprintf (s, "%2då%.20sæ", strlen (x_source->head->txt), x_source->head->txt);
    if (x_source->tail != NULL)  sprintf (t, "%2då%.20sæ", strlen (x_source->tail->txt), x_source->tail->txt);
-   sprintf (g_print, "%-2d %-40.40s  %2d %-24.24s %s", n, x_source->path, x_source->count, s, t);
+   sprintf (g_print, "%-2d %-39.39s %c %2d %-24.24s %s", n, x_source->path, x_source->type, x_source->count, s, t);
    return g_print;
 }
 
@@ -330,6 +338,100 @@ metis_source_cleanse    (void)
       if (rc < 0) ++n;
       rc = metis_source_by_index  (n, &x_source);
    }
+   /*---(complete)-----------------------*/
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_source_purge_file  (tSOURCE *a_source)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   tTASK      *x_task      = NULL;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_PROG   yLOG_point   ("a_source"  , a_source);
+   --rce;  if (a_source == NULL) {
+      DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(walk)---------------------------*/
+   x_task = a_source->head;
+   while (x_task != NULL) {
+      metis_task_free   (&x_task);
+      x_task = a_source->head;
+   }
+   /*---(purge empties)------------------*/
+   metis_source_cleanse   ();
+   metis_minor_cleanse    ();
+   metis_major_cleanse    ();
+   metis_resequence_tasks ();
+   metis_refresh_no_visual();
+   /*---(complete)-----------------------*/
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_source_purge_code  (char *a_dir)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   int         x_len       =    0;
+   tSOURCE    *x_source    = NULL;
+   tTASK      *x_task      = NULL;
+   char        x_good      =  '-';
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_PROG   yLOG_point   ("a_dir"     , a_dir);
+   --rce;  if (a_dir == NULL) {
+      DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   x_len = strlen (a_dir);
+   DEBUG_PROG   yLOG_value   ("x_len"     , x_len);
+   /*---(walk)---------------------------*/
+   metis_source_by_cursor (YDLST_HEAD, &x_source);
+   while (x_source != NULL) {
+      DEBUG_PROG   yLOG_complex ("source"    , "%c %s", x_source->type, x_source->path);
+      /*---(evaluate)-------------------*/
+      x_good = 'y';
+      if (x_source->type != 's') {
+         DEBUG_PROG   yLOG_note    ("skipping, not a source code type");
+         x_good = '-';
+      }
+      if (strncmp (x_source->path, a_dir, x_len) != 0) {
+         DEBUG_PROG   yLOG_note    ("skipping, initial path does not match");
+         x_good = '-';
+      }
+      DEBUG_PROG   yLOG_info    ("tail"      , x_source->path + x_len + 1);
+      if (strldcnt (x_source->path + x_len + 1, '/', LEN_PATH) > 0) {
+         DEBUG_PROG   yLOG_note    ("skipping, contains futher sub-directories");
+         x_good = '-';
+      }
+      /*---(handle)---------------------*/
+      if (x_good == 'y') {
+         DEBUG_PROG   yLOG_note    ("processing tasks");
+         x_task = x_source->head;
+         while (x_task != NULL) {
+            metis_task_free   (&x_task);
+            x_task = x_source->head;
+         }
+      }
+      /*---(next)-----------------------*/
+      metis_source_by_cursor (YDLST_NEXT, &x_source);
+   }
+   /*---(purge empties)------------------*/
+   metis_source_cleanse   ();
+   metis_minor_cleanse    ();
+   metis_major_cleanse    ();
+   metis_resequence_tasks ();
+   metis_refresh_no_visual();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);
    return 0;

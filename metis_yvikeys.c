@@ -336,13 +336,6 @@ api_yvikeys_window      (char *a_format)
    x_save = my.format;
    /*---(update)-------------------------*/
    metis_refresh ();
-   /*> metis_filter_sort ();                                                          <* 
-    *> metis_filter_set ();                                                           <* 
-    *> metis_format_refresh ();                                                       <* 
-    *> api_yvikeys__resize ('-');                                                     <* 
-    *> yMAP_refresh_full ();                                                          <* 
-    *> metis_opengl_draw ();                                                          <* 
-    *> metis_opengl_mask();                                                           <*/
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
@@ -352,15 +345,8 @@ char
 api_yvikeys_refresh     (void)
 {
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
-   metis_refresh_full ();
-   /*> metis_data_refresh   ();                                                       <* 
-    *> metis_filter_sort ();                                                          <* 
-    *> metis_filter_set ();                                                           <* 
-    *> metis_format_refresh ();                                                       <* 
-    *> api_yvikeys__resize ('-');                                                     <* 
-    *> yMAP_refresh_full ();                                                          <* 
-    *> metis_opengl_draw    ();                                                       <* 
-    *> metis_opengl_mask    ();                                                       <*/
+   metis_data_purge_all ();
+   metis_refresh_full   ();
    DEBUG_DATA   yLOG_exit    (__FUNCTION__);
    return 0;
 }

@@ -410,13 +410,13 @@ metis_db__read_sources  (int n)
       fread  (&x_raw, sizeof (tSOURCE), 1, my.f_db);
       DEBUG_OUTP   yLOG_complex ("x_raw"     , "%3d#, %3ds, %s", my.nsource, x_raw.ref, x_raw.path);
       /*---(allocate)-----------------------*/
-      metis_source_new (x_raw.path, 'y', &x_source);
+      metis_source_new (x_raw.path, x_raw.type, 'y', &x_source);
       DEBUG_INPT   yLOG_point   ("x_source"  , x_source);
       --rce;  if (x_source == NULL) {
          DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
          return rce;
       }
-      x_source->ref = x_raw.ref;
+      x_source->ref  = x_raw.ref;
       ++my.nsource;
       /*---(done)---------------------------*/
    }

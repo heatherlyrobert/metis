@@ -256,7 +256,6 @@ SCRP          (DATA) verify parsing of task details                            
 
    COND       initialize the testing environment                                 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((04.001))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     start testing                        PROG__unit_quiet                                                                                                                  i_equal     0                                                                                                    
-     get      ... review count                     DATA__unit                  "count"          , 0                                                                                  s_equal     DATA count       : 0                                                                                 
      local    create working/return variable       - - - - - - - - - - - - -   tMAJOR   *x_major  = NULL;                                                                                                                                                                                                 
      local    create working/return variable       - - - - - - - - - - - - -   tMINOR   *x_minor  = NULL;                                                                                                                                                                                                 
      local    create working/return variable       - - - - - - - - - - - - -   tSOURCE  *x_source = NULL;                                                                                                                                                                                                 
@@ -267,7 +266,7 @@ SCRP          (DATA) verify parsing of task details                            
      echo     ... check return                     - - - - - - - - - - - - -   x_minor->name                                                                                         s_equal     khronos_data.c                                                                                       
 
    COND       create a source                                                    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((04.003))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-     exec     call add                             metis_source_new            "/tmp/metis.good_stuff"           , 'y'          , &x_source                                          i_equal     0                                                                                                    
+     exec     call add                             metis_source_new            "/tmp/metis.good_stuff"           , DATA_TESTING, 'y'          , &x_source                            i_equal     0                                                                                                    
 
    COND       verify a simple task parsing                                       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((04.004))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     parse task                           metis_data_parsing          x_minor, x_source, 1  , "metis § ta+<· § actual task                                     § M1FDie §"  i_equal     0                                                                                                    
@@ -387,6 +386,8 @@ SCRP          (DATA) verify reading tasks from a source file                   
 
    DITTO (1)  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((05.010))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
 
+   REUSE -Z-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   - - - - -   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
    COND       complete testing                                                   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((05.011))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     stop testing                         PROG__unit_end                                                                                                                    i_equal     0                                                                                                    
 
@@ -431,6 +432,8 @@ SCRP          (DATA) verify reading tasks from group of related sources        
 
    DITTO (1)  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((06.007))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
 
+   REUSE -Z-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   - - - - -   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
    COND       complete testing                                                   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((06.008))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     stop testing                         PROG__unit_end                                                                                                                    i_equal     0                                                                                                    
 
@@ -474,7 +477,7 @@ SCRP          (DATA) verify reading tasks from a task file                     
      exec     ... check count                      metis_epoch_count                                                                                                                 i_equal     0                                                                                                    
 
    COND       read task file                                                     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((07.006))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
-     exec     read the file                        metis_data_read             "/tmp/prog.tasks"                                                                                     i_equal     0                                                                                                    
+     exec     read the file                        metis_data_read             "/tmp/metis.unit_testing/prog.tasks"                                                                                     i_equal     0                                                                                                    
 
    DITTO (0)  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((07.007))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
 
@@ -484,6 +487,8 @@ SCRP          (DATA) verify reading tasks from a task file                     
      exec     call full purge                      metis_data_purge_all                                                                                                              i_equal     0                                                                                                    
 
    DITTO (2)  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((07.010))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
+
+   REUSE -Z-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   - - - - -   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
 
    COND       complete testing                                                   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   ((07.011))  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  
      exec     stop testing                         PROG__unit_end                                                                                                                    i_equal     0                                                                                                    

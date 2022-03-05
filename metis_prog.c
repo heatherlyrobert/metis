@@ -120,7 +120,7 @@ PROG__init              (void)
    my.s_tall  = 1536;  /* temp default for my iconia */
    my.c_wide  =  300;
    my.r_tall  =   45;
-   my.source  = DATA_NONE;
+   my.source  = DATA_DATABASE;
    my.format  = FORMAT_RSHORT;
    format_column ();
    my.quit    = '-';
@@ -215,7 +215,7 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strcmp  (a, "--project"       ) == 0)  my.format = FORMAT_PROJECT;
       else if (strcmp  (a, "--extra"         ) == 0)  my.format = FORMAT_EXTRA;
       /*---(task/data source)------------*/
-      else if (strcmp  (a, "--master"        ) == 0)  my.source = DATA_MASTER;
+      else if (strcmp  (a, "--file"          ) == 0)  TWOARG  { my.source = DATA_FILE; strncpy (my.file, b, LEN_RECD); }
       else if (strcmp  (a, "--sources"       ) == 0)  my.source = DATA_SOURCES;
       /*---(control)---------------------*/
       else if (strcmp  (a, "--pngonly"       ) == 0)  my.png    = 'y';
@@ -224,8 +224,8 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strcmp  (a, "--foreground"    ) == 0)  my.daemon = '-';
       /*---(file)------------------------*/
       else if (strncmp (a, "-"           ,  1) != 0)  {
+         my.source = DATA_FILE;
          strncpy (my.file, a, LEN_RECD);
-         my.source = DATA_CUSTOM;
       }
       /*---(unknown)---------------------*/
       else {
@@ -411,7 +411,8 @@ PROG__verify            (void)
    yURG_msg ('>', "  option --vverify, check current project suitability for usage");
    yURG_msg (' ', "");
    /*---(call action)--------------------*/
-   rc = metis_refresh_no_visual ();
+   rc = metis_data_refresh   ();
+   DEBUG_PROG   yLOG_value   ("data"      , rc);
    /*---(failure)------------------------*/
    if (rc < 0) {
       yURG_msg (' ', "");
@@ -441,6 +442,88 @@ PROG__verify            (void)
    return rc;
 }
 
+
+
+/*====================------------------------------------====================*/
+/*===----                      action dispatching                      ----===*/
+/*====================------------------------------------====================*/
+static void      o___DISPATCH________________o (void) {;}
+
+char
+PROG__stats             (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   char        t           [LEN_LABEL] = "";
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(call action)--------------------*/
+   rc = metis_db_read ();
+   if (rc < 0)  {
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(display)------------------------*/
+   printf ("#!/usr/local/bin/metis --stats\n");
+   printf ("db     å%sæ\n" , my.n_db);
+   printf ("name   å%sæ\n" , g_audit.name);
+   printf ("ver    å%sæ\n" , g_audit.vernum);
+   strl4main (g_audit.major , t , 0, 'c', '-', LEN_LABEL);
+   printf ("major  %7.7s\n", t);
+   strl4main (g_audit.minor , t , 0, 'c', '-', LEN_LABEL);
+   printf ("minor  %7.7s\n", t);
+   strl4main (g_audit.source, t , 0, 'c', '-', LEN_LABEL);
+   printf ("source %7.7s\n", t);
+   strl4main (g_audit.task  , t , 0, 'c', '-', LEN_LABEL);
+   printf ("task   %7.7s\n", t);
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+PROG__update            (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   IF_VERBOSE   yURG_msg ('>', "  option --vupdate, analyze current source and add to database");
+   IF_VERBOSE   yURG_msg (' ', "");
+   --rce;  if (my.source == DATA_DATABASE) {
+      if (my.run_mode == ACT_CUPDATE )   yURG_msg_live ();
+      if (my.run_mode == ACT_CUPDATE )   yURG_msg ('>', "FAILED, must select --sources or --file <name>");
+      if (my.run_mode == ACT_VUPDATE )   yURG_msg ('>', "FAILED, must select --sources or --file <name>");
+      if (my.run_mode == ACT_CUPDATE )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(call action)--------------------*/
+   if (rc >= 0)  rc = metis_db_read        ();
+   if (rc >= 0)  rc = metis_data_refresh   ();
+   if (rc >= 0)  rc = metis_db_write       ();
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CUPDATE )   yURG_msg_live ();
+      if (my.run_mode == ACT_CUPDATE )   yURG_msg ('>', "FAILED, could not update database, run --vupdate to identify reasons");
+      if (my.run_mode == ACT_VUPDATE )   yURG_msg ('>', "FAILED, but could not update database, the reasons are shown above");
+      if (my.run_mode == ACT_CUPDATE )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(success)------------------------*/
+   yURG_msg (' ', "");
+   IF_CONFIRM  yURG_msg_live ();
+   yURG_msg ('>', "SUCCESS, data was updated in the database");
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return rc;
+}
+
 char
 PROG_dispatch           (void)
 {
@@ -457,7 +540,7 @@ PROG_dispatch           (void)
    --rce;  switch (my.run_mode) {
       /*---(basic)-----------------------*/
    case ACT_STATS       :
-      /*> rc = PROG__stats    ();                                                     <*/
+      rc = PROG__stats    ();
       break;
       /*---(incomming)-------------------*/
    case CASE_VERIFY     :
@@ -467,7 +550,7 @@ PROG_dispatch           (void)
       /*> rc = PROG__register ();                                                     <*/
       break;
    case CASE_UPDATE     :
-      /*> rc = PROG__update   ();                                                     <*/
+      rc = PROG__update   ();
       break;
    case CASE_INSTALL    :
       /*> rc = PROG__install  ();                                                     <*/
@@ -484,6 +567,7 @@ PROG_dispatch           (void)
       break;
       /*---(central)---------------------*/
    case CASE_REPORT     :
+      rc = metis_data_refresh   ();
       rc = metis_reporter   ();
       break;
    case CASE_AUDIT      :

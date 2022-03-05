@@ -356,4 +356,43 @@ metis_major_purge_tasks (tMAJOR *a_major)
    return 0;
 }
 
+char
+metis_resequence_tasks  (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   tMAJOR     *x_major     = NULL;
+   tMINOR     *x_minor     = NULL;
+   tTASK      *x_task      = NULL;
+   short       c           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   /*---(walk majors)--------------------*/
+   rc = metis_major_by_cursor (YDLST_HEAD, &x_major);
+   while (x_major != NULL) {
+      /*---(walk minors)-----------------*/
+      x_minor = x_major->head;
+      while (x_minor != NULL) {
+         /*---(walk tasks)---------------*/
+         x_task = x_minor->head;
+         c = 0;
+         while (x_task != NULL) {
+            x_task->seq = c++;
+            metis_filter_key (x_task);
+            x_task = x_task->m_next;
+         }
+         /*---(next minor)---------------*/
+         x_minor = x_minor->next;
+         /*---(done with minor)----------*/
+      }
+      /*---(next major)------------------*/
+      rc = metis_major_by_index  (YDLST_NEXT, &x_major);
+      /*---(done with major)-------------*/
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
 

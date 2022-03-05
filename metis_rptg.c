@@ -81,26 +81,29 @@ metis_inventory         (void)
    int         i           =    0;
    int         x_max       =    0;
    tTASK      *x_task      = NULL;
+   char        x_days      [LEN_TERSE] = "";
    if (s_opt == METIS_REPORT) {
       metis_rptg__header ();
-      printf ("#@ x-parse   åÏ--·Ï-------------------·Ï-------------------·Ï--·Ï·Ï·Ï·Ï·Ï·Ï---------------------------------------------------------------------·Ï-----·Ï---·Ï-------------------------------------------------------------------------------æ\n");
-      printf ("#@ titles    åref·major················minor················seq·u·i·e·p·s·task·detail····························································epoch··line·source··········································································æ\n");
+      printf ("#@ x-parse   åÏ--·Ï-------------------·Ï------------------------·Ï--·Ï·Ï·Ï·Ï·Ï··Ï---------------------------------------------------------------------·Ï-----·Ï--·Ï---·Ï-------------------------------------------------------------------------------æ\n");
+      printf ("#@ titles    åref·major················minor·····················seq·u·i·e·p·s··task·detail····························································epoch··dys·line·source··········································································æ\n");
       printf ("\n");
    }
    x_max = metis_task_count ();
    for (i = 0; i < x_max; ++i) {
       if (s_opt != METIS_DUMP) {
          if (i %  5 == 0 && i != 0)  printf ("\n");
-         if (i % 25 == 0)  printf ("#ef major--------------- minor--------------- seq u i e p s task-detail----------------------------------------------------------- epoch- line source--------------------------------------------------------------------------\n\n");
+         if (i % 25 == 0)  printf ("#ef major--------------- minor-------------------- seq u i e p s  task-detail----------------------------------------------------------- epoch- dys line source--------------------------------------------------------------------------\n\n");
       }
       metis_task_by_index (i, &x_task);
       if (x_task == NULL) {
          printf ("FOUND A NULL\n");
       }
-      printf ("%3d %-20.20s %-20.20s %3d %c %c %c %c %c %-70.70s %-6.6s %4d %-80.80s\n",
+      if (x_task->days > 0)  sprintf  (x_days, "%3d", x_task->days);
+      else                   strlcpy  (x_days, "  ·", LEN_TERSE);
+      printf ("%3d %-20.20s %-25.25s %3d %c %c %c %c %c  %-70.70s %-6.6s %-3.3s %4d %-80.80s\n",
             i, x_task->minor->major->name, x_task->minor->name, x_task->seq,
             x_task->urg, x_task->imp, x_task->est, x_task->prg, x_task->shr,
-            x_task->txt, x_task->epoch, x_task->line, x_task->source->path);
+            x_task->txt, x_task->epoch, x_days, x_task->line, x_task->source->path);
    }
    if (s_opt == METIS_REPORT) {
       printf ("\n");

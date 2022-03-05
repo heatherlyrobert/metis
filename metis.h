@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.6-, adding central database capability"    
-#define     P_VERNUM    "1.6a"
-#define     P_VERTXT    "binary database integrated and unit tested"
+#define     P_VERNUM    "1.6c"
+#define     P_VERTXT    "can purge tasks by source or project now, unit tested"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -282,6 +282,7 @@ struct      cSOURCE {
    /*---(master data)-------*/
    uchar       path        [LEN_PATH];      /* data source                    */
    ushort      ref;                         /* pointer for re-linking task    */
+   char        type;                        /* 'f' file, 's' sources, '-' other */
    /*---(children)----------*/
    tTASK      *head;
    tTASK      *tail;
@@ -330,14 +331,14 @@ struct      cTASK  {
 /*---(task filtering)--------------------*/
 extern char  g_recd [LEN_RECD];
 
-#define     FILE_MASTER    "/home/member/g_hlosdo/metis.tasks"
 
 #define     DATA_NONE      '-'
+#define     DATA_DATABASE  'd'
 #define     DATA_SOURCES   's'
-#define     DATA_MASTER    'm'
-#define     DATA_CUSTOM    'c'
+#define     DATA_FILE      'f'
 #define     DATA_PIPE      'p'
-#define     DATA_ALL       "smcp"
+#define     DATA_TESTING   't'
+#define     DATA_ALL       "dsfpt"
 
 #define     F_DB           "/var/lib/metis/metis.db"
 #define     F_WORLD        "/var/lib/metis/world.txt"
@@ -362,7 +363,10 @@ struct cMY {
    int         run_uid;                     /* uid of person who launched     */
    long        runtime;
    char        quick;                       /* generate metis source line     */
-   /*---(files)--------------------------*/
+   /*---(data source)--------------------*/
+   char        source;                      /* data sourcing location         */
+   char        file        [LEN_RECD];      /* file for reading tasks         */
+   /*---(database)-----------------------*/
    char        n_db        [LEN_RECD];      /* name of database file          */
    FILE       *f_db;                        /* shared database of tasks       */
    /*---(counts)-------------------------*/
@@ -380,9 +384,6 @@ struct cMY {
    int         pretty;                      /* pretty font                    */
    char        lines;                       /* show some helpful debug stats  */
    char        png;                         /* png save control flag          */
-   /*---(data source)--------------------*/
-   char        source;                      /* data sourcing location         */
-   char        file        [LEN_RECD];      /* file for reading tasks         */
    /*---(validity)-----------------------*/
    char        urgs        [LEN_LABEL];     /* all valid urgent codes         */
    char        imps        [LEN_LABEL];     /* all valid importance codes     */
@@ -555,8 +556,6 @@ char        metis_data_directory    (tMAJOR *a_major, char *a_home);
 char        metis_data_project      (void);
 /*---(other)----------------*/
 char        metis_data_read         (char *a_filename);
-char        DATA__master            (void);
-char        DATA__custom            (void);
 /*---(driver)---------------*/
 char        metis_data_refresh      (void);
 
@@ -671,6 +670,7 @@ char*       metis_major_entry       (int n);
 char        metis_major_init        (void);
 char        metis_major_cleanse     (void);
 char        metis_major_purge_tasks (tMAJOR *a_major);
+char        metis_resequence_tasks  (void);
 /*---(done)-----------------*/
 
 
@@ -701,7 +701,7 @@ char        metis_minor_purge_tasks (tMINOR *a_minor);
 /*---(support)--------------*/
 char        metis_source_wipe       (tSOURCE *a_dst);
 /*---(memory)---------------*/
-char        metis_source_new        (char *a_path, char a_force, tSOURCE **r_new);
+char        metis_source_new        (char *a_path, char a_type, char a_force, tSOURCE **r_new);
 char        metis_source_free       (tSOURCE **r_old);;
 /*---(hooking)--------------*/
 char        metis_source_hook       (tSOURCE *a_source, tTASK *a_task);
@@ -715,6 +715,8 @@ char*       metis_source_entry      (int n);
 /*---(program)--------------*/
 char        metis_source_init       (void);
 char        metis_source_cleanse    (void);
+char        metis_source_purge_file (tSOURCE *a_source);
+char        metis_source_purge_code (char *a_dir);
 /*---(done)-----------------*/
 
 

@@ -21,26 +21,34 @@
  *
  * metis § tn1#· § create an active only filter, no closed, canceled, or redundant        § M1QGYq §  1 §
  *
+ * metis § mg2·· § format for normal files to have headers and task embedded              § M23JwR §  · §
+ *
+ *
  */
 
 /*
+ *
+ *
+ * urgency is NOT how fast i would like to do it or plan to do it !!!!
+ * urgency IS how fast i must do it, a lot of things should be months or years
+ *
  *                    urgency
  *
  *         -   y   m   w   d   s   t   !
  *       ƒ€€€€€€€‰€€€€€€€‰€€€€€€€‰€€€€€€€‚
- *     a  focus Œ              Œ drive  a  absolute
+ *     a  focus Œ              Œ drive  a  absolute      all dies without
  *              Œ              Œ       
- *     n        Œ              Œ        n  need
+ *     n        Œ              Œ        n  need          functions missing/fail
  *  i    ‡·······Š·······Š·······Š·······†
- *  m  v        Œ              Œ        v  value
+ *  m  v        Œ              Œ        v  value         clear business case
  *  p           Œ              Œ       
- *  o  c        Œ              Œ        c  crave
+ *  o  c        Œ              Œ        c  crave         really, really wanna
  *  r    ‡€€€€€€€Š€€€€€€€Š€€€€€€€Š€€€€€€€†
- *  t  w        Œ              Œ        g  good
+ *  t  w        Œ              Œ        g  good          can see its use
  *  a           Œ              Œ       
- *  n  l        Œ              Œ        l  like
+ *  n  l        Œ              Œ        l  like          kinda cool
  *  c    ‡·······Š·······Š·······Š·······†
- *  e  m        Œ              Œ        i  idea 
+ *  e  m        Œ              Œ        i  idea          pondering
  *              Œ              Œ       
  *     -  dump  Œ              Œ weeds  -  backlog
  *       „€€€€€€€ˆ€€€€€€€ˆ€€€€€€€ˆ€€€€€€€…
@@ -618,7 +626,7 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
-   yURG_msg ('>', "source %då%sæ ", strlen (a_source->path), a_source->path);
+   yURG_msg ('>', "%s", a_source->path);
    /*---(walk the entries)---------------*/
    --rce;  while (1) {
       /*---(read)------------------------*/
@@ -661,9 +669,16 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
       /*---(check metis tag)-------------*/
       rc = metis_data_parsing (a_minor, a_source, x_line, x_recd);
       ++x_try;
-      if (rc >  0)  ++x_warn;
-      if (rc == 0)  ++x_good;
-      if (rc <  0)  ++x_badd;
+      if (rc >  0) {
+         DEBUG_INPT   yLOG_note     ("WARNING on parsing");
+         ++x_warn;
+      } else if (rc == 0) {
+         DEBUG_INPT   yLOG_note     ("success on parsing");
+         ++x_good;
+      } else {
+         DEBUG_INPT   yLOG_note     ("FAILURE on parsing");
+         ++x_badd;
+      }
    }
    fclose(f);
    if      (x_try  == 0)  yURG_msg ('-', "%d lines checked, no metis entries found", x_line);
@@ -763,7 +778,7 @@ metis_data_directory    (tMAJOR *a_major, char *a_home)
       DEBUG_INPT   yLOG_info    ("->name"    , x_minor->name);
       /*---(create source)------------------*/
       sprintf (x_full, "%s/%s", a_home, x_name);
-      rc = metis_source_new (x_full, 'y', &x_source);
+      rc = metis_source_new (x_full, DATA_SOURCES, 'y', &x_source);
       DEBUG_INPT   yLOG_value   ("new"       , rc);
       DEBUG_INPT   yLOG_point   ("x_source"  , x_source);
       --rce;  if (x_source == NULL) {
@@ -879,7 +894,7 @@ metis_data_read         (char *a_file)
       return rce;
    }
    /*---(create source)------------------*/
-   rc = metis_source_new (a_file, 'y', &x_source);
+   rc = metis_source_new (a_file, DATA_FILE, 'y', &x_source);
    DEBUG_INPT   yLOG_point   ("x_source"  , x_source);
    --rce;  if (x_source == NULL) {
       DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
@@ -920,9 +935,6 @@ metis_data_read         (char *a_file)
    return 0;
 }
 
-char DATA__master        (void) { return metis_data_read (FILE_MASTER); }
-char DATA__custom        (void) { return metis_data_read (my.file);     }
-
 
 
 /*====================------------------------------------====================*/
@@ -958,20 +970,20 @@ metis_data_refresh      (void)
       DEBUG_INPT   yLOG_exit    (__FUNCTION__);
       return 0;
    }
-   metis_data_purge_all ();
+   /*> metis_data_purge_all ();                                                       <*/
    /*---(update)-------------------------*/
    --rce;  switch (my.source) {
-   case DATA_SOURCES :
+   case DATA_DATABASE :
+      rc = metis_db_read      ();
+      break;
+   case DATA_SOURCES  :
       rc = metis_data_project ();
       break;
-   case DATA_MASTER  :
-      rc = DATA__master  (); 
+   case DATA_FILE     :
+      rc = metis_data_read    (my.file);
       break;
-   case DATA_CUSTOM  :
-      rc = DATA__custom  ();
-      break;
-   case DATA_PIPE    :
-      rc = DATA__stdin   ();
+   case DATA_PIPE     :
+      rc = DATA__stdin        ();
       break;
    }
    ++c;
