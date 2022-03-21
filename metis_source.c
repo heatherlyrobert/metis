@@ -3,6 +3,7 @@
 
 /*
  * metis § wn2<· § delete tasks by source, or all related source for code entries         § M22NYO §  · §
+ * metis § mg2·· § save date since earch source updated in database (aging)               § M255Id §  · §
  *
  *
  *
@@ -437,4 +438,23 @@ metis_source_purge_code  (char *a_dir)
    return 0;
 }
 
+char
+metis_source_purge      (char a_type, char *a_path)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   tSOURCE    *x_source    = NULL;
+   --rce;  switch (a_type) {
+   case 'f' :
+      metis_source_by_name (a_path, &x_source);
+      if (x_source == NULL)  return rce;
+      rc = metis_source_purge_file (x_source);
+      break;
+   case 's' :
+      rc = metis_source_purge_code (a_path);
+      break;
+   }
+   return rc;
+}
 

@@ -36,6 +36,9 @@ metis_task_wipe         (tTASK *a_dst)
    a_dst->show     = 'y';
    a_dst->note     = '·';
    a_dst->key [0]  = '\0';
+   a_dst->srch [0] = '\0';
+   a_dst->x        =    0;
+   a_dst->y        =    0;
    /*---(btree)-----------------------*/
    a_dst->ysort    = NULL;
    a_dst->unique   = NULL;
@@ -247,47 +250,47 @@ metis_task_by_aindex    (int n, tTASK**r_task)
    return rce;
 }
 
-int
-metis_task_by_regex     (char *a_regex, tTASK **r_task)
-{
-   /*---(locals)-----------+-----+-----+-*/
-   char        rce         =  -10;
-   char        rc          =    0;
-   tTASK      *x_task      = NULL;
-   int         c           =    0;
-   /*---(header)-------------------------*/
-   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
-   /*---(compile)------------------------*/
-   DEBUG_DATA   yLOG_point   ("a_regex"   , a_regex);
-   --rce;  if (a_regex == NULL) {
-      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
-      return rce;
-   }
-   rc = yREGEX_comp (a_regex);
-   DEBUG_DATA   yLOG_value   ("comp"      , rc);
-   --rce;  if (rc < 0) {
-      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
-      return rce;
-   }
-   if (r_task != NULL)  *r_task = NULL;
-   /*---(walk)---------------------------*/
-   rc = metis_task_by_cursor (YDLST_HEAD, &x_task);
-   while (x_task != NULL) {
-      x_task->note = '·';
-      rc = yREGEX_filter (x_task->txt);
-      if (rc > 0) {
-         DEBUG_DATA   yLOG_info    ("found in"  , x_task->txt);
-         if (r_task != NULL && *r_task == NULL)  *r_task = x_task;
-         x_task->note = 'r';
-         ++c;
-      }
-      rc = metis_task_by_cursor (YDLST_NEXT, &x_task);
-   }
-   DEBUG_DATA   yLOG_value   ("c"         , c);
-   /*---(complete)-----------------------*/
-   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
-   return c;
-}
+/*> int                                                                               <* 
+ *> metis_task_by_regex     (char *a_regex, tTASK **r_task)                           <* 
+ *> {                                                                                 <* 
+ *>    /+---(locals)-----------+-----+-----+-+/                                       <* 
+ *>    char        rce         =  -10;                                                <* 
+ *>    char        rc          =    0;                                                <* 
+ *>    tTASK      *x_task      = NULL;                                                <* 
+ *>    int         c           =    0;                                                <* 
+ *>    /+---(header)-------------------------+/                                       <* 
+ *>    DEBUG_PROG   yLOG_enter   (__FUNCTION__);                                      <* 
+ *>    /+---(compile)------------------------+/                                       <* 
+ *>    DEBUG_DATA   yLOG_point   ("a_regex"   , a_regex);                             <* 
+ *>    --rce;  if (a_regex == NULL) {                                                 <* 
+ *>       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                              <* 
+ *>       return rce;                                                                 <* 
+ *>    }                                                                              <* 
+ *>    rc = yREGEX_comp (a_regex);                                                    <* 
+ *>    DEBUG_DATA   yLOG_value   ("comp"      , rc);                                  <* 
+ *>    --rce;  if (rc < 0) {                                                          <* 
+ *>       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                              <* 
+ *>       return rce;                                                                 <* 
+ *>    }                                                                              <* 
+ *>    if (r_task != NULL)  *r_task = NULL;                                           <* 
+ *>    /+---(walk)---------------------------+/                                       <* 
+ *>    rc = metis_task_by_cursor (YDLST_HEAD, &x_task);                               <* 
+ *>    while (x_task != NULL) {                                                       <* 
+ *>       x_task->note = '·';                                                         <* 
+ *>       rc = yREGEX_filter (x_task->txt);                                           <* 
+ *>       if (rc > 0) {                                                               <* 
+ *>          DEBUG_DATA   yLOG_info    ("found in"  , x_task->txt);                   <* 
+ *>          if (r_task != NULL && *r_task == NULL)  *r_task = x_task;                <* 
+ *>          x_task->note = 'r';                                                      <* 
+ *>          ++c;                                                                     <* 
+ *>       }                                                                           <* 
+ *>       rc = metis_task_by_cursor (YDLST_NEXT, &x_task);                            <* 
+ *>    }                                                                              <* 
+ *>    DEBUG_DATA   yLOG_value   ("c"         , c);                                   <* 
+ *>    /+---(complete)-----------------------+/                                       <* 
+ *>    DEBUG_PROG   yLOG_exit    (__FUNCTION__);                                      <* 
+ *>    return c;                                                                      <* 
+ *> }                                                                                 <*/
 
 char*
 metis_task_entry       (int n)

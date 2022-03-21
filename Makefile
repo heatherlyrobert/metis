@@ -8,7 +8,7 @@ NAME_BASE  = metis
 # additional standard and outside libraries
 LIB_STD    = -lX11 -lGL -lGLU -lm -lXext
 # all heatherly libraries used, debug versions whenever available
-LIB_MINE   = -lX11 -lXext -lGL -lyX11_debug -lyFONT_debug -lySTR_debug -lyGLTEX_debug -lyVIOPENGL_debug -lyMODE_debug -lyKEYS_debug -lyMACRO_debug -lyCMD_debug -lySRC_debug -lyVIEW_debug -lyFILE_debug -lyMAP_debug -lyJOBS_debug -lyREGEX_debug -lySORT_debug
+LIB_MINE   = -lX11 -lXext -lGL -lyX11_debug -lyFONT_debug -lySTR_debug -lyGLTEX_debug -lyVIOPENGL_debug -lyMODE_debug -lyKEYS_debug -lyMACRO_debug -lyCMD_debug -lySRC_debug -lyVIEW_debug -lyFILE_debug -lyMAP_debug -lyJOBS_debug -lyREGEX_debug -lySORT_debug -lyMARK_debug
 # directory for production code, no trailing slash
 INST_DIR   = /usr/local/bin
 

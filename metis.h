@@ -9,7 +9,7 @@
 
 #define     P_FOCUS     "PT (productivity/time mgmt)"
 #define     P_NICHE     "td (todo list)"
-#define     P_SUBJECT   "task management"
+#define     P_SUBJECT   "system-wide task management"
 #define     P_PURPOSE   "task consolitation, visualization, and navigation system"
 
 #define     P_NAMESAKE  "metis-okeanides (wise-counsel)"
@@ -34,8 +34,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.6-, adding central database capability"    
-#define     P_VERNUM    "1.6c"
-#define     P_VERTXT    "can purge tasks by source or project now, unit tested"
+#define     P_VERNUM    "1.6d"
+#define     P_VERTXT    "yMARK regex search fully integrated and working -- still must test"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -43,6 +43,17 @@
 
 
 /*
+ *
+ * x metis § ····· § abcdefghijklmnopqrstuvwxyz {|}~                                        § M290Ou §  · §
+ * x metis § wc8·· § !"#$%&'()+*,-../ 0123456789 :;<=>?                                     § M2875J §  · §
+ * x metis § ····· § @ABCDEFGHIJKHLMNOPRSTUVWXYZ [\]^_                                      § M294uB §  · §
+ * x metis § ····· §  ¡¢£¤¥¦ ¨©ª«¬­®¯ °±²³´µ¶·¸¹                                            § M29Mba §  · §
+ * x metis § ····· § º»¼½¾¿ĞÑÒÓÔÖÕ×                                                         § M2A4sx §  · §
+ * x metis § ····· § aÀbÁcÂdÃeÄfÅ                                                           § M2A5wm §  · §
+ * x metis § ····· § gÆhÇiÈjÉkÊlËmÌnÍoÎ Ï                                                   § M2AL9b §  · §
+ * x metis § ····· § š™ÙØàáâãåæç›˜äÜİŞß                                                    § M2ALQe §  · §
+ * x x metis § ····· § ƒ€‰€‚‡€Š€†„€ˆ€…Œ‘”•œŸ’“–—                                        § M2B3UB §  · §
+ * x metis § ····· § èéêëìíîïğñòóôõö÷øùúûüışÿ                                               § M2ANqZ §  · §
  * metis § wc8·· § write interactive-use manual for metis                                 § M1GDo1 §  · §
  *
  */
@@ -157,15 +168,16 @@
 #include    <yLOG.h>         /* CUSTOM : heatherly program logging            */
 
 /*---(custom vi-keys)--------------------*/
-#include    <yKEYS.h>             /* heatherly vi-keys key handling           */
-#include    <yMODE.h>             /* heatherly vi-keys mode tracking          */
-#include    <yMACRO.h>            /* heatherly vi-keys macro processing       */
-#include    <ySRC.h>              /* heatherly vi-keys source editing         */
-#include    <yCMD.h>              /* heatherly vi-keys command processing     */
-#include    <yVIEW.h>             /* heatherly vi-keys view management        */
-#include    <yMAP.h>              /* heatherly vi-keys location management    */
-#include    <yFILE.h>             /* heatherly vi-keys content file handling  */
-#include    <yVIOPENGL.h>         /* heatherly vi-keys opengl handler         */
+#include    <yKEYS.h>             /* heatherly vikeys key handling            */
+#include    <yMODE.h>             /* heatherly vikeys mode tracking           */
+#include    <yMACRO.h>            /* heatherly vikeys macro processing        */
+#include    <ySRC.h>              /* heatherly vikeys source editing          */
+#include    <yCMD.h>              /* heatherly vikeys command processing      */
+#include    <yVIEW.h>             /* heatherly vikeys view management         */
+#include    <yMAP.h>              /* heatherly vikeys location management     */
+#include    <yFILE.h>             /* heatherly vikeys content file handling   */
+#include    <yMARK.h>             /* heatherly vikeys search and marking      */
+#include    <yVIOPENGL.h>         /* heatherly vikeys opengl handler          */
 
 #include    <yJOBS.h>             /* heatherly job execution and control      */
 #include    <yREGEX.h>       /* CUSTOM  heatherly regular expressions         */
@@ -236,6 +248,7 @@ extern     char      g_print     [LEN_RECD];
 #define     B_SOURCE       's'
 #define     B_TASK         't'
 #define     B_UNIQUE       'u'
+#define     B_WORLD        'w'
 /*---(warnings)-------------*/
 #define     WARN_NODATA    32000
 #define     WARN_SPACER    32001
@@ -313,15 +326,26 @@ struct      cTASK  {
    tSOURCE    *source;
    tTASK      *s_prev;
    tTASK      *s_next;
-   short       line;                        /* source line in file             */
+   ushort      line;                        /* source line in file             */
    /*---(filtering)---------*/
    uchar       show;                        /* filtering mark                  */
    uchar       note;                        /* none (-), regex (r)             */
    uchar       key         [LEN_HUND];
    uchar       srch        [LEN_FULL];
+   ushort      x, y;
    /*---(btree)-------------*/
    tSORT      *ysort;
    tSORT      *unique;
+   /*---(done)--------------*/
+};
+
+typedef struct cWORLD tWORLD;
+struct cWORLD {
+   /*---(master)------------*/
+   char        type;
+   char        path        [LEN_PATH];
+   /*---(btree)-------------*/
+   tSORT      *ysort;
    /*---(done)--------------*/
 };
 
@@ -366,9 +390,11 @@ struct cMY {
    /*---(data source)--------------------*/
    char        source;                      /* data sourcing location         */
    char        file        [LEN_RECD];      /* file for reading tasks         */
-   /*---(database)-----------------------*/
+   /*---(central)------------------------*/
    char        n_db        [LEN_RECD];      /* name of database file          */
    FILE       *f_db;                        /* shared database of tasks       */
+   char        n_world     [LEN_RECD];      /* name of world inventory        */
+   FILE       *f_world;                     /* world inventory                */
    /*---(counts)-------------------------*/
    ushort      nmajor;
    ushort      nminor;
@@ -397,6 +423,8 @@ struct cMY {
    uchar       cest;                        /* current estimating filter      */
    uchar       cprg;                        /* current progress filter        */
    uchar       cshr;                        /* current progress filter        */
+   uchar       cmaj        [LEN_LABEL];     /* current major filter           */
+   uchar       cmin        [LEN_TITLE];     /* current minor filter           */
    uchar       ctxt        [LEN_HUND];      /* current text filter            */
    uchar       sort;                        /* sorting request                */
    /*---(window)-------------------------*/
@@ -600,7 +628,7 @@ char        metis_filter_init       (void);
 char        metis_filter_vikeys     (void);
 char        metis_filter_clear      (void);
 char        metis_filter_set        (void);
-char        metis_filter_search     (char *a_search);
+/*> char        metis_filter_search     (char *a_search);                             <*/
 char        metis_filter_key        (tTASK *a_task);
 char        metis_filter_sort       (void);
 char*       FILTER__unit            (char *a_question, int a_num);
@@ -634,6 +662,8 @@ char        api_yvikeys_window      (char *a_format);
 char        api_yvikeys_refresh     (void);
 char        api_yvikeys_png         (void);
 
+char        api_yvikeys_regex       (uchar a_not, uchar *a_search);
+char        api_yvikeys_unfind      (uchar *a_label, ushort u, ushort x, ushort y, ushort z);
 
 char        metis_reporter          (void);
 
@@ -647,6 +677,7 @@ char        metis_reporter          (void);
 /*---(memory)---------------*/
 char        metis_shared_new        (char a_abbr, void **r_new, char a_force, char *a_wiper (void *));
 char        metis_shared_free       (char a_abbr, void **a_old);;
+char        metis_shared_verify     (uchar *a_name);
 
 
 
@@ -717,6 +748,7 @@ char        metis_source_init       (void);
 char        metis_source_cleanse    (void);
 char        metis_source_purge_file (tSOURCE *a_source);
 char        metis_source_purge_code (char *a_dir);
+char        metis_source_purge      (char a_type, char *a_path);
 /*---(done)-----------------*/
 
 
@@ -736,7 +768,7 @@ int         metis_epoch_count       (void);
 char        metis_epoch_by_index    (int n, tTASK **r_task);
 char        metis_epoch_by_cursor   (char a_dir, tTASK **r_task);
 char        metis_epoch_by_name     (uchar *a_name, tMINOR **r_minor);
-int         metis_task_by_regex     (char *a_regex, tTASK **r_task);
+/*> int         metis_task_by_regex     (char *a_regex, tTASK **r_task);              <*/
 char*       metis_task_entry        (int n);
 char        metis_task_by_aindex    (int n, tTASK**r_task);
 /*---(program)--------------*/
@@ -801,7 +833,6 @@ char        metis_refresh_full      (void);
 /*---(support)--------------*/
 char        metis_db_cli            (char *a_name, char a_loud);
 char        metis_db_init           (void);
-char        metis_db_verify         (uchar *a_name);
 /*---(file)-----------------*/
 char        metis_db__read_head     (char *a_name, ushort *a_var);
 char        metis_db__write_head    (char *a_name, ushort a_var);
@@ -822,6 +853,37 @@ char*       metis_db__unit          (char *a_question);
 /*---(done)-----------------*/
 
 
+/*===[[ metis_world.c ]]======================================================*/
+/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
+/*---(support)--------------*/
+char        metis_world_cli         (char *a_name, char a_loud);
+/*---(cleanse)--------------*/
+char        metis_world__wipe       (tWORLD *a_world);
+/*---(memory)---------------*/
+char        metis_world_new         (char a_type, char* a_path, char a_force, tWORLD **r_new);
+char        metis_world_free        (tWORLD **r_old);
+/*---(search)---------------*/
+int         metis_world_count       (void);
+char        metis_world_by_path     (uchar *a_path, tWORLD **r_world);
+char        metis_world_by_index    (int n, tWORLD **r_world);
+char        metis_world_by_cursor   (char a_dir, tWORLD **r_world);
+char*       metis_world_entry       (int n);
+/*---(exim)-----------------*/
+char        metis_world__open       (char a_dir);
+char        metis_world__close      (void);
+char        metis_world__import     (void);
+char        metis_world__export     (void);
+/*---(register)-------------*/
+char        metis_world_register    (void);
+char        metis_world_unregister  (void);
+char        metis_world_system      (void);
+/*---(program)--------------*/
+char        metis_world_init        (void);
+char        metis_world_purge_all   (void);
+char        metis_world_wrap        (void);
+/*---(unittest)-------------*/
+char*       metis_world__unit       (char *a_question, int i);
+/*---(done)-----------------*/
 
 
 #endif

@@ -1,4 +1,4 @@
-/*============================----beg-of-source---============================*/
+/*============================----eg-of-source---============================*/
 /*===[[ HEADER ]]=============================================================*
 
  *   focus         : (MH) mind_hacking
@@ -43,12 +43,29 @@ float     step      = 0;
 
 /*> char   face_pretty [30] = "verdana_sm";                                               <*/
 /*> char   face_pretty [30] = "comfortaa";                                                <*/
-char   face_pretty [30] = "sansation";
+
+/*> char   face_pretty [30] = "sansation";                                            <*/
+/*> char   face_pretty [30] = "luxi";                                                 <*/
+/*> char   face_pretty [30] = "comfortaa";                                            <*/
+/*> float  txf_off   = 0.00;                                                          <* 
+ *> float  txf_space = 1.15;                                                          <*/
+
+char   face_pretty [30] = "shrike";
+float  txf_off   =  0.00;
+float  txf_space =  1.12;
+/*> char   face_pretty [30] = "envy";                                                 <* 
+ *> float  txf_off   =  0.00;                                                         <* 
+ *> float  txf_space =  1.12;                                                         <*/
+
+/*> char   face_pretty [30] = "shrike";                                               <* 
+ *> float  txf_off   =  7.00;                                                         <* 
+ *> float  txf_space = 1.20;                                                          <*/
+
+
+
 /*> char   face_fixed  [30] = "comfortaa";                                            <*/
 /*> char   face_fixed [30] = "courier";                                               <*/
 char   face_fixed [30] = "hack";
-float  txf_off   = 0.00;
-float  txf_space = 1.15;
 
 
 
@@ -645,11 +662,11 @@ metis_opengl__age       (uchar a_prg, uchar *a_epoch, uchar a_days, short a_line
    }
    glColor4f (0.0, 0.0, 0.0, 1.0);
    glPushMatrix(); {
-      glTranslatef( 282.0, -35.0, 80.0);
-      yFONT_print (my.pretty,  7, YF_BASRIG, t);
-      glTranslatef(   0.0,  15.0,  0.0);
-      sprintf (t, "%4d", a_line);
-      yFONT_print (my.pretty,  7, YF_BASRIG, t);
+      glTranslatef( 282.0, -33.0, 80.0);
+      yFONT_print (my.pretty,  6, YF_BASRIG, t);
+      glTranslatef(   0.0,  13.0,  0.0);
+      sprintf (t, "%d", a_line);
+      yFONT_print (my.pretty,  6, YF_BASRIG, t);
    } glPopMatrix();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -684,26 +701,25 @@ char
 metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text)
 {
    char        temp        [LEN_LABEL];
-   glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+   /*> glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                  <*/
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
-      glTranslatef (  53.0,  -9.0,  40.0);
+      glTranslatef (  53.0,  -8.0,  40.0);
       glTranslatef (   0.0, txf_off,   0.0);
       if (a_index >= 0) {
          snprintf (temp, 10, "%d", a_index + 1);
-         yFONT_print  (my.pretty,  8, YF_MIDCEN, temp);
+         yFONT_print  (my.pretty,  7, YF_MIDCEN, temp);
       }
       glTranslatef (  72.0,   0.0,   0.0);
-      yFONT_print  (my.pretty,  8, YF_MIDCEN, a_major);
+      yFONT_print  (my.pretty,  7, YF_MIDCEN, a_major);
       glTranslatef ( 105.0,   0,   0);
-      yFONT_print  (my.pretty,  8, YF_MIDCEN, a_minor);
+      yFONT_print  (my.pretty,  7, YF_MIDCEN, a_minor);
       /*> glTranslatef (-160.0, -10.0,   0.0);                                        <*/
-      glTranslatef (-160.0, -18.0,   0.0);
+      glTranslatef (-165.0, -18.0,   0.0);
       glTranslatef (   0.0, txf_off - 1.0,   0.0);
-      glColor4f (0.0, 0.0, 0.0, 1.0);
-      yFONT_printw (my.pretty,  8, YF_TOPLEF, a_text, 180, 35, txf_space);
+      yFONT_printw (my.pretty,  7, YF_TOPLEF, a_text, 170, 25, txf_space);
    } glPopMatrix();
-   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   /*> glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                            <*/
    return 0;
 }
 
@@ -711,21 +727,21 @@ char
 metis_opengl__cats      (char a_urg, char a_imp, char a_est)
 {
    char        temp        [LEN_LABEL];
-   glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+   /*> glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                  <*/
    glPushMatrix(); {
-      glColor4f (0.0, 0.0, 0.0, 1.0);
+      glColor4f (0.1, 0.1, 0.1, 1.0);
       glTranslatef(  21.0,  -6.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
       snprintf (temp, 4, "%c", a_urg);
-      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
+      yFONT_print (my.pretty,  7, YF_BASCEN, temp);
       glTranslatef(  12.0, -12.0,   0.0);
       snprintf (temp, 4, "%c", a_imp);
-      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
+      yFONT_print (my.pretty,  7, YF_BASCEN, temp);
       glTranslatef(  12.0, -12.0,   0.0);
       snprintf (temp, 4, "%c", a_est);
-      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
+      yFONT_print (my.pretty,  7, YF_BASCEN, temp);
    } glPopMatrix();
-   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   /*> glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                            <*/
    return 0;
 }
 
@@ -768,6 +784,7 @@ metis_opengl__search    (char a_note)
    switch (a_note) {
    case 'r' : glColor4f (  0.800,  0.000,  0.000, 1.000);  break;
    case 'm' : glColor4f (  0.800,  0.800,  0.000, 1.000);  break;
+   default  : glColor4f (  0.350,  0.350,  0.350, 1.000);  break;
    }
    glBegin(GL_POLYGON); {
       glVertex3f (  17.0,  -35.0,   80.0);

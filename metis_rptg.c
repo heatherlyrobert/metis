@@ -3,7 +3,8 @@
 
 
 /*
- * metis § dn1-· § report <list>, maybe any report, does not read data first              § M1Q5f3 §  · §
+ * metis § dn1#· § report <list>, maybe any report, does not read data first              § M1Q5f3 §  6 §
+ * metis § mg2·· § report <world> to list world file                                      § M255Gs §  · §
  *
  */
 #define    METIS_REPORT   'r'

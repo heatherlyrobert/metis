@@ -70,6 +70,8 @@ metis_filter_vikeys     (void)
 char
 metis_filter_clear      (void)
 {
+   my.cmaj [0] = '\0';
+   my.cmin [0] = '\0';
    my.curg   = my.cimp = my.cest = my.cprg = my.cshr = ' ';
    my.ctxt [0] = '\0';
    return 0;
@@ -101,13 +103,18 @@ metis_filter_set        (void)
          return rce;
       }
    }
+   /*---(clean)--------------------------*/
+   if (my.curg ==0  || strchr (METIS_URGS, my.curg) == NULL)  my.curg = ' ';
+   if (my.cimp ==0  || strchr (METIS_IMPS, my.cimp) == NULL)  my.cimp = ' ';
+   if (my.cest ==0  || strchr (METIS_ESTS, my.cest) == NULL)  my.cest = ' ';
+   if (my.cprg ==0  || strchr (METIS_PRGS, my.cprg) == NULL)  my.cprg = ' ';
+   if (my.cshr ==0  || strchr (METIS_SHRS, my.cshr) == NULL)  my.cshr = ' ';
    /*---(display)------------------------*/
    metis_task_by_cursor (YDLST_HEAD, &x_task);
    while (x_task != NULL) {
       DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", c, x_task->urg, x_task->imp, x_task->est, x_task->prg);
       /*---(default)---------------------*/
       x_task->show  = 'y';
-      x_task->note  = '·';
       ++c;
       /*---(urgency)---------------------*/
       if      ((my.curg != ' ' && x_task->urg != my.curg)) {
@@ -148,6 +155,16 @@ metis_filter_set        (void)
          DEBUG_DATA   yLOG_note     ("skip as sharing does not match filter");
          x_task->show = '·';
       }
+      /*---(major)-----------------------*/
+      if (my.cmaj [0] != '\0' && strcmp (x_task->minor->major->name, my.cmaj) != 0) {
+         DEBUG_DATA   yLOG_note     ("skip as major does not match filter");
+         x_task->show = '·';
+      }
+      /*---(major)-----------------------*/
+      if (my.cmin [0] != '\0' && strcmp (x_task->minor->name, my.cmin) != 0) {
+         DEBUG_DATA   yLOG_note     ("skip as minor does not match filter");
+         x_task->show = '·';
+      }
       /*---(text)------------------------*/
       if (my.ctxt [0] != '\0' && yREGEX_filter (x_task->txt) <= 0) {
          DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");
@@ -170,49 +187,48 @@ metis_filter_set        (void)
    return 0;
 }
 
-char
-metis_filter_search     (char *a_search)
-{
-   /*---(locals)-----------+-----+-----+-*/
-   char        rce         =  -10;
-   char        rc          =    0;
-   int         c           =    0;
-   char        x_show      =  'y';
-   tTASK      *x_task      = NULL;
-   /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
-   /*---(prepare)------------------------*/
-   my.nact = 0;
-   rc = yREGEX_comp (a_search);
-   DEBUG_DATA   yLOG_value   ("comp"      , rc);
-   --rce;  if (rc < 0) {
-      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
-      return rce;
-   }
-   /*---(display)------------------------*/
-   metis_task_by_cursor (YDLST_HEAD, &x_task);
-   while (x_task != NULL) {
-      DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", c, x_task->urg, x_task->imp, x_task->est, x_task->prg);
-      /*---(default)---------------------*/
-      x_task->show  = 'y';
-      x_task->note  = '·';
-      ++c;
-      /*---(text)------------------------*/
-      rc = yREGEX_filter (x_task->srch);
-      if (rc > 0) {
-         DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");
-         x_task->note = 'r';
-      }
-      /*---(increment)-------------------*/
-      if (x_task->show == 'y')  ++my.nact;
-      metis_task_by_cursor (YDLST_NEXT, &x_task);
-      /*---(done)------------------------*/
-   }
-   DEBUG_DATA   yLOG_value    ("my.nact"  , my.nact);
-   /*---(complete)-----------------------*/
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
-   return 0;
-}
+/*> char                                                                                                                                  <* 
+ *> metis_filter_search     (char *a_search)                                                                                              <* 
+ *> {                                                                                                                                     <* 
+ *>    /+---(locals)-----------+-----+-----+-+/                                                                                           <* 
+ *>    char        rce         =  -10;                                                                                                    <* 
+ *>    char        rc          =    0;                                                                                                    <* 
+ *>    int         c           =    0;                                                                                                    <* 
+ *>    char        x_show      =  'y';                                                                                                    <* 
+ *>    tTASK      *x_task      = NULL;                                                                                                    <* 
+ *>    /+---(header)-------------------------+/                                                                                           <* 
+ *>    DEBUG_DATA   yLOG_enter    (__FUNCTION__);                                                                                         <* 
+ *>    /+---(prepare)------------------------+/                                                                                           <* 
+ *>    my.nact = 0;                                                                                                                       <* 
+ *>    rc = yREGEX_comp (a_search);                                                                                                       <* 
+ *>    DEBUG_DATA   yLOG_value   ("comp"      , rc);                                                                                      <* 
+ *>    --rce;  if (rc < 0) {                                                                                                              <* 
+ *>       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);                                                                                  <* 
+ *>       return rce;                                                                                                                     <* 
+ *>    }                                                                                                                                  <* 
+ *>    /+---(display)------------------------+/                                                                                           <* 
+ *>    metis_task_by_cursor (YDLST_HEAD, &x_task);                                                                                        <* 
+ *>    while (x_task != NULL) {                                                                                                           <* 
+ *>       DEBUG_DATA   yLOG_complex  ("review"    , "%3d#, %cu, %ci, %ce, %cf", c, x_task->urg, x_task->imp, x_task->est, x_task->prg);   <* 
+ *>       /+---(default)---------------------+/                                                                                           <* 
+ *>       x_task->note  = '·';                                                                                                            <* 
+ *>       ++c;                                                                                                                            <* 
+ *>       /+---(text)------------------------+/                                                                                           <* 
+ *>       rc = yREGEX_filter (x_task->srch);                                                                                              <* 
+ *>       if (rc > 0) {                                                                                                                   <* 
+ *>          DEBUG_DATA   yLOG_note     ("skip as txt does not contain filter");                                                          <* 
+ *>          x_task->note = 'r';                                                                                                          <* 
+ *>       }                                                                                                                               <* 
+ *>       /+---(increment)-------------------+/                                                                                           <* 
+ *>       if (x_task->show == 'y')  ++my.nact;                                                                                            <* 
+ *>       metis_task_by_cursor (YDLST_NEXT, &x_task);                                                                                     <* 
+ *>       /+---(done)------------------------+/                                                                                           <* 
+ *>    }                                                                                                                                  <* 
+ *>    DEBUG_DATA   yLOG_value    ("my.nact"  , my.nact);                                                                                 <* 
+ *>    /+---(complete)-----------------------+/                                                                                           <* 
+ *>    DEBUG_DATA   yLOG_exit     (__FUNCTION__);                                                                                         <* 
+ *>    return 0;                                                                                                                          <* 
+ *> }                                                                                                                                     <*/
 
 
 

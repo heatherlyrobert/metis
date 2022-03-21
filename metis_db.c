@@ -5,6 +5,10 @@
 
 tAUDIT      g_audit;
 
+/*
+ * metis § mg2·· § save date when database last written (with any updates)                § M255Jt §  · §
+ */
+
 
 
 /*====================------------------------------------====================*/
@@ -67,34 +71,6 @@ metis_db_init           (void)
    metis_db_cli (F_DB, '-');
    my.f_db = NULL;
    return 0;
-}
-
-char
-metis_db_verify         (uchar *a_name)
-{
-   /*---(locals)-----------+-----+-----+-*/
-   char        rce         =  -10;
-   int         rci         =    0;
-   tSTAT       st;
-   /*---(defense)------------------------*/
-   if (a_name == NULL)                   return 0;
-   if (strcmp (a_name, "") == 0)         return 0;
-   /*---(check for existance)------------*/
-   rci = lstat (a_name, &st);
-   DEBUG_FILE   yLOG_value   ("lstat"     , rci);
-   --rce; if (rci < 0) {
-      DEBUG_FILE   yLOG_note    ("file does not exist, can not read");
-      return rce;
-   }
-   /*---(check for regular file)---------*/
-   --rce;  if (!S_ISREG (st.st_mode)) {
-      DEBUG_FILE   yLOG_note    ("not a regular file, rejected");
-      return rce;
-   }
-   /*---(output)-------------------------*/
-   DEBUG_FILE   yLOG_note    ("confirmed as existing and is a regular file");
-   /*---(complete)-----------------------*/
-   return 1;
 }
 
 
@@ -620,7 +596,7 @@ metis_db__unit          (char *a_question)
    snprintf (unit_answer, LEN_RECD, "DB unit          : question unknown");
    /*---(simple)-------------------------*/
    if      (strcmp (a_question, "file"      )     == 0) {
-      rc = metis_db_verify (my.n_db);
+      rc = metis_shared_verify (my.n_db);
       if      (rc >  0)  x_exist = 'y';
       else if (rc <= 0)  x_exist = '-';
       snprintf (unit_answer, LEN_RECD, "DB file          : %c  %-10p  %c  %2då%sæ",

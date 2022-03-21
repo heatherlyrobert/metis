@@ -132,6 +132,7 @@ PROG__init              (void)
    metis_minor_init  ();
    metis_task_init   ();
    metis_source_init ();
+   metis_world_init  ();
    /*---(yvikeys config)-----------------*/
    metis_data_init   ();
    metis_filter_init ();
@@ -202,7 +203,7 @@ PROG__args              (int a_argc, char *a_argv [])
       /*---(configuration)---------------*/
       else if (strcmp  (a, "--local"         ) == 0)  rc = metis_db_cli  ("metis_local.db", 'y');
       else if (strcmp  (a, "--database"      ) == 0)  TWOARG rc = metis_db_cli      (a_argv [i], 'y');
-      /*> else if (strcmp  (a, "--world"         ) == 0)  TWOARG rc = poly_world_cli   (a_argv [i], 'y');   <*/
+      else if (strcmp  (a, "--world"         ) == 0)  TWOARG rc = metis_world_cli   (a_argv [i], 'y');
       /*---(initial format)--------------*/
       else if (strcmp  (a, "--ticker"        ) == 0)  my.format = FORMAT_TICKER;
       else if (strcmp  (a, "--baseline"      ) == 0)  my.format = FORMAT_BASELINE;
@@ -399,49 +400,6 @@ PROG_dusk               (void)
    return 0;
 }
 
-char
-PROG__verify            (void)
-{
-   /*---(locals)-----------+-----+-----+-*/
-   char        rce         =  -10;
-   char        rc          =    0;
-   /*---(header)-------------------------*/
-   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
-   /*---(title)--------------------------*/
-   yURG_msg ('>', "  option --vverify, check current project suitability for usage");
-   yURG_msg (' ', "");
-   /*---(call action)--------------------*/
-   rc = metis_data_refresh   ();
-   DEBUG_PROG   yLOG_value   ("data"      , rc);
-   /*---(failure)------------------------*/
-   if (rc < 0) {
-      yURG_msg (' ', "");
-      if (my.run_mode == ACT_CVERIFY )   yURG_msg_live ();
-      if (my.run_mode == ACT_CVERIFY )   yURG_msg ('>', "FAILURE, source contains hard failures, run --vverify to identify reasons");
-      if (my.run_mode == ACT_VVERIFY )   yURG_msg ('>', "FAILURE, source contains hard failures, the reasons are shown above");
-      if (my.run_mode == ACT_CVERIFY )   yURG_msg_mute ();
-      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
-      return rc;
-   }
-   /*---(warning)------------------------*/
-   if (rc > 0) {
-      yURG_msg (' ', "");
-      if (my.run_mode == ACT_CVERIFY )   yURG_msg_live ();
-      if (my.run_mode == ACT_CVERIFY )   yURG_msg ('>', "WARNING, source can be used with minor issues, run --vverify to identify warnings");
-      if (my.run_mode == ACT_VVERIFY )   yURG_msg ('>', "WARNING, source can be used with minor issues, the warnings are shown above");
-      if (my.run_mode == ACT_CVERIFY )   yURG_msg_mute ();
-      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
-      return rc;
-   }
-   /*---(success)------------------------*/
-   yURG_msg (' ', "");
-   IF_CONFIRM  yURG_msg_live ();
-   yURG_msg ('>', "SUCCESS, source is suitable for inclusion in database");
-   /*---(complete)-----------------------*/
-   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
-   return rc;
-}
-
 
 
 /*====================------------------------------------====================*/
@@ -483,7 +441,7 @@ PROG__stats             (void)
 }
 
 char
-PROG__update            (void)
+PROG__verify            (char a_main)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -491,15 +449,101 @@ PROG__update            (void)
    /*---(header)-------------------------*/
    DEBUG_PROG    yLOG_enter   (__FUNCTION__);
    /*---(title)--------------------------*/
-   IF_VERBOSE   yURG_msg ('>', "  option --vupdate, analyze current source and add to database");
-   IF_VERBOSE   yURG_msg (' ', "");
-   --rce;  if (my.source == DATA_DATABASE) {
-      if (my.run_mode == ACT_CUPDATE )   yURG_msg_live ();
-      if (my.run_mode == ACT_CUPDATE )   yURG_msg ('>', "FAILED, must select --sources or --file <name>");
-      if (my.run_mode == ACT_VUPDATE )   yURG_msg ('>', "FAILED, must select --sources or --file <name>");
-      if (my.run_mode == ACT_CUPDATE )   yURG_msg_mute ();
-      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rce);
-      return rce;
+   if (a_main == 'y') {
+      yURG_msg ('>', "  option --vverify, check current source suitability for usage");
+      yURG_msg (' ', "");
+   }
+   /*---(call action)--------------------*/
+   rc = metis_data_refresh   ();
+   DEBUG_PROG   yLOG_value   ("data"      , rc);
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_live ();
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg ('>', "FAILURE, source contains hard failures, run --vverify to identify reasons");
+      if (my.run_mode == ACT_VVERIFY )   yURG_msg ('>', "FAILURE, source contains hard failures, the reasons are shown above");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(warning)------------------------*/
+   if (rc > 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_live ();
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg ('>', "WARNING, source can be used with minor issues, run --vverify to identify warnings");
+      if (my.run_mode == ACT_VVERIFY )   yURG_msg ('>', "WARNING, source can be used with minor issues, the warnings are shown above");
+      if (my.run_mode == ACT_CVERIFY )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(success)------------------------*/
+   if (a_main == 'y') {
+      yURG_msg (' ', "");
+      IF_CONFIRM  yURG_msg_live ();
+      yURG_msg ('>', "SUCCESS, source is suitable for inclusion in database");
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return rc;
+}
+
+char
+PROG__register          (char a_main)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   if (a_main == 'y') {
+      IF_VERBOSE   yURG_msg ('>', "  option --vregister, analyze current source and add to registry");
+      IF_VERBOSE   yURG_msg (' ', "");
+   }
+   /*---(call action)--------------------*/
+   rc = metis_world_register   ();
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CREGISTER)  yURG_msg_live ();
+      if (my.run_mode == ACT_CREGISTER)  yURG_msg ('>', "FAILURE, source could not be registered, run --vregister to identify reasons");
+      if (my.run_mode == ACT_VREGISTER)  yURG_msg ('>', "FAILURE, source could not be registered, the reasons are shown above");
+      if (my.run_mode == ACT_CREGISTER)  yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(success)------------------------*/
+   if (a_main == 'y') {
+      yURG_msg (' ', "");
+      IF_CONFIRM  yURG_msg_live ();
+      if (rc == 0)  yURG_msg ('>', "SUCCESS, source was registered in the database");
+      else          yURG_msg ('>', "WARNING, source was already registered in the database");
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return rc;
+}
+
+char
+PROG__update            (char a_main)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   if (a_main == 'y') {
+      IF_VERBOSE   yURG_msg ('>', "  option --vupdate, analyze current source and add to database");
+      IF_VERBOSE   yURG_msg (' ', "");
+      --rce;  if (my.source == DATA_DATABASE) {
+         if (my.run_mode == ACT_CUPDATE )   yURG_msg_live ();
+         if (my.run_mode == ACT_CUPDATE )   yURG_msg ('>', "FAILURE, must select --sources or --file <name>");
+         if (my.run_mode == ACT_VUPDATE )   yURG_msg ('>', "FAILURE, must select --sources or --file <name>");
+         if (my.run_mode == ACT_CUPDATE )   yURG_msg_mute ();
+         DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
    }
    /*---(call action)--------------------*/
    if (rc >= 0)  rc = metis_db_read        ();
@@ -509,19 +553,138 @@ PROG__update            (void)
    if (rc < 0) {
       yURG_msg (' ', "");
       if (my.run_mode == ACT_CUPDATE )   yURG_msg_live ();
-      if (my.run_mode == ACT_CUPDATE )   yURG_msg ('>', "FAILED, could not update database, run --vupdate to identify reasons");
-      if (my.run_mode == ACT_VUPDATE )   yURG_msg ('>', "FAILED, but could not update database, the reasons are shown above");
+      if (my.run_mode == ACT_CUPDATE )   yURG_msg ('>', "FAILURE, could not update database, run --vupdate to identify reasons");
+      if (my.run_mode == ACT_VUPDATE )   yURG_msg ('>', "FAILURE, but could not update database, the reasons are shown above");
       if (my.run_mode == ACT_CUPDATE )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(success)------------------------*/
+   if (a_main == 'y') {
+      yURG_msg (' ', "");
+      IF_CONFIRM  yURG_msg_live ();
+      yURG_msg ('>', "SUCCESS, data was updated in the database");
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return rc;
+}
+
+char
+PROG__install           (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   IF_VERBOSE   yURG_msg ('>', "  option --vinstall, analyze current source and add to registry plus database");
+   IF_VERBOSE   yURG_msg (' ', "");
+   /*---(call action)--------------------*/
+   rc = PROG__register ('-');
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CINSTALL)   yURG_msg_live ();
+      if (my.run_mode == ACT_CINSTALL)   yURG_msg ('>', "FAILURE, source could not be registered, run --vinstall to identify reasons");
+      if (my.run_mode == ACT_VINSTALL)   yURG_msg ('>', "FAILURE, source could not be registered, the reasons are shown above");
+      if (my.run_mode == ACT_CINSTALL)   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(call action)--------------------*/
+   yURG_msg (' ', "");
+   rc = PROG__update ('-');
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CINSTALL)   yURG_msg_live ();
+      if (my.run_mode == ACT_CINSTALL)   yURG_msg ('>', "FAILURE, source registered, but could not update database, run --vinstall to identify reasons");
+      if (my.run_mode == ACT_VINSTALL)   yURG_msg ('>', "FAILURE, source registered, but could not update database, the reasons are shown above");
+      if (my.run_mode == ACT_CINSTALL)   yURG_msg_mute ();
       DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
       return rc;
    }
    /*---(success)------------------------*/
    yURG_msg (' ', "");
    IF_CONFIRM  yURG_msg_live ();
-   yURG_msg ('>', "SUCCESS, data was updated in the database");
+   yURG_msg ('>', "SUCCESS, source was both registered and updated in the database");
    /*---(complete)-----------------------*/
    DEBUG_PROG    yLOG_exit    (__FUNCTION__);
    return rc;
+}
+
+char
+PROG__withdraw          (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   IF_VERBOSE   yURG_msg ('>', "  option --vwithdraw, remove named source from the to registry");
+   IF_VERBOSE   yURG_msg (' ', "");
+   /*---(call action)--------------------*/
+   rc = metis_world_unregister ();
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CWITHDRAW)  yURG_msg_live ();
+      if (my.run_mode == ACT_CWITHDRAW)  yURG_msg ('>', "FAILURE, source could not be unregistered, run --vwithdraw to identify reasons");
+      if (my.run_mode == ACT_VWITHDRAW)  yURG_msg ('>', "FAILURE, source could not be unregistered, the reasons are shown above");
+      if (my.run_mode == ACT_CWITHDRAW)  yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(success)------------------------*/
+   yURG_msg (' ', "");
+   IF_CONFIRM  yURG_msg_live ();
+   if (rc == 0)  yURG_msg ('>', "SUCCESS, source was removed from the registry");
+   else          yURG_msg ('>', "WARNING, source was not in the registry, nothing to do");
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return rc;
+}
+
+char
+PROG__gather            (void)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
+   /*---(title)--------------------------*/
+   IF_CONFIRM {
+      yURG_msg_live ();
+      yURG_msg ('>', "%s", P_ONELINE);
+      yURG_msg ('>', "  option --cgather, update data with all sources from registry");
+      yURG_msg (' ', "");
+      yURG_msg_mute ();
+   }
+   IF_VERBOSE   yURG_msg ('>', "  option --vgather, update data with all sources from registry");
+   IF_VERBOSE   yURG_msg (' ', "");
+   /*---(call action)--------------------*/
+   rc = metis_world_system     ();
+   /*---(failure)------------------------*/
+   if (rc < 0) {
+      yURG_msg (' ', "");
+      if (my.run_mode == ACT_CNORMAL )   yURG_msg_live ();
+      if (my.run_mode == ACT_CNORMAL )   yURG_msg ('>', "FAILED, system update was not completed, run --vnormal to identify reasons");
+      if (my.run_mode == ACT_VNORMAL )   yURG_msg ('>', "FAILED, system update was not completed, the reasons are shown above");
+      if (my.run_mode == ACT_CNORMAL )   yURG_msg_mute ();
+      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
+      return rc;
+   }
+   /*---(success)------------------------*/
+   IF_CONFIRM  yURG_msg_live ();
+   yURG_msg (' ', "");
+   yURG_msg ('>', "SUCCESS, system update was completed for all registry sources");
+   /*---(complete)-----------------------*/
+   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
+   return 0;
 }
 
 char
@@ -544,20 +707,20 @@ PROG_dispatch           (void)
       break;
       /*---(incomming)-------------------*/
    case CASE_VERIFY     :
-      rc = PROG__verify   ();
+      rc = PROG__verify   ('y');
       break;
    case CASE_REGISTER   :
-      /*> rc = PROG__register ();                                                     <*/
+      rc = PROG__register ('y');
       break;
    case CASE_UPDATE     :
-      rc = PROG__update   ();
+      rc = PROG__update   ('y');
       break;
    case CASE_INSTALL    :
       /*> rc = PROG__install  ();                                                     <*/
       break;
       /*---(outgoing)--------------------*/
    case CASE_WITHDRAW   :
-      /*> rc = PROG__withdraw ();                                                     <*/
+      rc = PROG__withdraw ();
       break;
    case CASE_CLEAR      :
       /*> rc = PROG__clear    ();                                                     <*/
@@ -575,7 +738,7 @@ PROG_dispatch           (void)
       break;
       /*---(execute)---------------------*/
    case CASE_GATHER     :
-      /*> rc = PROG__system   ();                                                     <*/
+      rc = PROG__gather   ();
       break;
    case CASE_NORMAL     : case CASE_STRICT     :
       rc = PROG_dawn    ();
@@ -611,6 +774,7 @@ PROG__end               (void)
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    metis_data_purge_all ();
+   metis_world_purge_all ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }

@@ -988,12 +988,8 @@ metis_data_refresh      (void)
    }
    ++c;
    /*---(refresh others)-----------------*/
-   /*> metis_filter_set  ();                                                          <* 
-    *> metis_format_refresh ();                                                       <*/
    CROW = CCOL = 0;
-   /*> yMAP_refresh_full ();                                                          <* 
-    *> metis_opengl_draw ();                                                          <* 
-    *> metis_opengl_mask ();                                                          <*/
+   yMARK_execute ("/");
    /*---(complete)------------------------------*/
    DEBUG_INPT   yLOG_exit    (__FUNCTION__);
    return rc;

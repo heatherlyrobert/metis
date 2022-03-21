@@ -41,6 +41,7 @@ metis_shared_new        (char a_abbr, void **r_new, char a_force, char *a_wiper 
    case B_MINOR  : x_size = sizeof (tMINOR);   break;
    case B_SOURCE : x_size = sizeof (tSOURCE);  break;
    case B_TASK   : x_size = sizeof (tTASK);    break;
+   case B_WORLD  : x_size = sizeof (tWORLD);   break;
    default       :
       DEBUG_DATA   yLOG_snote   ("unknown btree abbr");
       DEBUG_DATA   yLOG_sexitr  (__FUNCTION__, rce);
@@ -96,6 +97,34 @@ metis_shared_free       (char a_abbr, void **r_old)
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_sexit   (__FUNCTION__);
    return 0;
+}
+
+char
+metis_shared_verify     (uchar *a_name)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   int         rci         =    0;
+   tSTAT       st;
+   /*---(defense)------------------------*/
+   if (a_name == NULL)                   return 0;
+   if (strcmp (a_name, "") == 0)         return 0;
+   /*---(check for existance)------------*/
+   rci = lstat (a_name, &st);
+   DEBUG_FILE   yLOG_value   ("lstat"     , rci);
+   --rce; if (rci < 0) {
+      DEBUG_FILE   yLOG_note    ("file does not exist, can not read");
+      return rce;
+   }
+   /*---(check for regular file)---------*/
+   --rce;  if (!S_ISREG (st.st_mode)) {
+      DEBUG_FILE   yLOG_note    ("not a regular file, rejected");
+      return rce;
+   }
+   /*---(output)-------------------------*/
+   DEBUG_FILE   yLOG_note    ("confirmed as existing and is a regular file");
+   /*---(complete)-----------------------*/
+   return 1;
 }
 
 

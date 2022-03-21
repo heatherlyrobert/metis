@@ -96,18 +96,15 @@ metis_place_single      (tTASK **a_task, short a_col, short a_row, short *i, sho
       /*---(record)----------------*/
       DEBUG_DATA   yLOG_sint     (*i);
       metis_place_map (a_col, a_row, *i, c);
-      /*> g_map [a_col][a_row] = *i;                                                  <* 
-       *> ++(g_map [MAX_COLS - 1][a_row        ]);                                    <* 
-       *> ++(g_map [a_col        ][MAX_ROWS - 1]);                                    <*/
-      /*---(check maxes)-----------*/
-      /*> if (NCOLS <= a_col)  NCOLS = a_col + 1;                                     <* 
-       *> if (NROWS <= a_row)  NROWS = a_row + 1;                                     <*/
+      /*---(save-back)----------------*/
+      (*a_task)->x = a_col;
+      (*a_task)->y = a_row;
       /*---(output)----------------*/
-      /*> ++(*c);                                                                     <*/
-      /*> DEBUG_DATA   yLOG_sint     (*c);                                            <*/
       rc = 0;
       /*---(done)------------------*/
    } else {
+      (*a_task)->x = 0;
+      (*a_task)->y = 0;
       DEBUG_DATA   yLOG_snote    ("filtered task");
       rc = 1;
    }

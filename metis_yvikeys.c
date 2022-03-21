@@ -4,6 +4,7 @@
 /*
  * metis § dn2#³ § get positioning working with wmctrl again                              § M1FDii §  2 §
  * metis § dv2<· § get yVIOPENGL to change colors when editing text                       § M1Q5lC §  · §
+ * metis § wv2·· § change format using command line is not right                          § M25ItY §  · §
  *
  */
 
@@ -68,11 +69,113 @@ api_yvikeys_init        (void)
     *> yVIKEYS_cmds_direct   (":xaxis disable");                                      <* 
     *> yVIKEYS_cmds_direct   (":yaxis disable");                                      <* 
     *> yVIKEYS_view_font     (my.fixed);                                              <*/
-   yMAP_config    (YMAP_OFFICE, api_ymap_locator, api_ymap_addressor, api_ymap_sizer, api_ymap_entry, api_ymap_placer, api_ymap_done);
+   if (rc >= 0)  rc = yMAP_config    (YMAP_OFFICE, api_ymap_locator, api_ymap_addressor, api_ymap_sizer, api_ymap_entry, api_ymap_placer, api_ymap_done);
+   if (rc >= 0)  rc = yMARK_config  (api_yvikeys_regex , api_yvikeys_unfind, NULL);
    /*> yVIKEYS_cmds_direct   (":palette 100 rcomp pale earthy");                      <*/
    /*> yVIKEYS_view_colors   (YCOLOR_POS, YCOLOR_BAS, YCOLOR_NEG, YCOLOR_POS);        <*/
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+
+
+/*====================------------------------------------====================*/
+/*===----                        searching                             ----===*/
+/*====================------------------------------------====================*/
+static void  o___SEARCH__________o () { return; }
+
+char         /*-> tbd --------------------------------[ ------ [ge.#M5.1C#.#7]*/ /*-[03.0000.013.L]-*/ /*-[--.---.---.--]-*/
+api_yvikeys_regex         (uchar a_not, uchar *a_search)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   int         x_len       =    0;
+   tTASK      *x_task      = NULL;
+   /*---(header)-------------------------*/
+   DEBUG_SRCH   yLOG_enter   (__FUNCTION__);
+   DEBUG_SRCH   yLOG_point   ("a_search"  , a_search);
+   /*---(defenses)---------------------------*/
+   --rce;  if (a_search == NULL) {
+      DEBUG_SRCH   yLOG_note    ("can not use null search");
+      DEBUG_SRCH   yLOG_exitr   (__FUNCTION__, rce);
+   }
+   DEBUG_SRCH   yLOG_info    ("a_search"  , a_search);
+   x_len = strlen (a_search);
+   DEBUG_SRCH   yLOG_value   ("x_len"     , x_len);
+   --rce;  if (x_len <= 0) {
+      DEBUG_SRCH   yLOG_note    ("can be an empty search");
+      DEBUG_SRCH   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   --rce;  if (a_search [0] != '/') {
+      DEBUG_SRCH   yLOG_note    ("must start with a forward slash");
+      DEBUG_SRCH   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   if (x_len == 1) {
+      DEBUG_SRCH   yLOG_note    ("redraw after purge only");
+      metis_refresh ();
+      DEBUG_SRCH   yLOG_exit    (__FUNCTION__);
+      return 0;
+   }
+   rc = yREGEX_comp (a_search + 1);
+   DEBUG_SRCH   yLOG_value   ("comp rc"   , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_SRCH   yLOG_note    ("could not compile search");
+      DEBUG_SRCH   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   /*---(process range)----------------------*/
+   metis_task_by_cursor (YDLST_HEAD, &x_task);
+   while (x_task != NULL) {
+      x_task->note = '·';
+      DEBUG_SRCH   yLOG_info    ("x_curr"    , x_task->srch);
+      rc = yREGEX_filter (x_task->srch);
+      DEBUG_SRCH   yLOG_value   ("exec rc"   , rc);
+      if (a_not != 'y' && rc > 0) {
+         DEBUG_SRCH   yLOG_note    ("normal find");
+         yMARK_found (x_task->epoch, 0, 0, x_task->seq, 0);
+         x_task->note = 'r';
+      } else if (a_not == 'y' && rc <= 0) {
+         DEBUG_SRCH   yLOG_note    ("reverse (NOT) find");
+         yMARK_found (x_task->epoch, 0, 0, x_task->seq, 0);
+         x_task->note = 'r';
+      }
+      metis_task_by_cursor (YDLST_NEXT, &x_task);
+   }
+   /*---(update task)------------------------*/
+   metis_refresh ();
+   /*---(complete)---------------------------*/
+   DEBUG_SRCH   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+api_yvikeys_unfind      (uchar *a_label, ushort u, ushort x, ushort y, ushort z)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   tTASK      *x_task      = NULL;
+   /*---(header)-------------------------*/
+   DEBUG_SRCH   yLOG_enter   (__FUNCTION__);
+   /*---(defense)------------------------*/
+   DEBUG_SRCH   yLOG_point   ("a_label"   , a_label);
+   --rce;  if (a_label == NULL) {
+      DEBUG_SRCH   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_SRCH   yLOG_info    ("a_label"   , a_label);
+   metis_epoch_by_name (a_label, &x_task);
+   DEBUG_DATA   yLOG_point   ("x_task"    , x_task);
+   --rce;  if (x_task == NULL) {
+      DEBUG_SRCH   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   x_task->note = '·';
+   /*---(complete)---------------------------*/
+   DEBUG_SRCH   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
@@ -290,7 +393,9 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    if (a_which  == NULL) return -1;
    if (a_string == NULL) return -2;
-   if      (strcmp (a_which, "urg"     ) == 0)   my.curg  = a_string [0];
+   if      (strcmp (a_which, "maj"     ) == 0)   strlcpy (my.cmaj, a_string, LEN_LABEL);
+   else if (strcmp (a_which, "min"     ) == 0)   strlcpy (my.cmin, a_string, LEN_TITLE);
+   else if (strcmp (a_which, "urg"     ) == 0)   my.curg  = a_string [0];
    else if (strcmp (a_which, "imp"     ) == 0)   my.cimp  = a_string [0];
    else if (strcmp (a_which, "est"     ) == 0)   my.cest  = a_string [0];
    else if (strcmp (a_which, "prg"     ) == 0)   my.cprg  = a_string [0];
