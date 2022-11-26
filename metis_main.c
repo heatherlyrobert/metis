@@ -19,6 +19,7 @@ main               (int argc, char *argv[])
       return rce;
    }
    /*---(main loop)----------------------*/
+   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    rc = PROG_dispatch ();
    /*> rc = PROG_dawn    ();                                                          <* 
     *> if (rc >= 0)  rc = yVIOPENGL_main  ("keys", "every", NULL);                    <* 

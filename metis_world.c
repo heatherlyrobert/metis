@@ -4,8 +4,8 @@
 /*
  * metis § mg2·· § add pass, warn, and fail counts to each system confirm output line     § M25JET §  · §
  * metis § mg4·· § do not delete archived tasks from database during update/gather        § M25JHc §  · §
- *
- *
+ * metis § mg4·· § when registering, feebback whether already registered                  § M323lB §  · §
+ * metis § mg4·· § when withdrawaling, feedback whether not registered already            § M323la §  · §
  *
  *
  *
@@ -32,7 +32,7 @@ metis_world_cli         (char *a_name, char a_loud)
    DEBUG_ARGS  yLOG_point   ("a_name"    , a_name);
    --rce;  if (a_name == NULL) {
       if (a_loud == 'y')  yURG_err (YURG_FATAL, "world <name>, name can not be null");
-      DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
+      DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
       return rce;
    }
    DEBUG_ARGS  yLOG_info    ("a_name"    , a_name);
@@ -42,15 +42,15 @@ metis_world_cli         (char *a_name, char a_loud)
    DEBUG_ARGS  yLOG_value   ("l"         , l);
    --rce;  if (l <= 0) {
       if (a_loud == 'y')  yURG_err (YURG_FATAL, "world <name>, name can not be blank/empty");
-      DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
+      DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
       return rce;
    }
    /*---(check characters)---------------*/
    --rce;  for (i = 0; i < l; ++i) {
       if (strchr (x_valid, x_recd [i]) != NULL)  continue;
       if (a_loud == 'y')  yURG_err (YURG_FATAL, "world <name>, name can not have a <%c> at character %d", x_recd [i], i);
-      DEBUG_TOPS  yLOG_char  ("bad char"  , x_recd [i]);
-      DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
+      DEBUG_PROG  yLOG_char  ("bad char"  , x_recd [i]);
+      DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
       return rce;
    }
    /*---(check extension)----------------*/

@@ -23,6 +23,8 @@
  *
  * metis § mg2·· § format for normal files to have headers and task embedded              § M23JwR §  · §
  *
+ * metis § mn4·· § trouble leaving search mode with escape, just locks for a while        § M323rW §  · §
+ *
  *
  */
 
@@ -34,7 +36,7 @@
  *
  *                    urgency
  *
- *         -   y   m   w   d   s   t   !
+ *         ·   y   m   w   d   s   t   !
  *       ƒ€€€€€€€‰€€€€€€€‰€€€€€€€‰€€€€€€€‚
  *     a  focus Œ              Œ drive  a  absolute      all dies without
  *              Œ              Œ       
@@ -50,9 +52,9 @@
  *  c    ‡·······Š·······Š·······Š·······†
  *  e  m        Œ              Œ        i  idea          pondering
  *              Œ              Œ       
- *     -  dump  Œ              Œ weeds  -  backlog
+ *     ·  dump  Œ              Œ weeds  ·  backlog
  *       „€€€€€€€ˆ€€€€€€€ˆ€€€€€€€ˆ€€€€€€€…
- *         -   y   m   w   d   s   t   !
+ *         ·   y   m   w   d   s   t   !
  *
  *         b   y   m   w   d   s   t   n
  *         a   e   o   e   a   o   o   o
@@ -516,13 +518,13 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
          DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
          return  rce;
       }
-      if (x_date < time (NULL) - 86400 * 100) {
-         DEBUG_INPT   yLOG_note     ("date older than 100 days, illegal");
-         yURG_err ('f', "time code å%sæå%dæ more than 100 days in past", p, x_date);
-         metis_task_free (&x_task);
-         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
-         return  rce;
-      }
+      /*> if (x_date < time (NULL) - 86400 * 100) {                                        <* 
+       *>    DEBUG_INPT   yLOG_note     ("date older than 100 days, illegal");             <* 
+       *>    yURG_err ('f', "time code å%sæå%dæ more than 100 days in past", p, x_date);   <* 
+       *>    metis_task_free (&x_task);                                                    <* 
+       *>    DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);                               <* 
+       *>    return  rce;                                                                  <* 
+       *> }                                                                                <*/
       strlcpy (x_task->epoch, p, LEN_TERSE);
    } else if   (x_len == 10) {
       DEBUG_INPT   yLOG_note     ("date/epoch in epoch form");
@@ -533,13 +535,13 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
          DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
          return  rce;
       }
-      if (atoi (p) < time (NULL) - 86400 * 100) {
-         DEBUG_INPT   yLOG_note     ("date older than 100 days");
-         yURG_err ('f', "time code (epoch) å%sæå%sæ more than 100 days in past", p, x_mongo);
-         metis_task_free (&x_task);
-         DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
-         return  rce;
-      }
+      /*> if (atoi (p) < time (NULL) - 86400 * 100) {                                               <* 
+       *>    DEBUG_INPT   yLOG_note     ("date older than 100 days");                               <* 
+       *>    yURG_err ('f', "time code (epoch) å%sæå%sæ more than 100 days in past", p, x_mongo);   <* 
+       *>    metis_task_free (&x_task);                                                             <* 
+       *>    DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);                                        <* 
+       *>    return  rce;                                                                           <* 
+       *> }                                                                                         <*/
       str2mongo (atoi (p), x_mongo);
       strlcpy (x_task->epoch, x_mongo, LEN_TERSE);
    } else {

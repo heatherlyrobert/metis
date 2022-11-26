@@ -19,6 +19,7 @@
 
 #define     P_ONELINE   P_NAMESAKE " " P_SUBJECT
 
+#define     P_HOMEDIR   "/home/monkey/metis.task_management"
 #define     P_BASENAME  "metis"
 #define     P_FULLPATH  "/usr/local/bin/metis"
 #define     P_SUFFIX    "tasks"
@@ -34,8 +35,8 @@
 
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.6-, adding central database capability"    
-#define     P_VERNUM    "1.6d"
-#define     P_VERTXT    "yMARK regex search fully integrated and working -- still must test"
+#define     P_VERNUM    "1.6e"
+#define     P_VERTXT    "small corrections for updates to yJOBS functions"
 
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
@@ -152,45 +153,6 @@
  */
 /*============================================================================*/
 
-#include <X11/X.h>                   /* main header                           */
-#include <X11/Xlib.h>                /* c-api (xlib) header                   */
-#include <X11/Xutil.h>               /* c-api (xlib) header                   */
-#include <X11/keysym.h>              /* for resolving keycodes/keysyms        */
-#include <X11/extensions/shape.h>    /* shape extention -- funky windows    */
-
-
-/*===[[ GLX HEADERS ]]========================================================*/
-#include <GL/gl.h>                   /* main header for opengl                */
-#include <GL/glx.h>                  /* for xlib/opengl integration           */
-
-/*===[[ CUSTOM LIBRARIES ]]===================================================*/
-#include    <yURG.h>         /* CUSTOM : heatherly urgent processing          */
-#include    <yLOG.h>         /* CUSTOM : heatherly program logging            */
-
-/*---(custom vi-keys)--------------------*/
-#include    <yKEYS.h>             /* heatherly vikeys key handling            */
-#include    <yMODE.h>             /* heatherly vikeys mode tracking           */
-#include    <yMACRO.h>            /* heatherly vikeys macro processing        */
-#include    <ySRC.h>              /* heatherly vikeys source editing          */
-#include    <yCMD.h>              /* heatherly vikeys command processing      */
-#include    <yVIEW.h>             /* heatherly vikeys view management         */
-#include    <yMAP.h>              /* heatherly vikeys location management     */
-#include    <yFILE.h>             /* heatherly vikeys content file handling   */
-#include    <yMARK.h>             /* heatherly vikeys search and marking      */
-#include    <yVIOPENGL.h>         /* heatherly vikeys opengl handler          */
-
-#include    <yJOBS.h>             /* heatherly job execution and control      */
-#include    <yREGEX.h>       /* CUSTOM  heatherly regular expressions         */
-#include    <ySORT.h>        /* CUSTOM  heatherly sort and search             */
-
-
-#include    <ySTR.h>         /* CUSTOM : heatherly string handling            */
-#include    <yX11.h>         /* heatherly xlib/glx setup            */
-#include    <yFONT.h>        /* heatherly text display for opengl   */
-#include    <yGLTEX.h>       /* heatherly opengl texture support              */
-#include    <yCOLOR.h>       /* heatherly opengl color support                */
-
-#include    <yDLST_solo.h>   /* heatherly                                     */
 
 #include   <stdio.h>
 #include   <stdlib.h>                  /* getenv()                            */
@@ -201,6 +163,49 @@
 #include   <time.h>
 #include   <signal.h>                  /* signal(), sigalarm()                */
 #include   <dirent.h>
+
+#include <make_opengl.h>             /* heatherly opengl standard headers     */
+
+/*> #include <X11/X.h>                   /+ main header                           +/   <* 
+ *> #include <X11/Xlib.h>                /+ c-api (xlib) header                   +/   <*/
+#include <X11/Xutil.h>               /* c-api (xlib) header                   */
+#include <X11/keysym.h>              /* for resolving keycodes/keysyms        */
+#include <X11/extensions/shape.h>    /* shape extention -- funky windows    */
+
+
+/*===[[ GLX HEADERS ]]========================================================*/
+/*> #include <GL/gl.h>                   /+ main header for opengl                +/   <* 
+ *> #include <GL/glx.h>                  /+ for xlib/opengl integration           +/   <*/
+
+/*===[[ CUSTOM LIBRARIES ]]===================================================*/
+/*> #include    <yURG.h>         /+ CUSTOM : heatherly urgent processing          +/   <* 
+ *> #include    <yLOG.h>         /+ CUSTOM : heatherly program logging            +/   <*/
+
+/*---(custom vi-keys)--------------------*/
+/*> #include    <yKEYS.h>             /+ heatherly vikeys key handling            +/   <* 
+ *> #include    <yMODE.h>             /+ heatherly vikeys mode tracking           +/   <* 
+ *> #include    <yMACRO.h>            /+ heatherly vikeys macro processing        +/   <* 
+ *> #include    <ySRC.h>              /+ heatherly vikeys source editing          +/   <* 
+ *> #include    <yCMD.h>              /+ heatherly vikeys command processing      +/   <* 
+ *> #include    <yVIEW.h>             /+ heatherly vikeys view management         +/   <* 
+ *> #include    <yMAP.h>              /+ heatherly vikeys location management     +/   <* 
+ *> #include    <yFILE.h>             /+ heatherly vikeys content file handling   +/   <* 
+ *> #include    <yMARK.h>             /+ heatherly vikeys search and marking      +/   <* 
+ *> #include    <yVIOPENGL.h>         /+ heatherly vikeys opengl handler          +/   <*/
+
+#include    <yJOBS.h>             /* heatherly job execution and control      */
+#include    <yEXEC.h>             /* heatherly job execution and control      */
+#include    <yREGEX.h>       /* CUSTOM  heatherly regular expressions         */
+#include    <ySORT.h>        /* CUSTOM  heatherly sort and search             */
+
+
+/*> #include    <ySTR.h>         /+ CUSTOM : heatherly string handling            +/   <* 
+ *> #include    <yX11.h>         /+ heatherly xlib/glx setup            +/             <* 
+ *> #include    <yFONT.h>        /+ heatherly text display for opengl   +/             <* 
+ *> #include    <yGLTEX.h>       /+ heatherly opengl texture support              +/   <* 
+ *> #include    <yCOLOR.h>       /+ heatherly opengl color support                +/   <*/
+
+#include    <yDLST_solo.h>   /* heatherly                                     */
 
 
 

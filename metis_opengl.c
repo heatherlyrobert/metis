@@ -662,11 +662,11 @@ metis_opengl__age       (uchar a_prg, uchar *a_epoch, uchar a_days, short a_line
    }
    glColor4f (0.0, 0.0, 0.0, 1.0);
    glPushMatrix(); {
-      glTranslatef( 282.0, -33.0, 80.0);
-      yFONT_print (my.pretty,  6, YF_BASRIG, t);
+      glTranslatef( 282.0, -32.0, 80.0);
+      yFONT_print (my.pretty,  7, YF_BASRIG, t);
       glTranslatef(   0.0,  13.0,  0.0);
       sprintf (t, "%d", a_line);
-      yFONT_print (my.pretty,  6, YF_BASRIG, t);
+      yFONT_print (my.pretty,  7, YF_BASRIG, t);
    } glPopMatrix();
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -717,7 +717,7 @@ metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text
       /*> glTranslatef (-160.0, -10.0,   0.0);                                        <*/
       glTranslatef (-165.0, -18.0,   0.0);
       glTranslatef (   0.0, txf_off - 1.0,   0.0);
-      yFONT_printw (my.pretty,  7, YF_TOPLEF, a_text, 170, 25, txf_space);
+      yFONT_printw (my.pretty,  7, YF_TOPLEF, a_text, 165, 25, txf_space);
    } glPopMatrix();
    /*> glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                            <*/
    return 0;
@@ -952,6 +952,31 @@ metis_opengl_draw        (void)
 /*============================--------------------============================*/
 static void      o___MASK____________________o (void) {;}
 
+/*> char                                                                                                                     <* 
+ *> metis_opengl_mask_notes (GC gc, Pixmap bounds)                                                                           <* 
+ *> {                                                                                                                        <* 
+ *>    /+---(locals)-----------+-----+-----+-+/                                                                              <* 
+ *>    char        rc          =    0;                                                                                       <* 
+ *>    int       i         = 0;                                                                                              <* 
+ *>    short       x, y;                                                                                                     <* 
+ *>    uchar       m, s;                                                                                                     <* 
+ *>    short       w, h;                                                                                                     <* 
+ *>    uchar       t           [LEN_HUND]  = "";                                                                             <* 
+ *>    uchar       c;                                                                                                        <* 
+ *>    short       xb, yb, xe, ye;                                                                                           <* 
+ *>    int         x_count     =    0;                                                                                       <* 
+ *>    DEBUG_GRAF   yLOG_note     ("draw the notes masks");                                                                  <* 
+ *>    for (i = 0; i < 20; ++i) {                                                                                            <* 
+ *>       rc = yVIEW_note_data (i, &m, &s, &x, &y, &w, &h, t, &c, &xb, &yb, &xe, &ye);                                       <* 
+ *>       if (rc < 0)  break;                                                                                                <* 
+ *>       DEBUG_GRAF   yLOG_complex  ("note"      , "%2di, %2dm, %4dx, %4dw, %4dy, %4dh, %c, %s", i, m, x, w, y, h, s, t);   <* 
+ *>       XFillRectangle (YX_DISP, bounds, gc, x, my.w_tall - y, w, h);                                                      <* 
+ *>       ++x_count;                                                                                                         <* 
+ *>    }                                                                                                                     <* 
+ *>    DEBUG_GRAF   yLOG_value    ("x_count"   , x_count);                                                                   <* 
+ *>    return 0;                                                                                                             <* 
+ *> }                                                                                                                        <*/
+
 char
 metis_opengl_mask             (void)
 {
@@ -978,7 +1003,7 @@ metis_opengl_mask             (void)
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(prepare)------------------------*/
    /*> if (yVIEW_showing (YVIEW_STATUS)) {                                                       <* 
-    *>    yVIEW_bounds (YVIEW_STATUS, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &y_dif);   <* 
+    *>    yVIEW_bounds (YVIEW_STATUS, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &y_dif);   <* 
     *> }                                                                                         <*/
    bounds    = XCreatePixmap (YX_DISP, YX_BASE, my.w_wide, my.w_ftall + y_dif, 1);
    gc        = XCreateGC     (YX_DISP, bounds, 0, NULL);
@@ -1032,25 +1057,30 @@ metis_opengl_mask             (void)
    /*---(check for menu)-----------------*/
    if (x_mode == SMOD_MENUS) {
       DEBUG_GRAF   yLOG_note     ("draw the main menu mask");
-      yVIEW_bounds (YVIEW_MENUS, NULL, NULL, NULL, &x_min, &x_max, &x_dif, &y_min, &y_max, &y_dif);
+      yVIEW_size  (YVIEW_MENUS, NULL, &x_min, &x_dif, &y_min, &y_dif);
+      x_max = x_min + x_dif;
+      y_max = y_min + y_dif;
       DEBUG_GRAF   yLOG_complex ("menus"  ,"x_min %4d, x_max %4d, x_dif %4d, y_min %4d, y_max %4d, y_dif %4d", x_min, x_max, x_dif, y_min, y_max, y_dif);
-      XFillRectangle (YX_DISP, bounds, gc, x_min, -y_max, x_dif, y_dif);
+      DEBUG_GRAF   yLOG_value   ("special", my.w_ftall - y_min - y_dif);
+      XFillRectangle (YX_DISP, bounds, gc, x_min, my.w_tall - y_min - y_dif, x_dif, y_dif);
    }
    /*---(check for status bar)-----------*/
    if (yVIEW_showing (YVIEW_STATUS)) {
       DEBUG_GRAF   yLOG_note     ("draw the status bar mask");
-      yVIEW_bounds (YVIEW_STATUS, NULL, NULL, NULL, &x_min, &x_max, &x_dif, &y_min, &y_max, &y_dif);
+      yVIEW_bounds (YVIEW_STATUS, NULL, NULL, &x_min, &x_max, &x_dif, &y_min, &y_max, &y_dif);
       DEBUG_GRAF   yLOG_complex ("status" , "x_min %4d, x_max %4d, x_dif %4d, y_min %4d, y_max %4d, y_dif %4d", x_min, x_max, x_dif, y_min, y_max, y_dif);
       XFillRectangle (YX_DISP, bounds, gc, x_min, -y_max, x_dif, y_dif);
    }
-   /*---(check for status bar)-----------*/
+   /*---(check for float)----------------*/
    if (strchr (MODES_EDITING, x_mode) != NULL) {
       DEBUG_GRAF   yLOG_note     ("draw the float mask");
-      yVIEW_bounds (YVIEW_FLOAT, NULL, NULL, NULL, &x_min, &x_max, &x_dif, &y_min, &y_max, &y_dif);
+      yVIEW_size  (YVIEW_FLOAT, NULL, &x_min, &x_dif, &y_min, &y_dif);
       DEBUG_GRAF   yLOG_complex ("float"  , "x_min %4d, x_max %4d, x_dif %4d, y_min %4d, y_max %4d, y_dif %4d", x_min, x_max, x_dif, y_min, y_max, y_dif);
-      /*> XFillRectangle (YX_DISP, bounds, gc, x_min, y_max, x_dif, y_dif);           <*/
-      XFillRectangle (YX_DISP, bounds, gc, x_min - 2, -y_max - 2, x_dif + 4, y_dif + 4);
+      DEBUG_GRAF   yLOG_complex ("special", "ftall %4d, y_min %4d, y_dif, %4d, final %4d", my.w_ftall, y_min, y_dif, my.w_ftall - y_min - y_dif);
+      XFillRectangle (YX_DISP, bounds, gc, x_min, my.w_tall - y_min - y_dif, x_dif, y_dif);
    }
+   /*---(notes)--------------------------*/
+   yVIOPENGL_notes_mask (gc, bounds);
    /*---(set mask)-----------------------*/
    XShapeCombineMask (YX_DISP, YX_BASE, ShapeBounding, 0, 0, bounds, ShapeSet);
    /*---(free)---------------------------*/

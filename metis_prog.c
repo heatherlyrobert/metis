@@ -56,7 +56,6 @@ PROG_version       (void)
 /*====================------------------------------------====================*/
 static void      o___PREINIT_________________o (void) {;}
 
-
 char
 PROG_urgents            (int a_argc, char *a_argv [])
 {
@@ -89,6 +88,7 @@ char             /* [------] immediate program initialization ----------------*/
 PROG__init              (void)
 {
    /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
    char        rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
@@ -107,7 +107,7 @@ PROG__init              (void)
    PROG_reset_yjobs ();
    my.run_uid     = getuid ();
    my.runtime     = time (NULL);
-   DEBUG_TOPS  yLOG_char    ("run_as"    , my.run_as);
+   DEBUG_PROG  yLOG_char    ("run_as"    , my.run_as);
    /*---(set globals)--------------------*/
    metis_filter_clear ();
    my.daemon  = 'y';
@@ -133,11 +133,17 @@ PROG__init              (void)
    metis_task_init   ();
    metis_source_init ();
    metis_world_init  ();
-   /*---(yvikeys config)-----------------*/
    metis_data_init   ();
    metis_filter_init ();
    metis_format_init ();
    metis_db_init     ();
+   /*---(yvikeys config)-----------------*/
+   rc = yVIOPENGL_init ("metis-okeanides", P_VERNUM, MODE_MAP, my.w_wide, my.w_tall);
+   DEBUG_PROG   yLOG_value    ("yVIOPENGL" , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -160,15 +166,15 @@ PROG__args              (int a_argc, char *a_argv [])
    char        x_mongo     [LEN_TERSE] = "";
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   if (a_argv > 0)  yJOBS_runas (&(my.run_as), a_argv [0]);
-   DEBUG_TOPS  yLOG_char    ("run_as"    , my.run_as);
+   rc = yJOBS_runas (a_argv [0], &(my.run_as), P_FOCUS, P_NICHE, P_SUBJECT, P_PURPOSE, P_NAMESAKE, P_HERITAGE, P_IMAGERY, P_REASON, P_ONELINE, P_HOMEDIR, P_BASENAME, P_FULLPATH, P_SUFFIX, P_CONTENT, P_SYSTEM, P_LANGUAGE, P_CODESIZE, P_DEPENDS, P_AUTHOR, P_CREATED, P_VERMAJOR, P_VERMINOR, P_VERNUM, P_VERTXT, NULL);
+   DEBUG_PROG  yLOG_char    ("run_as"    , my.run_as);
    for (i = 1; i < a_argc; ++i) {
       /*---(get arg)---------------------*/
       a = a_argv [i];
       if (a == NULL) {
          yURG_err ('f', "arg %d is NULL", i);
-         DEBUG_TOPS   yLOG_note    ("FATAL, found a null argument, really bad news");
-         DEBUG_TOPS   yLOG_exitr   (__FUNCTION__, rce);
+         DEBUG_PROG   yLOG_note    ("FATAL, found a null argument, really bad news");
+         DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
          return rce;
       }
       ++x_total;
@@ -191,13 +197,13 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strcmp  (a, "--unit"          ) == 0)  my.quick  = 'u';
       else if (strcmp  (a, "--date"          ) == 0) {
          if (b == NULL) {
-            DEBUG_TOPS  yLOG_note  ("no epoch value included with data");
-            DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
+            DEBUG_PROG  yLOG_note  ("no epoch value included with data");
+            DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
             return rce;
          }
          str2mongo (atoi (b), x_mongo);
          printf ("%s\n", x_mongo);
-         DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rce);
+         DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
          return rce;
       }
       /*---(configuration)---------------*/
@@ -230,10 +236,11 @@ PROG__args              (int a_argc, char *a_argv [])
       }
       /*---(unknown)---------------------*/
       else {
-         rc = yJOBS_args_handle (&(my.run_as), &(my.run_mode), my.run_file, &i, a, b);
+         /*> rc = yJOBS_arg (&(my.run_as), &(my.run_mode), my.run_file, &i, a, b);    <*/
+         rc = yJOBS_argument (&i, a, b, &(my.run_as), &(my.run_mode), my.run_file);
          if (rc < 0) {
-            DEBUG_TOPS  yLOG_note  ("argument not understood");
-            DEBUG_TOPS  yLOG_exitr (__FUNCTION__, rc);
+            DEBUG_PROG  yLOG_note  ("argument not understood");
+            DEBUG_PROG  yLOG_exitr (__FUNCTION__, rc);
             return rc;
          }
       }
@@ -296,24 +303,24 @@ PROG_startup            (int a_argc, char *a_argv [])
    char        rc          =    0;
    /*---(header)-------------------------*/
    yURG_stage_check (YURG_BEG);
-   DEBUG_TOPS  yLOG_enter   (__FUNCTION__);
+   DEBUG_PROG  yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
    if (rc >= 0) {
       rc = PROG__init    ();
-      DEBUG_TOPS  yLOG_value   ("init"      , rc);
+      DEBUG_PROG  yLOG_value   ("init"      , rc);
    }
    /*---(arguments)----------------------*/
    if (rc >= 0) {
       rc = PROG__args    (a_argc, a_argv);
-      DEBUG_TOPS  yLOG_value   ("args"      , rc);
+      DEBUG_PROG  yLOG_value   ("args"      , rc);
    }
    /*---(begin)--------------------------*/
    if (rc >= 0) {
       rc = PROG__begin   ();
-      DEBUG_TOPS  yLOG_value   ("args"      , rc);
+      DEBUG_PROG  yLOG_value   ("args"      , rc);
    }
    /*---(complete)-----------------------*/
-   DEBUG_TOPS  yLOG_exit  (__FUNCTION__);
+   DEBUG_PROG  yLOG_exit  (__FUNCTION__);
    yURG_stage_check (YURG_MID);
    return rc;
 }
@@ -330,9 +337,19 @@ PROG_dawn          (void)
 {
    char        rce         =  -10;
    char        rc          =    0;
+   int         x_logger    =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   rc = yVIOPENGL_init ("metis-okeanides", P_VERNUM, MODE_MAP, my.w_wide, my.w_tall);
+   x_logger = yLOGS_lognum ();
+   DEBUG_PROG   yLOG_value    ("x_logger"  , x_logger);
+   DEBUG_PROG   yLOG_char     ("my.daemon" , my.daemon);
+   if (my.daemon == 'y') {
+      rc = yEXEC_daemon (x_logger, NULL);
+      DEBUG_PROG   yLOG_value    ("daemon"    , rc);
+      /*> rc = daemon (1, 0);                                                         <*/
+      if (rc != 0) return rc;
+   }
+   rc = yVIOPENGL_dawn ();
    DEBUG_PROG   yLOG_value    ("yVIOPENGL" , rc);
    --rce;  if (rc < 0) {
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
@@ -341,15 +358,11 @@ PROG_dawn          (void)
    /*> rc = FILE_init      ();                                                        <*/
    /*> rc = yFILE_whoami   (P_FULLPATH, P_VERNUM, P_VERTXT, P_ONELINE, P_SUFFIX, P_CONTENT, NULL, NULL, NULL);   <*/
    /*> rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");   <*/
-   if (my.daemon == 'y') {
-      rc = daemon (1, 0);
-      if (rc != 0) return rc;
-   }
    /*---(open window)---------------------------*/
    api_yvikeys_init      ();
    /*---(create texture)------------------------*/
    metis_opengl_font_load ();
-   rc = yVIEW_full (YVIEW_MAIN , YVIEW_FLAT, YVIEW_TOPLEF,  1, 0, metis_opengl_show);
+   rc = yVIEW_full (YVIEW_MAIN , YVIEW_FLAT, YVIEW_TOPLEF, YCOLOR_SPE, YCOLOR_BLK, metis_opengl_show);
    DEBUG_PROG   yLOG_value    ("MAIN"      , rc);
    yCMD_direct (":layout  min");
    yCMD_direct (":title   disable");
@@ -391,10 +404,18 @@ PROG_dawn          (void)
 char             /* [------] drive the program closure activities ------------*/
 PROG_dusk               (void)
 {
+   char        rce         =  -10;
+   char        rc          =    0;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    metis_opengl_font_close ();
    /*> yX11_end();                  /+ close window and xwin context            +/    <*/
+   rc = yVIOPENGL_dusk ();
+   DEBUG_PROG   yLOG_value    ("yVIOPENGL" , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
+      return rce;
+   }
    yVIOPENGL_wrap ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -783,10 +804,11 @@ char             /* [------] drive the program closure activities ------------*/
 PROG_shutdown           (void)
 {
    /*---(header)-------------------------*/
+   yURG_stage_check (YURG_END);
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    PROG__end ();
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
-   DEBUG_TOPS   yLOGS_end    ();
+   DEBUG_PROG   yLOGS_end    ();
    return 0;
 }
 
