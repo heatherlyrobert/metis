@@ -32,7 +32,7 @@ metis_format_init        (void)
 char
 metis_format_vikeys      (void)
 {
-   yCMD_add (YCMD_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );
+   yCMD_add (YVIHUB_M_VIEW   , "window"      , ""    , "s"    , api_yvikeys_window  , "size and placement of window"    );
    yCMD_menu_add ("µvwr", "col/rig"   , ":window col_rig¦");
    yCMD_menu_add ("µvwR", "long/rig"  , ":window long_rig¦");
    yCMD_menu_add ("µvwl", "col/lef"   , ":window col_lef¦");

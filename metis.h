@@ -2,46 +2,56 @@
 #ifndef METIS
 #define METIS yes
 
-/*===[[ BEG_HEADER ]]=========================================================*/
 
 /*===[[ ONE_LINERS ]]=========================================================*/
-/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-12345678901-12345678901-*/
-
+/*                      ´·········1·········2·········3·········4·········5·········6·········7*/
+/*--------- 12345678901 ´123456789-123456789-123456789-123456789-123456789-123456789-123456789-*/
+/*········· ··········· ´·····························´········································*/
 #define     P_FOCUS     "PT (productivity/time mgmt)"
 #define     P_NICHE     "td (todo list)"
 #define     P_SUBJECT   "system-wide task management"
 #define     P_PURPOSE   "task consolitation, visualization, and navigation system"
-
+/*········· ··········· ´·····························´········································*/
 #define     P_NAMESAKE  "metis-okeanides (wise-counsel)"
+#define     P_PRONOUNCE "meh·tihs oh·kah·nee·days"
 #define     P_HERITAGE  "titan goddess of deep thought, wisdom, wise counsel, and cunning"
+#define     P_BRIEFLY   "deep thought and wise counsel"
 #define     P_IMAGERY   "singularly graceful, stately, and regal goddess"
 #define     P_REASON    "smart task management leads to better priorities and decisions"
-
+/*········· ··········· ´·····························´········································*/
 #define     P_ONELINE   P_NAMESAKE " " P_SUBJECT
-
+/*········· ··········· ´·····························´········································*/
 #define     P_HOMEDIR   "/home/monkey/metis.task_management"
 #define     P_BASENAME  "metis"
 #define     P_FULLPATH  "/usr/local/bin/metis"
 #define     P_SUFFIX    "tasks"
 #define     P_CONTENT   "scan-card task list"
-
+/*········· ··········· ´·····························´········································*/
 #define     P_SYSTEM    "gnu/linux   (powerful, ubiquitous, technical, and hackable)"
 #define     P_LANGUAGE  "ansi-c      (wicked, limitless, universal, and everlasting)"
+#define     P_COMPILER  "gcc 5.3.0"
 #define     P_CODESIZE  "large       (appoximately 10,000 slocl)"
+/*········· ··········· ´·····························´········································*/
 #define     P_DEPENDS   "none"
-
+/*········· ··········· ´·····························´········································*/
 #define     P_AUTHOR    "heatherlyrobert"
 #define     P_CREATED   "2008-06"
-
+/*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
-#define     P_VERMINOR  "1.6-, adding central database capability"    
-#define     P_VERNUM    "1.6e"
-#define     P_VERTXT    "small corrections for updates to yJOBS functions"
-
+#define     P_VERMINOR  "1.7-, catch up to library changes"
+#define     P_VERNUM    "1.7a"
+#define     P_VERTXT    "update to recent vikeys library changes"
+/*········· ··········· ´·····························´········································*/
+#define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
 #define     P_PRINCIPAL "[grow a set] and build your wings on the way down (r. bradbury)"
 #define     P_REMINDER  "there are many better options, but i *own* every byte of this one"
+/*········· ··········· ´·····························´········································*/
+#define     P_HEADERS   P_FOCUS, P_NICHE, P_SUBJECT, P_PURPOSE, P_NAMESAKE, P_PRONOUNCE, P_HERITAGE, P_BRIEFLY, P_IMAGERY, P_REASON, P_ONELINE, P_HOMEDIR, P_BASENAME, P_FULLPATH, P_SUFFIX, P_CONTENT, P_SYSTEM, P_LANGUAGE, P_COMPILER, P_CODESIZE, P_DEPENDS, P_AUTHOR, P_CREATED, P_VERMAJOR, P_VERMINOR, P_VERNUM, P_VERTXT
+/*········· ··········· ´·····························´········································*/
+/*--------- 12345678901 ´123456789-123456789-123456789-123456789-123456789-123456789-123456789-*/
 
+/*===[[ END ONE_LINERS ]]=====================================================*/
 
 /*
  *
@@ -154,57 +164,26 @@
 /*============================================================================*/
 
 
-#include   <stdio.h>
-#include   <stdlib.h>                  /* getenv()                            */
-#include   <string.h>
-#include   <sys/time.h>
-#include   <sys/stat.h>
-#include   <unistd.h>
-#include   <time.h>
-#include   <signal.h>                  /* signal(), sigalarm()                */
-#include   <dirent.h>
-
-#include <make_opengl.h>             /* heatherly opengl standard headers     */
-
-/*> #include <X11/X.h>                   /+ main header                           +/   <* 
- *> #include <X11/Xlib.h>                /+ c-api (xlib) header                   +/   <*/
-#include <X11/Xutil.h>               /* c-api (xlib) header                   */
-#include <X11/keysym.h>              /* for resolving keycodes/keysyms        */
-#include <X11/extensions/shape.h>    /* shape extention -- funky windows    */
-
-
-/*===[[ GLX HEADERS ]]========================================================*/
-/*> #include <GL/gl.h>                   /+ main header for opengl                +/   <* 
- *> #include <GL/glx.h>                  /+ for xlib/opengl integration           +/   <*/
-
-/*===[[ CUSTOM LIBRARIES ]]===================================================*/
-/*> #include    <yURG.h>         /+ CUSTOM : heatherly urgent processing          +/   <* 
- *> #include    <yLOG.h>         /+ CUSTOM : heatherly program logging            +/   <*/
-
-/*---(custom vi-keys)--------------------*/
-/*> #include    <yKEYS.h>             /+ heatherly vikeys key handling            +/   <* 
- *> #include    <yMODE.h>             /+ heatherly vikeys mode tracking           +/   <* 
- *> #include    <yMACRO.h>            /+ heatherly vikeys macro processing        +/   <* 
- *> #include    <ySRC.h>              /+ heatherly vikeys source editing          +/   <* 
- *> #include    <yCMD.h>              /+ heatherly vikeys command processing      +/   <* 
- *> #include    <yVIEW.h>             /+ heatherly vikeys view management         +/   <* 
- *> #include    <yMAP.h>              /+ heatherly vikeys location management     +/   <* 
- *> #include    <yFILE.h>             /+ heatherly vikeys content file handling   +/   <* 
- *> #include    <yMARK.h>             /+ heatherly vikeys search and marking      +/   <* 
- *> #include    <yVIOPENGL.h>         /+ heatherly vikeys opengl handler          +/   <*/
-
+/*---(standard)--------------------------*/
+#include    <stdio.h>
+#include    <stdlib.h>                  /* getenv()                            */
+#include    <string.h>
+#include    <sys/time.h>
+#include    <sys/stat.h>
+#include    <unistd.h>
+#include    <time.h>
+#include    <signal.h>                  /* signal(), sigalarm()                */
+#include    <dirent.h>
+/*---(opengl/vikeys specific)------------*/
+#include    <make_opengl.h>             /* heatherly opengl standard headers     */
+#include    <X11/Xutil.h>               /* c-api (xlib) header                   */
+#include    <X11/keysym.h>              /* for resolving keycodes/keysyms        */
+#include    <X11/extensions/shape.h>    /* shape extention -- funky windows    */
+/*---(specialty)-------------------------*/
 #include    <yJOBS.h>             /* heatherly job execution and control      */
 #include    <yEXEC.h>             /* heatherly job execution and control      */
 #include    <yREGEX.h>       /* CUSTOM  heatherly regular expressions         */
 #include    <ySORT.h>        /* CUSTOM  heatherly sort and search             */
-
-
-/*> #include    <ySTR.h>         /+ CUSTOM : heatherly string handling            +/   <* 
- *> #include    <yX11.h>         /+ heatherly xlib/glx setup            +/             <* 
- *> #include    <yFONT.h>        /+ heatherly text display for opengl   +/             <* 
- *> #include    <yGLTEX.h>       /+ heatherly opengl texture support              +/   <* 
- *> #include    <yCOLOR.h>       /+ heatherly opengl color support                +/   <*/
-
 #include    <yDLST_solo.h>   /* heatherly                                     */
 
 
@@ -392,6 +371,7 @@ struct cMY {
    int         run_uid;                     /* uid of person who launched     */
    long        runtime;
    char        quick;                       /* generate metis source line     */
+   char        cwd         [LEN_PATH];      /* current working directory      */
    /*---(data source)--------------------*/
    char        source;                      /* data sourcing location         */
    char        file        [LEN_RECD];      /* file for reading tasks         */
@@ -612,7 +592,7 @@ char        metis_format_refresh    (void);
 char        PROG_urgents            (int a_argc, char *a_argv []);
 /*---(startup)--------------*/
 char        PROG_reset_yjobs        (void);
-char        PROG__init              (void);
+char        PROG__init              (int a_argc, char *a_argv []);
 char        PROG__args              (int a_argc, char *a_argv []);
 char        PROG__begin             (void);
 char        PROG_startup            (int a_argc, char *a_argv []);
@@ -861,34 +841,40 @@ char*       metis_db__unit          (char *a_question);
 /*===[[ metis_world.c ]]======================================================*/
 /*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
 /*---(support)--------------*/
-char        metis_world_cli         (char *a_name, char a_loud);
+/*> char        metis_world_cli         (char *a_name, char a_loud);                  <*/
 /*---(cleanse)--------------*/
-char        metis_world__wipe       (tWORLD *a_world);
+/*> char        metis_world__wipe       (tWORLD *a_world);                            <*/
 /*---(memory)---------------*/
-char        metis_world_new         (char a_type, char* a_path, char a_force, tWORLD **r_new);
-char        metis_world_free        (tWORLD **r_old);
+/*> char        metis_world_new         (char a_type, char* a_path, char a_force, tWORLD **r_new);   <*/
+/*> char        metis_world_free        (tWORLD **r_old);                             <*/
 /*---(search)---------------*/
-int         metis_world_count       (void);
-char        metis_world_by_path     (uchar *a_path, tWORLD **r_world);
-char        metis_world_by_index    (int n, tWORLD **r_world);
-char        metis_world_by_cursor   (char a_dir, tWORLD **r_world);
-char*       metis_world_entry       (int n);
+/*> int         metis_world_count       (void);                                       <*/
+/*> char        metis_world_by_path     (uchar *a_path, tWORLD **r_world);            <*/
+/*> char        metis_world_by_index    (int n, tWORLD **r_world);                    <*/
+/*> char        metis_world_by_cursor   (char a_dir, tWORLD **r_world);               <*/
+/*> char*       metis_world_entry       (int n);                                      <*/
 /*---(exim)-----------------*/
-char        metis_world__open       (char a_dir);
-char        metis_world__close      (void);
-char        metis_world__import     (void);
-char        metis_world__export     (void);
+/*> char        metis_world__open       (char a_dir);                                 <*/
+/*> char        metis_world__close      (void);                                       <*/
+/*> char        metis_world__import     (void);                                       <*/
+/*> char        metis_world__export     (void);                                       <*/
 /*---(register)-------------*/
-char        metis_world_register    (void);
-char        metis_world_unregister  (void);
-char        metis_world_system      (void);
+/*> char        metis_world_register    (void);                                       <*/
+/*> char        metis_world_unregister  (void);                                       <*/
+/*> char        metis_world_system      (void);                                       <*/
 /*---(program)--------------*/
-char        metis_world_init        (void);
-char        metis_world_purge_all   (void);
-char        metis_world_wrap        (void);
+/*> char        metis_world_init        (void);                                       <*/
+/*> char        metis_world_purge_all   (void);                                       <*/
+/*> char        metis_world_wrap        (void);                                       <*/
 /*---(unittest)-------------*/
 char*       metis_world__unit       (char *a_question, int i);
 /*---(done)-----------------*/
+
+char        metis_yjobs_read        (void);
+char        metis_yjobs_stats       (void);
+char        metis_yjobs_write       (void);
+char        metis_yjobs             (cchar a_req, cchar *a_data);
+
 
 
 #endif

@@ -45,7 +45,7 @@ metis_filter_vikeys     (void)
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    /*---(commands)-----------------------*/
-   yCMD_add (YCMD_M_DATASET, "sort"        , ""    , "s"    , api_yvikeys_sort    , "sort metis data"    );
+   yCMD_add (YVIHUB_M_DATASET, "sort"        , ""    , "s"    , api_yvikeys_sort    , "sort metis data"    );
    yCMD_menu_add ("µdsc", "clear"     , ":sort clear¦");
    yCMD_menu_add ("µdso", "original"  , ":sort orig¦");
    yCMD_menu_add ("µdsu", "by urg"    , ":sort urg¦");
@@ -54,7 +54,7 @@ metis_filter_vikeys     (void)
    yCMD_menu_add ("µdsp", "by prg"    , ":sort prg¦");
    yCMD_menu_add ("µdss", "by shr"    , ":sort shr¦");
    yCMD_menu_add ("µdsd", "by date"   , ":sort date¦");
-   yCMD_add (YCMD_M_DATASET, "filter"      , ""    , "ss"   , api_yvikeys_filter  , "filter metis data"    );
+   yCMD_add (YVIHUB_M_DATASET, "filter"      , ""    , "ss"   , api_yvikeys_filter  , "filter metis data"    );
    yCMD_menu_add ("µdfc", "clear"     , ":filter clear¦");
    yCMD_menu_add ("µdfu", "by urg"    , ":filter urg ");
    yCMD_menu_add ("µdfi", "by imp"    , ":filter imp ");

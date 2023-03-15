@@ -85,11 +85,12 @@ PROG_reset_yjobs   (void)
 }
 
 char             /* [------] immediate program initialization ----------------*/
-PROG__init              (void)
+PROG__init              (int a_argc, char *a_argv [])
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
+   char       *p           = NULL;
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(log header)---------------------*/
@@ -102,6 +103,12 @@ PROG__init              (void)
    DEBUG_PROG   yLOG_info     ("ySTR"    , ySTR_version    ());
    DEBUG_PROG   yLOG_info     ("yLOG"    , yLOGS_version   ());
    DEBUG_PROG   yLOG_info     ("yVIOPEN" , yVIOPENGL_version ());
+   DEBUG_PROG   yLOG_info     ("yMODE"   , yMODE_version     ());
+   DEBUG_PROG   yLOG_info     ("yKEYS"   , yKEYS_version     ());
+   DEBUG_PROG   yLOG_info     ("yMACRO"  , yMACRO_version    ());
+   DEBUG_PROG   yLOG_info     ("yVIEW"   , yVIEW_version     ());
+   DEBUG_PROG   yLOG_info     ("yMAP"    , yMAP_version      ());
+   DEBUG_PROG   yLOG_info     ("ySRC"    , ySRC_version      ());
    DEBUG_PROG   yLOG_info     ("yJOBS"   , yJOBS_version   ());
    /*---(yJOB config)--------------------*/
    PROG_reset_yjobs ();
@@ -132,7 +139,7 @@ PROG__init              (void)
    metis_minor_init  ();
    metis_task_init   ();
    metis_source_init ();
-   metis_world_init  ();
+   /*> metis_world_init  ();                                                          <*/
    metis_data_init   ();
    metis_filter_init ();
    metis_format_init ();
@@ -144,6 +151,17 @@ PROG__init              (void)
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
+   /*---(yJOBS config)-------------------*/
+   rc = yJOBS_runas (a_argv [0], &(my.run_as), P_HEADERS, NULL);
+   DEBUG_PROG  yLOG_char    ("run_as"    , my.run_as);
+   /*---(get the home)-------------------*/
+   p = getcwd (my.cwd, LEN_PATH);
+   DEBUG_YJOBS   yLOG_point   ("getcwd"    , p);
+   --rce;  if (p == NULL) {
+      DEBUG_YJOBS   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   strlcat (my.cwd, "/", LEN_PATH);
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -164,10 +182,9 @@ PROG__args              (int a_argc, char *a_argv [])
    int         x_total     = 0;
    int         x_args      = 0;
    char        x_mongo     [LEN_TERSE] = "";
+   char        x_empty     [LEN_TERSE] = "";
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
-   rc = yJOBS_runas (a_argv [0], &(my.run_as), P_FOCUS, P_NICHE, P_SUBJECT, P_PURPOSE, P_NAMESAKE, P_HERITAGE, P_IMAGERY, P_REASON, P_ONELINE, P_HOMEDIR, P_BASENAME, P_FULLPATH, P_SUFFIX, P_CONTENT, P_SYSTEM, P_LANGUAGE, P_CODESIZE, P_DEPENDS, P_AUTHOR, P_CREATED, P_VERMAJOR, P_VERMINOR, P_VERNUM, P_VERTXT, NULL);
-   DEBUG_PROG  yLOG_char    ("run_as"    , my.run_as);
    for (i = 1; i < a_argc; ++i) {
       /*---(get arg)---------------------*/
       a = a_argv [i];
@@ -186,6 +203,22 @@ PROG__args              (int a_argc, char *a_argv [])
       if (i < a_argc - 1)  b = a_argv [i + 1];
       else                 b = NULL;
       l = strlen(a);
+      /*---(pre-yJOBS)-------------------*/
+      /*> if (strstr  (a, "register") != NULL || strstr (a, "withdraw") != NULL) {    <* 
+       *>    if (strcmp (b, "dir") == 0)  b = x_empty;                                <* 
+       *> }                                                                           <*/
+      if (strcmp  (a, "--sources"       ) == 0)  {
+         my.source = DATA_SOURCES;
+         strlcpy (my.file, my.cwd, LEN_PATH);
+         a = "--normal";
+      }
+      /*---(yJOBS arguments)-------------*/
+      ++x_args;
+      DEBUG_ARGS  yLOG_info     ("argument"  , a);
+      rc = yJOBS_argument (&i, a, b, &(my.run_as), &(my.run_mode), my.run_file);
+      DEBUG_ARGS  yLOG_value    ("rc"        , rc);
+      if (rc > 0)  continue;
+      --rce;
       /*---(statistics filtering)--------*/
       if      (strncmp (a, "-u"          ,  2) == 0 && l == 3)  my.curg  = a[2];
       else if (strncmp (a, "-i"          ,  2) == 0 && l == 3)  my.cimp  = a[2];
@@ -207,9 +240,9 @@ PROG__args              (int a_argc, char *a_argv [])
          return rce;
       }
       /*---(configuration)---------------*/
-      else if (strcmp  (a, "--local"         ) == 0)  rc = metis_db_cli  ("metis_local.db", 'y');
+      /*> else if (strcmp  (a, "--local"         ) == 0)  rc = metis_db_cli  ("metis_local.db", 'y');   <*/
       else if (strcmp  (a, "--database"      ) == 0)  TWOARG rc = metis_db_cli      (a_argv [i], 'y');
-      else if (strcmp  (a, "--world"         ) == 0)  TWOARG rc = metis_world_cli   (a_argv [i], 'y');
+      /*> else if (strcmp  (a, "--world"         ) == 0)  TWOARG rc = metis_world_cli   (a_argv [i], 'y');   <*/
       /*---(initial format)--------------*/
       else if (strcmp  (a, "--ticker"        ) == 0)  my.format = FORMAT_TICKER;
       else if (strcmp  (a, "--baseline"      ) == 0)  my.format = FORMAT_BASELINE;
@@ -236,13 +269,9 @@ PROG__args              (int a_argc, char *a_argv [])
       }
       /*---(unknown)---------------------*/
       else {
-         /*> rc = yJOBS_arg (&(my.run_as), &(my.run_mode), my.run_file, &i, a, b);    <*/
-         rc = yJOBS_argument (&i, a, b, &(my.run_as), &(my.run_mode), my.run_file);
-         if (rc < 0) {
-            DEBUG_PROG  yLOG_note  ("argument not understood");
-            DEBUG_PROG  yLOG_exitr (__FUNCTION__, rc);
-            return rc;
-         }
+         DEBUG_PROG  yLOG_note  ("argument not understood");
+         DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
+         return rce;
       }
    }
    metis_format_refresh ();
@@ -306,7 +335,7 @@ PROG_startup            (int a_argc, char *a_argv [])
    DEBUG_PROG  yLOG_enter   (__FUNCTION__);
    /*---(initialize)---------------------*/
    if (rc >= 0) {
-      rc = PROG__init    ();
+      rc = PROG__init    (a_argc, a_argv);
       DEBUG_PROG  yLOG_value   ("init"      , rc);
    }
    /*---(arguments)----------------------*/
@@ -395,7 +424,7 @@ PROG_dawn          (void)
    metis_refresh_full  ();
    /*> api_yvikeys__resize ('-');                                                     <*/
    yVIEW_debug_list ();
-   yCMD_add (YCMD_M_FILE   , "png"         , ""    , ""     , api_yvikeys_png     , "save a png file of texture"                   );
+   yCMD_add (YVIHUB_M_FILE   , "png"         , ""    , ""     , api_yvikeys_png     , "save a png file of texture"                   );
    /*---(complete)------------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -427,39 +456,6 @@ PROG_dusk               (void)
 /*===----                      action dispatching                      ----===*/
 /*====================------------------------------------====================*/
 static void      o___DISPATCH________________o (void) {;}
-
-char
-PROG__stats             (void)
-{
-   /*---(locals)-----------+-----+-----+-*/
-   char        rce         =  -10;
-   char        rc          =    0;
-   char        t           [LEN_LABEL] = "";
-   /*---(header)-------------------------*/
-   DEBUG_PROG    yLOG_enter   (__FUNCTION__);
-   /*---(call action)--------------------*/
-   rc = metis_db_read ();
-   if (rc < 0)  {
-      DEBUG_PROG    yLOG_exitr   (__FUNCTION__, rc);
-      return rc;
-   }
-   /*---(display)------------------------*/
-   printf ("#!/usr/local/bin/metis --stats\n");
-   printf ("db     å%sæ\n" , my.n_db);
-   printf ("name   å%sæ\n" , g_audit.name);
-   printf ("ver    å%sæ\n" , g_audit.vernum);
-   strl4main (g_audit.major , t , 0, 'c', '-', LEN_LABEL);
-   printf ("major  %7.7s\n", t);
-   strl4main (g_audit.minor , t , 0, 'c', '-', LEN_LABEL);
-   printf ("minor  %7.7s\n", t);
-   strl4main (g_audit.source, t , 0, 'c', '-', LEN_LABEL);
-   printf ("source %7.7s\n", t);
-   strl4main (g_audit.task  , t , 0, 'c', '-', LEN_LABEL);
-   printf ("task   %7.7s\n", t);
-   /*---(complete)-----------------------*/
-   DEBUG_PROG    yLOG_exit    (__FUNCTION__);
-   return 0;
-}
 
 char
 PROG__verify            (char a_main)
@@ -522,7 +518,7 @@ PROG__register          (char a_main)
       IF_VERBOSE   yURG_msg (' ', "");
    }
    /*---(call action)--------------------*/
-   rc = metis_world_register   ();
+   /*> rc = metis_world_register   ();                                                <*/
    /*---(failure)------------------------*/
    if (rc < 0) {
       yURG_msg (' ', "");
@@ -648,7 +644,7 @@ PROG__withdraw          (void)
    IF_VERBOSE   yURG_msg ('>', "  option --vwithdraw, remove named source from the to registry");
    IF_VERBOSE   yURG_msg (' ', "");
    /*---(call action)--------------------*/
-   rc = metis_world_unregister ();
+   /*> rc = metis_world_unregister ();                                                <*/
    /*---(failure)------------------------*/
    if (rc < 0) {
       yURG_msg (' ', "");
@@ -688,7 +684,7 @@ PROG__gather            (void)
    IF_VERBOSE   yURG_msg ('>', "  option --vgather, update data with all sources from registry");
    IF_VERBOSE   yURG_msg (' ', "");
    /*---(call action)--------------------*/
-   rc = metis_world_system     ();
+   /*> rc = metis_world_system     ();                                                <*/
    /*---(failure)------------------------*/
    if (rc < 0) {
       yURG_msg (' ', "");
@@ -724,7 +720,7 @@ PROG_dispatch           (void)
    --rce;  switch (my.run_mode) {
       /*---(basic)-----------------------*/
    case ACT_STATS       :
-      rc = PROG__stats    ();
+      /*> rc = PROG_stats    ();                                                      <*/
       break;
       /*---(incomming)-------------------*/
    case CASE_VERIFY     :
@@ -795,7 +791,7 @@ PROG__end               (void)
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    metis_data_purge_all ();
-   metis_world_purge_all ();
+   /*> metis_world_purge_all ();                                                      <*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
 }

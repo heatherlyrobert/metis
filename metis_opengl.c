@@ -89,6 +89,7 @@ metis_opengl_color      (char *a_valid, char a_color, float a_alpha)
       else              i = p - a_valid;
    }
    DEBUG_GRAF   yLOG_value    ("i"          , i);
+   /*> glColor4f (  0.000,  0.800,  0.000, 1.0);                                      <*/
    switch (i) {
    case  0  : glColor4f (  0.800,  0.100,  0.100, a_alpha); break;
    case  1  : glColor4f (  0.800,  0.400,  0.000, a_alpha); break;
@@ -658,7 +659,7 @@ metis_opengl__age       (uchar a_prg, uchar *a_epoch, uchar a_days, short a_line
       else             sprintf (t, "???");
    } else {
       str4mongo (a_epoch, &v);
-      strlage (v, t);
+      strlage (v, '-', t);
    }
    glColor4f (0.0, 0.0, 0.0, 1.0);
    glPushMatrix(); {
@@ -701,7 +702,6 @@ char
 metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text)
 {
    char        temp        [LEN_LABEL];
-   /*> glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                  <*/
    glPushMatrix(); {
       glColor4f (0.0, 0.0, 0.0, 1.0);
       glTranslatef (  53.0,  -8.0,  40.0);
@@ -710,16 +710,24 @@ metis_opengl__text      (int a_index, char *a_major, char *a_minor, char *a_text
          snprintf (temp, 10, "%d", a_index + 1);
          yFONT_print  (my.pretty,  7, YF_MIDCEN, temp);
       }
-      glTranslatef (  72.0,   0.0,   0.0);
-      yFONT_print  (my.pretty,  7, YF_MIDCEN, a_major);
-      glTranslatef ( 105.0,   0,   0);
-      yFONT_print  (my.pretty,  7, YF_MIDCEN, a_minor);
+      /*> glTranslatef (  72.0,   0.0,   0.0);                                        <* 
+       *> yFONT_print  (my.pretty,  8, YF_MIDCEN, a_major);                           <*/
+      glTranslatef (  30.0,   0.0,   0.0);
+      yFONT_print  (my.pretty,  8, YF_MIDLEF, a_major);
+      /*> glTranslatef ( 105.0,   0,   0);                                            <* 
+       *> yFONT_print  (my.pretty,  8, YF_MIDCEN, a_minor);                           <*/
+      glTranslatef ( 100.0,   0,   0);
+      yFONT_print  (my.pretty,  8, YF_MIDLEF, a_minor);
+   } glPopMatrix();
+   glPushMatrix(); {
       /*> glTranslatef (-160.0, -10.0,   0.0);                                        <*/
-      glTranslatef (-165.0, -18.0,   0.0);
+      /*> glTranslatef (-165.0, -26.0,   0.0);                                        <* 
+       *> glTranslatef (   0.0, txf_off - 1.0,   0.0);                                <* 
+       *> yFONT_printw (my.pretty,  7, YF_TOPLEF, a_text, 165, 25, txf_space);        <*/
+      glTranslatef (  68.0, -27.0,   0.0);
       glTranslatef (   0.0, txf_off - 1.0,   0.0);
       yFONT_printw (my.pretty,  7, YF_TOPLEF, a_text, 165, 25, txf_space);
    } glPopMatrix();
-   /*> glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                            <*/
    return 0;
 }
 
@@ -730,16 +738,16 @@ metis_opengl__cats      (char a_urg, char a_imp, char a_est)
    /*> glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                  <*/
    glPushMatrix(); {
       glColor4f (0.1, 0.1, 0.1, 1.0);
-      glTranslatef(  21.0,  -6.0,  40.0);
+      glTranslatef(  22.0,  -5.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
       snprintf (temp, 4, "%c", a_urg);
-      yFONT_print (my.pretty,  7, YF_BASCEN, temp);
-      glTranslatef(  12.0, -12.0,   0.0);
+      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
+      glTranslatef(  13.0, -13.0,   0.0);
       snprintf (temp, 4, "%c", a_imp);
-      yFONT_print (my.pretty,  7, YF_BASCEN, temp);
-      glTranslatef(  12.0, -12.0,   0.0);
+      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
+      glTranslatef(  13.0, -13.0,   0.0);
       snprintf (temp, 4, "%c", a_est);
-      yFONT_print (my.pretty,  7, YF_BASCEN, temp);
+      yFONT_print (my.pretty,  9, YF_BASCEN, temp);
    } glPopMatrix();
    /*> glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                            <*/
    return 0;
@@ -812,6 +820,7 @@ metis_opengl__card      (int a_index)
       return rce;
    }
    /*---(draw)---------------------------*/
+   glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    metis_opengl__base    (x_task->urg);
    metis_opengl__urg     (x_task->urg,  0);
    metis_opengl__est     (x_task->est, 10);
@@ -823,6 +832,7 @@ metis_opengl__card      (int a_index)
    metis_opengl__cats    (x_task->urg, x_task->imp, x_task->est);
    metis_opengl__search  (x_task->note);
    metis_opengl__borders ();
+   glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    /*---(complete)-----------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;

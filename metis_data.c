@@ -216,7 +216,7 @@ metis_data_vikeys       (void)
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(add commands and menus)---------*/
-   yCMD_add (YCMD_M_FILE   , "refresh"     , "r"   , ""     , api_yvikeys_refresh , ""                   );
+   yCMD_add (YVIHUB_M_FILE   , "refresh"     , "r"   , ""     , api_yvikeys_refresh , ""                   );
    /*---(complete)-----------------------*/
    DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -348,6 +348,7 @@ metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor)
    char        x_recd      [LEN_RECD];
    char       *p           = NULL;
    char       *q           = "§";
+   int         l           =    0;
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    /*---(defenses)----------------------*/
@@ -393,6 +394,8 @@ metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor)
       return rce;
    }
    strltrim (p, ySTR_BOTH, LEN_LABEL);
+   l = strlen (*r_major);
+   if (strncmp (p, *r_major, l) == 0)  p += l;
    rc = metis_minor_new (*r_major, p, '-', r_minor);
    DEBUG_INPT   yLOG_value   ("new"       , rc);
    DEBUG_INPT   yLOG_point   ("*r_minor"  , *r_minor);
@@ -721,6 +724,7 @@ metis_data_directory    (tMAJOR *a_major, char *a_home)
    char        x_full      [LEN_PATH]  = "";
    tSOURCE    *x_source    = NULL;
    char        x_pass      =  '-';
+   int         l           =    0;
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
    /*---(open dir)-----------------------*/
@@ -770,7 +774,9 @@ metis_data_directory    (tMAJOR *a_major, char *a_home)
          continue;
       }
       /*---(create file/minor)--------------*/
-      rc = metis_minor_new (a_major, x_name, 'y', &x_minor);
+      l = strlen (a_major);
+      if (strncmp (x_name, a_major, l) != 0)  l = 0;
+      rc = metis_minor_new (a_major, x_name + l, 'y', &x_minor);
       DEBUG_INPT   yLOG_value   ("new"       , rc);
       DEBUG_INPT   yLOG_point   ("x_minor"   , x_minor);
       --rce;  if (x_minor == NULL) {
