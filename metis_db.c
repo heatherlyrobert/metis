@@ -6,7 +6,7 @@
 tAUDIT      g_audit;
 
 /*
- * metis § mg2·· § save date when database last written (with any updates)                § M255Jt §  · §
+ *
  */
 
 
@@ -81,41 +81,72 @@ metis_db_init           (void)
 static void  o___FILES___________o () { return; }
 
 char
-metis_db__read_head     (char *a_name, ushort *a_var)
+metis_db__read_head     (FILE *a_file, char a_name [LEN_TERSE], ushort *a_var)
 {
    short       n           =    0;
-   fread  (&n, sizeof (short), 1, my.f_db);
+   fread  (&n, sizeof (short), 1, a_file);
    DEBUG_FILE   yLOG_value   (a_name      , n);
    if (a_var != NULL)  *a_var = n;
    return 0;
 }
 
 char
-metis_db__write_head    (char *a_name, ushort a_var)
+metis_db__write_head    (FILE *a_file, char a_name [LEN_TERSE], ushort a_var)
 {
    DEBUG_FILE   yLOG_value   (a_name      , a_var);
-   fwrite (&a_var, sizeof (short), 1, my.f_db);
+   fwrite (&a_var, sizeof (short), 1, a_file);
    return 0;
 }
 
 char
-metis_db__open          (char a_mode, short *a_nmajor, short *a_nminor, short *a_nsource, short *a_ntask)
+metis_db__open          (char a_name [LEN_PATH], char a_mode, short *b_nmajor, short *b_nminor, short *b_nsource, short *b_ntask, char a_heartbeat [LEN_DESC], FILE **b_file)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        x_mode      [LEN_TERSE] = "";
    int         n           =    0;
-   char        t           [LEN_LABEL] = "";
+   char        t           [LEN_HUND]  = "";
+   FILE       *f           = NULL;
    /*---(header)-------------------------*/
    DEBUG_FILE   yLOG_enter   (__FUNCTION__);
-   /*---(defaults)-----------------------*/
-   if (a_nmajor  != NULL)  *a_nmajor  = 0;
-   if (a_nminor  != NULL)  *a_nminor  = 0;
-   if (a_nsource != NULL)  *a_nsource = 0;
-   if (a_ntask   != NULL)  *a_ntask   = 0;
    /*---(defense)------------------------*/
-   DEBUG_FILE   yLOG_point   ("my.f_db"   , my.f_db);
-   --rce;  if (my.f_db != NULL) {
+   DEBUG_FILE   yLOG_point   ("a_name"    , a_name);
+   --rce;  if (a_name      == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_FILE   yLOG_point   ("b_nmajor"  , b_nmajor);
+   --rce;  if (b_nmajor    == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_FILE   yLOG_point   ("b_nminor"  , b_nminor);
+   --rce;  if (b_nminor    == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_FILE   yLOG_point   ("b_nsource" , b_nsource);
+   --rce;  if (b_nsource   == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_FILE   yLOG_point   ("b_ntask"   , b_ntask);
+   --rce;  if (b_ntask     == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_FILE   yLOG_point   ("a_heart...", a_heartbeat);
+   --rce;  if (a_heartbeat == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_FILE   yLOG_point   ("b_file"    , b_file);
+   --rce;  if (b_file      == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_INPT   yLOG_point   ("*b_file"   , *b_file);
+   --rce;  if (*b_file != NULL) {
       DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
@@ -134,73 +165,96 @@ metis_db__open          (char a_mode, short *a_nmajor, short *a_nminor, short *a
    }
    DEBUG_FILE   yLOG_info    ("x_mode"    , x_mode);
    /*---(open)---------------------------*/
-   DEBUG_FILE   yLOG_info    ("my.n_db"   , my.n_db);
-   my.f_db = fopen (my.n_db, x_mode);
-   DEBUG_FILE   yLOG_point   ("my.f_db"   , my.f_db);
-   --rce;  if (my.f_db == NULL) {
+   DEBUG_FILE   yLOG_info    ("a_name"    , a_name);
+   f = fopen (a_name, x_mode);
+   DEBUG_FILE   yLOG_point   ("f"         , f);
+   --rce;  if (f == NULL) {
       DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    /*---(header)-------------------------*/
    switch (a_mode) {
    case 'r' :
-      /*---(header)----------------------*/
-      fread  (&(g_audit.name)  , LEN_LABEL, 1, my.f_db);
+      /*---(name)------------------------*/
+      fread  (&(g_audit.name)  , LEN_LABEL, 1, f);
       DEBUG_FILE   yLOG_info    ("name"      , g_audit.name);
-      fread  (&(g_audit.vernum), LEN_SHORT, 1, my.f_db);
+      /*---(version)---------------------*/
+      fread  (&(g_audit.vernum), LEN_SHORT, 1, f);
       DEBUG_FILE   yLOG_info    ("vernum"    , g_audit.vernum);
       /*---(stats)-----------------------*/
-      metis_db__read_head  ("major" , &(g_audit.major));
-      if (a_nmajor  != NULL)  *a_nmajor  = g_audit.major;
-      metis_db__read_head  ("minor" , &(g_audit.minor));
-      if (a_nminor  != NULL)  *a_nminor  = g_audit.minor;
-      metis_db__read_head  ("source", &(g_audit.source));
-      if (a_nsource != NULL)  *a_nsource = g_audit.source;
-      metis_db__read_head  ("task"  , &(g_audit.task));
-      if (a_ntask   != NULL)  *a_ntask   = g_audit.task;
+      metis_db__read_head  (f, "major" , b_nmajor);
+      metis_db__read_head  (f, "minor" , b_nminor);
+      metis_db__read_head  (f, "source", b_nsource);
+      metis_db__read_head  (f, "task"  , b_ntask);
+      /*---(heartbeat)-------------------*/
+      fread  (a_heartbeat, LEN_DESC, 1, f);
+      DEBUG_FILE   yLOG_info    ("heartbeat" , a_heartbeat);
       /*---(done)------------------------*/
       break;
    case 'w' :
-      for (n = 0; n < LEN_LABEL; n++)  t [n] = ' ';
+      /*---(name)------------------------*/
+      for (n = 0; n < LEN_LABEL; n++)  t [n] = '·';
       strlcpy (t, P_BASENAME, LEN_LABEL);
-      fwrite (t, LEN_LABEL, 1, my.f_db);
+      fwrite (t, LEN_LABEL, 1, f);
       DEBUG_FILE   yLOG_info    ("name"      , t);
-      for (n = 0; n < LEN_LABEL; n++)  t [n] = ' ';
+      /*---(version)---------------------*/
+      for (n = 0; n < LEN_LABEL; n++)  t [n] = '·';
       strlcpy (t, P_VERNUM  , LEN_SHORT);
-      fwrite (t, LEN_SHORT, 1, my.f_db);
+      fwrite (t, LEN_SHORT, 1, f);
       DEBUG_FILE   yLOG_info    ("vernum"    , t);
-      metis_db__write_head ("major" , metis_major_count ());
-      metis_db__write_head ("minor" , metis_minor_count ());
-      metis_db__write_head ("source", metis_source_count ());
-      metis_db__write_head ("task"  , metis_task_count ());
+      /*---(stats)-----------------------*/
+      metis_db__write_head (f, "major" , *b_nmajor);
+      metis_db__write_head (f, "minor" , *b_nminor);
+      metis_db__write_head (f, "source", *b_nsource);
+      metis_db__write_head (f, "task"  , *b_ntask);   
+      /*---(heartbeat)-------------------*/
+      for (n = 0; n < LEN_DESC;  n++)  t [n] = '·';
+      strlcpy (t, a_heartbeat, LEN_DESC);
+      fwrite (t, LEN_DESC , 1, f);
+      /*---(done)------------------------*/
+      fflush (f);
       break;
    }
+   /*---(save-back)----------------------*/
+   if (b_file != NULL)  *b_file = f;
    /*---(complete)-----------------------*/
    DEBUG_FILE   yLOG_exit    (__FUNCTION__);
    return 0;
 }
 
 char
-metis_db__close         (void)
+metis_db__close         (FILE **b_file)
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
+   /*---(header)-------------------------*/
+   DEBUG_FILE   yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
-   DEBUG_INPT   yLOG_point   ("my.f_db"   , my.f_db);
-   --rce;  if (my.f_db == NULL)  return rce;
+   DEBUG_INPT   yLOG_point   ("b_file"    , b_file);
+   --rce;  if (b_file == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_INPT   yLOG_point   ("*b_file"   , *b_file);
+   --rce;  if (*b_file == NULL) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(close)--------------------------*/
-   DEBUG_INPT   yLOG_info    ("my.n_db"   , my.n_db);
-   rc = fclose (my.f_db);
+   rc = fclose (*b_file);
    DEBUG_OUTP   yLOG_value   ("close"     , rc);
-   --rce;  if (rc < 0)  return rce; 
+   --rce;  if (rc < 0) {
+      DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
+      return rce; 
+   }
    /*---(ground pointer)-----------------*/
-   my.f_db = NULL;
-   DEBUG_INPT   yLOG_point   ("my.f_db"   , my.f_db);
+   *b_file = NULL;
+   DEBUG_INPT   yLOG_point   ("*b_file"   , *b_file);
    /*---(complete)-----------------------*/
+   DEBUG_FILE   yLOG_exit    (__FUNCTION__);
    return 0;
 }
-
 
 
 
@@ -310,13 +364,18 @@ metis_db_write          (void)
    char        rce         =  -10;
    char        rc          =    0;
    tMAJOR     *x_major     = NULL;
+   short       x_nmajor, x_nminor, x_nsource, x_ntask;
    /*---(header)-------------------------*/
    DEBUG_OUTP   yLOG_enter   (__FUNCTION__);
    /*---(prepare)------------------------*/
    my.nmajor     = my.nminor     = my.nsource     = my.ntask     = 0;
    g_audit.major = g_audit.minor = g_audit.source = g_audit.task = 0;
+   x_nmajor  = metis_major_count ();
+   x_nminor  = metis_minor_count ();
+   x_nsource = metis_source_count ();
+   x_ntask   = metis_task_count ();
    /*---(open)---------------------------*/
-   rc = metis_db__open ('w', NULL, NULL, NULL, NULL);
+   rc = metis_db__open (my.n_db, 'w', &(x_nmajor),  &(x_nminor), &(x_nsource), &(x_ntask), my.heartbeat, &(my.f_db));
    DEBUG_OUTP   yLOG_value   ("open"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_OUTP   yLOG_exitr   (__FUNCTION__, rce);
@@ -350,7 +409,7 @@ metis_db_write          (void)
       /*---(done)------------------------*/
    }
    /*---(close)--------------------------*/
-   rc = metis_db__close ();
+   rc = metis_db__close (&(my.f_db));
    DEBUG_OUTP   yLOG_value   ("close"     , rc);
    --rce;  if (rc < 0) {
       DEBUG_OUTP   yLOG_exitr   (__FUNCTION__, rce);
@@ -520,7 +579,7 @@ metis_db_read           (void)
    my.nmajor     = my.nminor     = my.nsource     = my.ntask     = 0;
    g_audit.major = g_audit.minor = g_audit.source = g_audit.task = 0;
    /*---(open)---------------------------*/
-   rc = metis_db__open ('r', NULL, NULL, NULL, NULL);
+   rc = metis_db__open (my.n_db, 'r', &(g_audit.major),  &(g_audit.minor), &(g_audit.source), &(g_audit.task), g_audit.heartbeat, &(my.f_db));
    DEBUG_INPT   yLOG_value   ("open"      , rc);
    --rce;  if (rc < 0) {
       DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
@@ -562,7 +621,7 @@ metis_db_read           (void)
       ++my.nmajor;
    }
    /*---(close)--------------------------*/
-   rc = metis_db__close ();
+   rc = metis_db__close (&(my.f_db));
    DEBUG_INPT   yLOG_value   ("close"     , rc);
    --rce;  if (rc < 0) {
       DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
@@ -592,6 +651,7 @@ metis_db__unit          (char *a_question)
    char        rc          =    0;
    char        x_exist     =  '-';
    int         n           =    0;
+   char        x_file      [LEN_LABEL] = "";
    /*---(defense)------------------------*/
    snprintf (unit_answer, LEN_RECD, "DB unit          : question unknown");
    /*---(simple)-------------------------*/
@@ -599,8 +659,9 @@ metis_db__unit          (char *a_question)
       rc = metis_shared_verify (my.n_db);
       if      (rc >  0)  x_exist = 'y';
       else if (rc <= 0)  x_exist = '-';
-      snprintf (unit_answer, LEN_RECD, "DB file          : %c  %-10p  %c  %2då%sæ",
-            (my.f_db     == NULL) ? '-' : 'y', my.f_db,
+      sprintf (x_file, "%-10.10p", my.f_db);
+      snprintf (unit_answer, LEN_RECD, "DB file          : %c  %-10.10s  %c  %2då%sæ",
+            (my.f_db     == NULL) ? '-' : 'y', x_file,
             x_exist, strlen (my.n_db), my.n_db);
    }
    else if (strcmp (a_question, "count"     )     == 0) {
@@ -608,6 +669,9 @@ metis_db__unit          (char *a_question)
             metis_major_count (), metis_minor_count (), metis_source_count (), metis_task_count (), 
             my.nmajor, my.nminor, my.nsource, my.ntask,
             g_audit.major, g_audit.minor, g_audit.source, g_audit.task);
+   }
+   else if (strcmp (a_question, "heartbeat" )     == 0) {
+      snprintf (unit_answer, LEN_RECD, "DB heartbeat     : å%sæ", g_audit.heartbeat);
    }
    /*---(complete)-----------------------*/
    return unit_answer;

@@ -2,10 +2,6 @@
 #include   "metis.h"
 
 /*
- * metis § mg2·· § add pass, warn, and fail counts to each system confirm output line     § M25JET §  · §
- * metis § mg4·· § do not delete archived tasks from database during update/gather        § M25JHc §  · §
- * metis § mg4·· § when registering, feebback whether already registered                  § M323lB §  · §
- * metis § mg4·· § when withdrawaling, feedback whether not registered already            § M323la §  · §
  *
  *
  *

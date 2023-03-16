@@ -21,19 +21,11 @@
 
 
 /*
- * metis § dg4#³ § fix artifacting in OPENGL__polygon which looks like dashes at edges    § M1FDip §  3 §
- * metis § dg2x³ § fit urgency letter in urgency area -- less confusing                   § M1FDiq §  1 §
- * metis § dg2x³ § fit estimate letter in estimate area -- less confusing                 § M1FDir §  1 §
- * metis § dg2#³ § fit progress letter in progress area -- less confusing                 § M1FDis §  1 §
- * metis § sn4#³ § get texture drawn to match yMAP position                               § M1FDit §  3 §
- * metis § wg1#³ § lighten normal blue as it dulls text too much                          § M1FDiu §  1 §
- *
- * metis § !n2#· § when filtered to zero cards, display blank card                        § M1FDiv § 13 §
- * metis § dg4·· § use yCOLOR to establish pallete and color selection                    § M1FDiw §  · §
+ * metis § sa2<· § command-line is not displaying text as typed                           § N2E3Gd §  · §
  * metis § wv4·· § continuation header-footer that show top/more and bot/more             § M1K24Q §  · §
  *
- * metis § dv2<· § ticker does not show tasks texture                                     § M207JN §  · §
- * metis § dv4<· § ticker needs to revise to be able to show all five lines               § M207K9 §  · §
+ * metis § dv2·· § ticker/baseline do not show tasks                                      § M207JN §  · §
+ * metis § dv4·· § projects/wide formats seem to just hide, invisible                     § M207K9 §  · §
  *
  */
 
@@ -631,8 +623,10 @@ metis_opengl__prg       (uchar a_prg, int z)
    case '·' : case '-' : case '<' : case 'o' :
       glColor4f (0.00, 0.00, 0.00, 1.00);   break;
    case '>' : case '#' : case 'x' : case 'r' :
+      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glColor4f (1.00, 1.00, 1.00, 1.00);   break;
    default  :
+      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
       glColor4f (1.00, 1.00, 1.00, 1.00);   break;
    }
    glPushMatrix(); {
@@ -640,6 +634,7 @@ metis_opengl__prg       (uchar a_prg, int z)
       snprintf (t, 4, "%c", a_prg);
       yFONT_print (my.pretty,  8, YF_BASCEN, t);
    } glPopMatrix();
+   glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }

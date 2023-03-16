@@ -2,11 +2,7 @@
 
 
 /*
- * metis § wg4x· § add --lstreamer (two screen) vs -streamer (one screen)                 § M1FDil § 13 §
- * metis § wg4-· § bring back menu items and commands for formatting                      § M1FDim §  · §
- * metis § dn2#· § data refresh needs to update card count and format                     § M1GLZh § 12 §
  *
- * metis § mn+·· § format that has four indenpendently chosen and scrolled columns        § M1K2CY §  · §
  *
  */
 

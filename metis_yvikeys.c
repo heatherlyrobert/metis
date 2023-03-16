@@ -2,9 +2,6 @@
 
 
 /*
- * metis § dn2#³ § get positioning working with wmctrl again                              § M1FDii §  2 §
- * metis § dv2<· § get yVIOPENGL to change colors when editing text                       § M1Q5lC §  · §
- * metis § wv2·· § change format using command line is not right                          § M25ItY §  · §
  *
  */
 

@@ -14,7 +14,7 @@
 
 /*===[[ METIS BACKLOG ]]======================================================*
  *
- * metis § !n2#· § update yMAP with active tasks, not all (NROW vs nact)                  § M1Q5aR §  2 §
+ *
  *
  */
 
@@ -62,6 +62,7 @@ metis_filter_vikeys     (void)
    yCMD_menu_add ("µdfp", "by prg"    , ":filter prg ");
    yCMD_menu_add ("µdfs", "by shr"    , ":filter shr ");
    yCMD_menu_add ("µdft", "by txt"    , ":filter txt ");
+   yCMD_menu_add ("µdfA", "by active" , ":filter prg A¦");
    /*---(complete)-----------------------*/
    DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -86,6 +87,7 @@ metis_filter_set        (void)
    int         c           =    0;
    char        x_show      =  'y';
    tTASK      *x_task      = NULL;
+   char        x_prgs      [LEN_LABEL] = "";
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    DEBUG_DATA   yLOG_char     ("my.curg"    , my.curg);
@@ -104,11 +106,13 @@ metis_filter_set        (void)
       }
    }
    /*---(clean)--------------------------*/
-   if (my.curg ==0  || strchr (METIS_URGS, my.curg) == NULL)  my.curg = ' ';
-   if (my.cimp ==0  || strchr (METIS_IMPS, my.cimp) == NULL)  my.cimp = ' ';
-   if (my.cest ==0  || strchr (METIS_ESTS, my.cest) == NULL)  my.cest = ' ';
-   if (my.cprg ==0  || strchr (METIS_PRGS, my.cprg) == NULL)  my.cprg = ' ';
-   if (my.cshr ==0  || strchr (METIS_SHRS, my.cshr) == NULL)  my.cshr = ' ';
+   strlcpy (x_prgs, METIS_PRGS, LEN_LABEL);
+   strlcat (x_prgs, "AC"      , LEN_LABEL);
+   if (my.curg == 0 || strchr (METIS_URGS, my.curg) == NULL)  my.curg = ' ';
+   if (my.cimp == 0 || strchr (METIS_IMPS, my.cimp) == NULL)  my.cimp = ' ';
+   if (my.cest == 0 || strchr (METIS_ESTS, my.cest) == NULL)  my.cest = ' ';
+   if (my.cprg == 0 || strchr (x_prgs    , my.cprg) == NULL)  my.cprg = ' ';
+   if (my.cshr == 0 || strchr (METIS_SHRS, my.cshr) == NULL)  my.cshr = ' ';
    /*---(display)------------------------*/
    metis_task_by_cursor (YDLST_HEAD, &x_task);
    while (x_task != NULL) {

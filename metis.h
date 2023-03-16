@@ -39,8 +39,8 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.7-, catch up to library changes"
-#define     P_VERNUM    "1.7a"
-#define     P_VERTXT    "update to recent vikeys library changes"
+#define     P_VERNUM    "1.7b"
+#define     P_VERTXT    "added database timestamp and eliminated duplicates in gathering"
 /*········· ··········· ´·····························´········································*/
 #define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
@@ -63,9 +63,9 @@
  * x metis § ····· § aÀbÁcÂdÃeÄfÅ                                                           § M2A5wm §  · §
  * x metis § ····· § gÆhÇiÈjÉkÊlËmÌnÍoÎ Ï                                                   § M2AL9b §  · §
  * x metis § ····· § š™ÙØàáâãåæç›˜äÜÝÞß                                                    § M2ALQe §  · §
- * x x metis § ····· § ƒ€‰€‚‡€Š€†„€ˆ€…Œ‘”•œžŸŽ’“–—                                        § M2B3UB §  · §
+ * x metis § ····· § ƒ€‰€‚‡€Š€†„€ˆ€…Œ‘”•œžŸŽ’“–—                                        § M2B3UB §  · §
  * x metis § ····· § èéêëìíîïðñòóôõö÷øùúûüýþÿ                                               § M2ANqZ §  · §
- * metis § wc8·· § write interactive-use manual for metis                                 § M1GDo1 §  · §
+ *
  *
  */
 
@@ -359,6 +359,7 @@ struct cAUDIT {
    ushort      minor;
    ushort      source;
    ushort      task;
+   char        heartbeat      [LEN_HUND];
 };
 extern      tAUDIT      g_audit;
 
@@ -369,9 +370,11 @@ struct cMY {
    char        run_mode;                    /* verify, install, audit, ...    */
    char        run_file    [LEN_PATH];      /* file to act on                 */
    int         run_uid;                     /* uid of person who launched     */
-   long        runtime;
+   int         run_pid;                     /* current process id             */
+   long        run_time;                    /* time of program launch         */
    char        quick;                       /* generate metis source line     */
    char        cwd         [LEN_PATH];      /* current working directory      */
+   char        heartbeat   [LEN_HUND];      /* latest heartbeat               */
    /*---(data source)--------------------*/
    char        source;                      /* data sourcing location         */
    char        file        [LEN_RECD];      /* file for reading tasks         */
@@ -607,6 +610,7 @@ char        PROG_shutdown           (void);
 char        PROG__unit_quiet        (void);
 char        PROG__unit_loud         (void);
 char        PROG__unit_end          (void);
+char*       PROG__unit              (char *a_question);
 /*---(done)-----------------*/
 
 char        metis_filter_init       (void);
@@ -819,10 +823,10 @@ char        metis_refresh_full      (void);
 char        metis_db_cli            (char *a_name, char a_loud);
 char        metis_db_init           (void);
 /*---(file)-----------------*/
-char        metis_db__read_head     (char *a_name, ushort *a_var);
-char        metis_db__write_head    (char *a_name, ushort a_var);
-char        metis_db__open          (char a_mode, short *a_nmajor, short *a_nminor, short *a_nsource, short *a_ntask);
-char        metis_db__close         (void);
+char        metis_db__read_head     (FILE *a_file, char a_name [LEN_TERSE], ushort *a_var);
+char        metis_db__write_head    (FILE *a_file, char a_name [LEN_TERSE], ushort a_var);
+char        metis_db__open          (char a_name [LEN_PATH], char a_mode, short *b_nmajor, short *b_nminor, short *b_nsource, short *b_ntask, char a_heartbeat [LEN_DESC], FILE **b_file);
+char        metis_db__close         (FILE **a_file);
 /*---(write)----------------*/
 char        metis_db__write_sources (void);
 char        metis_db__write_task    (tMINOR *x_minor);

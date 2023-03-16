@@ -2,10 +2,6 @@
 #include   "metis.h"
 
 /*
- * metis § tn4#³ § metis is not terminating properly leaving zombie processes             § M1FDih §  1 §
- * metis § tn2r³ § put back data refresh feature to avoid kill/init cycle                 § M1FDij §  · §
- * metis § tn2#· § bring the opengl command bar in as a float                             § M1GLUb §  9 §
- * metis § tv2#· § update the opengl menu and get it to work                              § M1GLUc §  9 §
  *
  *
  */
@@ -78,6 +74,7 @@ static void      o___STARTUP_________________o (void) {;}
 char
 PROG_reset_yjobs   (void)
 {
+   yJOBS_reset  (&(my.run_as), &(my.run_mode), &(my.run_file));
    my.run_as   = IAM_METIS;
    my.run_mode = ACT_NONE;
    strcpy (my.run_file, "");
@@ -113,7 +110,9 @@ PROG__init              (int a_argc, char *a_argv [])
    /*---(yJOB config)--------------------*/
    PROG_reset_yjobs ();
    my.run_uid     = getuid ();
-   my.runtime     = time (NULL);
+   my.run_pid     = getpid ();
+   my.run_time    = time (NULL);
+   yEXEC_heartbeat (my.run_pid, my.run_time, NULL, NULL, my.heartbeat);
    DEBUG_PROG  yLOG_char    ("run_as"    , my.run_as);
    /*---(set globals)--------------------*/
    metis_filter_clear ();
@@ -218,7 +217,12 @@ PROG__args              (int a_argc, char *a_argv [])
       rc = yJOBS_argument (&i, a, b, &(my.run_as), &(my.run_mode), my.run_file);
       DEBUG_ARGS  yLOG_value    ("rc"        , rc);
       if (rc > 0)  continue;
+      if (rc < 0) {
+         DEBUG_PROG   yLOG_exitr   (__FUNCTION__, rce);
+         return rce;
+      }
       --rce;
+      rc = 0;
       /*---(statistics filtering)--------*/
       if      (strncmp (a, "-u"          ,  2) == 0 && l == 3)  my.curg  = a[2];
       else if (strncmp (a, "-i"          ,  2) == 0 && l == 3)  my.cimp  = a[2];
@@ -273,11 +277,17 @@ PROG__args              (int a_argc, char *a_argv [])
          DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
          return rce;
       }
+      /*---(catch two-arg errors)--------*/
+      if (rc < 0)  {
+         DEBUG_PROG  yLOG_note  ("two arg test failed");
+         DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
+         return rce;
+      }
    }
    metis_format_refresh ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
-   return rc;
+   return 0;
 }
 
 char             /* [------] drive program setup activities ------------------*/
@@ -869,8 +879,8 @@ PROG__unit_quiet        (void)
 char         /*-> set up programgents/debugging ------[ light  [uz.320.011.05]*/ /*-[00.0000.00#.!]-*/ /*-[--.---.---.--]-*/
 PROG__unit_loud         (void)
 {
-   int         x_argc      = 3;
-   char       *x_args [20] = { "metis_unit", "@@kitchen", "@@sort"  };
+   int         x_argc      = 4;
+   char       *x_args [20] = { "metis_unit", "@@kitchen", "@@yjobs" , "@@sort"  };
    PROG_urgents  (x_argc, x_args);
    PROG_startup  (x_argc, x_args);
    return 0;
@@ -882,6 +892,19 @@ PROG__unit_end          (void)
    PROG_shutdown ();
    return 0;
 }
+
+char*        /*-> tbd --------------------------------[ light  [us.JC0.271.X1]*/ /*-[01.0000.00#.!]-*/ /*-[--.---.---.--]-*/
+PROG__unit              (char *a_question)
+{
+   /*---(defense)------------------------*/
+   snprintf (unit_answer, LEN_RECD, "PROG unit        : question unknown");
+   if      (strcmp (a_question, "heartbeat" )     == 0) {
+      snprintf (unit_answer, LEN_RECD, "PROG heartbeat   : å%sæ", my.heartbeat);
+   }
+   /*---(complete)-----------------------*/
+   return unit_answer;
+}
+
 
 
 

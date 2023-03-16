@@ -5,24 +5,8 @@
 
 /*
  *
- * metis § dg2#³ § add data refresh command and check                                     § M1FDid §  1 §
  *
- * metis § dg2<· § add data refresh to menus                                              § M1FDie §  · §
- * metis § wg4#· § add mark to tasks so that they can be selected to a short list         § M1FDif § 11 §
  * metis § wg4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y       § M1FDig §  · §
- * metis § wg4#· § add sharing flag to control database usage and marking                 § M1FDik § 13 §
- * metis § wl4#· § switch beg and end dates to pseudo-mongo (6 chars)                     § M1GLUa §  5 §
- * metis § dv2#· § when data is refreshed, the number of cards shown must be updated      § M1K29T §  8 §
- * metis § mv4·· § add a metis field for extra data, text, and notes (variable length)    § M1K2EC §  · §
- * metis § wn+·· § build central database capability                                      § M1K2GJ §  · §
- *
- * metis § wg4x· § update macros to create (,mm), close (,mq), and reformat (,mf) lines   § M1Q5m5 §  2 §
- * metis § dv2#· § change metis format to have closing date or elapsed days (0-99)        § M1Q5nM §  1 §
- *
- * metis § tn1#· § create an active only filter, no closed, canceled, or redundant        § M1QGYq §  1 §
- *
- * metis § mg2·· § format for normal files to have headers and task embedded              § M23JwR §  · §
- *
  * metis § mn4·· § trouble leaving search mode with escape, just locks for a while        § M323rW §  · §
  *
  *

@@ -2,8 +2,6 @@
 #include   "metis.h"
 
 /*
- * metis § wn2<· § delete tasks by source, or all related source for code entries         § M22NYO §  · §
- * metis § mg2·· § save date since earch source updated in database (aging)               § M255Id §  · §
  *
  *
  *
