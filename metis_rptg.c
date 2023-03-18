@@ -63,52 +63,55 @@ poly_rptg_lookup        (char *a_option)
 }
 
 char
-metis_rptg__header      (void)
+metis_rptg__header      (FILE *f)
 {
-   printf ("#!/usr/local/bin/metis --report %s\n", s_name);
-   printf ("\n");
-   printf ("#  %s %s\n", P_NAMESAKE, P_HERITAGE);
-   printf ("#  version %s, %s\n", P_VERNUM, P_VERTXT);
-   printf ("#  %s\n", s_desc);
-   printf ("\n");
-   printf ("#@ style     V = printable columnar values\n");
+   fprintf (f, "##   %s %s\n", P_NAMESAKE, P_HERITAGE);
+   fprintf (f, "##   version %s, %s\n", P_VERNUM, P_VERTXT);
+   fprintf (f, "##   inventory of tasks from current source\n");
+   fprintf (f, "\n");
+   fprintf (f, "#@ style     V = printable columnar values\n");
    return 0;
 }
 
 char
-metis_inventory         (void)
+metis_inventory         (FILE *f)
 {
    int         i           =    0;
    int         x_max       =    0;
    tTASK      *x_task      = NULL;
    char        x_days      [LEN_TERSE] = "";
-   if (s_opt == METIS_REPORT) {
-      metis_rptg__header ();
-      printf ("#@ x-parse   åÏ--·Ï-------------------·Ï------------------------·Ï--·Ï·Ï·Ï·Ï·Ï··Ï---------------------------------------------------------------------·Ï-----·Ï--·Ï---·Ï-------------------------------------------------------------------------------æ\n");
-      printf ("#@ titles    åref·major················minor·····················seq·u·i·e·p·s··task·detail····························································epoch··dys·line·source··········································································æ\n");
-      printf ("\n");
-   }
+   char       *x_heads     = "#ef major--------------- minor-------------------- seq u i e p s  task-detail----------------------------------------------------------- epoch- age dys line source--------------------------------------------------------------------------\n";
+   char       *x_div       = "#·· ···················· ························· ··· · · · · ·  ······································································ ······ ··· ··· ···· ················································································\n";
+   long        v           =    0;
+   char        x_age       [LEN_TERSE] = "";
+   metis_rptg__header (f);
+   fprintf (f, "#@ x-parse  14åÏ--·Ï-------------------·Ï------------------------·Ï--·Ï·Ï·Ï·Ï·Ï··Ï---------------------------------------------------------------------·Ï-----·Ï--·Ï--·Ï---·Ï-------------------------------------------------------------------------------æ\n");
+   fprintf (f, "#@ titles     åref·major················minor·····················seq·u·i·e·p·s··task·detail····························································epoch··age·dys·line·source··········································································æ\n");
+   fprintf (f, "\n");
    x_max = metis_task_count ();
    for (i = 0; i < x_max; ++i) {
-      if (s_opt != METIS_DUMP) {
-         if (i %  5 == 0 && i != 0)  printf ("\n");
-         if (i % 25 == 0)  printf ("#ef major--------------- minor-------------------- seq u i e p s  task-detail----------------------------------------------------------- epoch- dys line source--------------------------------------------------------------------------\n\n");
+      /*> if (i %  5 == 0 && i != 0)  fprintf (f, "\n");                              <*/
+      if (i % 25 == 0) {
+         if (i != 0)  fprintf (f, x_div);
+         fprintf (f, x_heads);
       }
+      if (i %  5 == 0)  fprintf (f, x_div);
       metis_task_by_index (i, &x_task);
       if (x_task == NULL) {
-         printf ("FOUND A NULL\n");
+         fprintf (f, "FOUND A NULL\n");
       }
+      str4mongo (x_task->epoch, &v);
+      strlage (v, '-', x_age);
       if (x_task->days > 0)  sprintf  (x_days, "%3d", x_task->days);
       else                   strlcpy  (x_days, "  ·", LEN_TERSE);
-      printf ("%3d %-20.20s %-25.25s %3d %c %c %c %c %c  %-70.70s %-6.6s %-3.3s %4d %-80.80s\n",
+      fprintf (f, "%3d %-20.20s %-25.25s %3d %c %c %c %c %c  %-70.70s %-6.6s %-3.3s %-3.3s %4d %-80.80s\n",
             i, x_task->minor->major->name, x_task->minor->name, x_task->seq,
             x_task->urg, x_task->imp, x_task->est, x_task->prg, x_task->shr,
-            x_task->txt, x_task->epoch, x_days, x_task->line, x_task->source->path);
+            x_task->txt, x_task->epoch, x_age, x_days, x_task->line, x_task->source->path);
    }
-   if (s_opt == METIS_REPORT) {
-      printf ("\n");
-      printf ("# end-of-file.  done, finito, completare, whimper.\n");
-   }
+   fprintf (f, x_div);
+   fprintf (f, x_heads);
+   fprintf (f, "\n");
    return 0;
 }
 
@@ -222,8 +225,8 @@ metis_reporter           (void)
    rc = poly_rptg_lookup   (my.run_file);
    --rce;  if (rc < 0)  return rce;
    --rce;  switch (s_abbr) {
-   case 'l' : metis_inventory ();  break;
-   /*> case 'm' : metis_rptg_matrix ();  break;                                       <*/
+      /*> case 'l' : metis_inventory ();  break;                                         <*/
+      /*> case 'm' : metis_rptg_matrix ();  break;                                       <*/
    default  : return rce;
    }
    return 0;

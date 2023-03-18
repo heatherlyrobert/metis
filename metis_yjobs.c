@@ -119,7 +119,7 @@ metis_yjobs             (cchar a_req, cchar *a_data)
       break;
    case YJOBS_REPORT   :
       DEBUG_PROG    yLOG_note    ("called for report");
-      rc = metis_inventory ();
+      /*> rc = metis_inventory ();                                                    <*/
       /*> rc = metis_rptg_matrix ();                                                  <*/
       break;
    case YJOBS_PURGE    :
