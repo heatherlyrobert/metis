@@ -39,8 +39,8 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.7-, catch up to library changes"
-#define     P_VERNUM    "1.7d"
-#define     P_VERTXT    "metis : tn4<· : dump tasks in current system to clipboard (all data)"
+#define     P_VERNUM    "1.7e"
+#define     P_VERTXT    "metis : tn2#  : unit test all major specific functions"
 /*········· ··········· ´·····························´········································*/
 #define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
@@ -55,16 +55,16 @@
 
 /*
  *
- * x metis § ····· § abcdefghijklmnopqrstuvwxyz {|}~                                        § M290Ou §  · §
- * x metis § wc8·· § !"#$%&'()+*,-../ 0123456789 :;<=>?                                     § M2875J §  · §
- * x metis § ····· § @ABCDEFGHIJKHLMNOPRSTUVWXYZ [\]^_                                      § M294uB §  · §
- * x metis § ····· §  ¡¢£¤¥¦ ¨©ª«¬­®¯ °±²³´µ¶·¸¹                                            § M29Mba §  · §
- * x metis § ····· § º»¼½¾¿ÐÑÒÓÔÖÕ×                                                         § M2A4sx §  · §
- * x metis § ····· § aÀbÁcÂdÃeÄfÅ                                                           § M2A5wm §  · §
- * x metis § ····· § gÆhÇiÈjÉkÊlËmÌnÍoÎ Ï                                                   § M2AL9b §  · §
- * x metis § ····· § š™ÙØàáâãåæç›˜äÜÝÞß                                                    § M2ALQe §  · §
- * x metis § ····· § ƒ€‰€‚‡€Š€†„€ˆ€…Œ‘”•œžŸŽ’“–—                                        § M2B3UB §  · §
- * x metis § ····· § èéêëìíîïðñòóôõö÷øùúûüýþÿ                                               § M2ANqZ §  · §
+ * x metis § wg··· § abcdefghijklmnopqrstuvwxyz {|}~                                        § M290Ou §  · §
+ * x metis § wg8·· § !"#$%&'()+*,-../ 0123456789 :;<=>?                                     § M2875J §  · §
+ * x metis § wg··· § @ABCDEFGHIJKHLMNOPRSTUVWXYZ [\]^_                                      § M294uB §  · §
+ * x metis § wg··· §  ¡¢£¤¥¦ ¨©ª«¬­®¯ °±²³´µ¶·¸¹                                            § M29Mba §  · §
+ * x metis § wg··· § º»¼½¾¿ÐÑÒÓÔÖÕ×                                                         § M2A4sx §  · §
+ * x metis § wg··· § aÀbÁcÂdÃeÄfÅ                                                           § M2A5wm §  · §
+ * x metis § wg··· § gÆhÇiÈjÉkÊlËmÌnÍoÎ Ï                                                   § M2AL9b §  · §
+ * x metis § wg··· § š™ÙØàáâãåæç›˜äÜÝÞß                                                    § M2ALQe §  · §
+ * x metis § wg··· § ƒ€‰€‚‡€Š€†„€ˆ€…Œ‘”•œžŸŽ’“–—                                        § M2B3UB §  · §
+ * x metis § wg··· § èéêëìíîïðñòóôõö÷øùúûüýþÿ                                               § M2ANqZ §  · §
  *
  *
  */
@@ -675,7 +675,7 @@ char        metis_shared_verify     (uchar *a_name);
 /*---(support)--------------*/
 char        metis_major_wipe        (tMAJOR *a_dst);
 /*---(memory)---------------*/
-char        metis_major_new         (char *a_name, char a_force, tMAJOR **r_new);
+char        metis_major_new         (char a_name [LEN_LABEL], char a_force, tMAJOR **r_new);
 char        metis_major_free        (tMAJOR **r_old);;
 /*---(hooking)--------------*/
 char        metis_major_hook        (tMAJOR *a_major, tMINOR *a_minor);
@@ -702,6 +702,9 @@ char        metis_minor_wipe        (tMINOR *a_dst);
 /*---(memory)---------------*/
 char        metis_minor_new         (tMAJOR *a_major, char *a_name, char a_force, tMINOR **r_new);
 char        metis_minor_free        (tMINOR **r_old);;
+/*---(hooking)--------------*/
+char        metis_minor_hook        (tMINOR *a_minor, tTASK *a_task);
+char        metis_minor_unhook      (tTASK *a_task);
 /*---(search)---------------*/
 int         metis_minor_count       (void);
 char        metis_minor_by_name     (uchar *a_name, tMINOR **r_minor);

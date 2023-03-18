@@ -3,7 +3,8 @@
 
 
 /*
- *
+ * metis § dv4<· § unit test task dump reporting                                          § N2GMeX §  · §
+ * metis § dv2<· § unit test task matrix reporting                                        § N2GMeZ §  · §
  */
 
 #define    METIS_REPORT   'r'

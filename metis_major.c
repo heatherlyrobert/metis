@@ -1,6 +1,10 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
+/*
+ * metis § tn2<· § unit test major requiring minor functions                              § N2H2A3 §  · §
+ *
+ */
 
 
 /*====================------------------------------------====================*/
@@ -31,7 +35,7 @@ metis_major_wipe        (tMAJOR *a_dst)
 static void  o___MEMORY__________o () { return; }
 
 char
-metis_major_new         (char *a_name, char a_force, tMAJOR **r_new)
+metis_major_new         (char a_name [LEN_LABEL], char a_force, tMAJOR **r_new)
 {  /*---(design notes)-------------------*/
    /*
     * a_force   '-' means r_new must be grounded (safefy), update btree
@@ -186,6 +190,11 @@ metis_major_hook        (tMAJOR *a_major, tMINOR *a_minor)
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   DEBUG_DATA   yLOG_point   ("->major"   , a_minor->major);
+   --rce;  if (a_minor->major != NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(onto major)---------------------*/
    DEBUG_DATA   yLOG_point   ("head"      , a_major->head);
    DEBUG_DATA   yLOG_point   ("tail"      , a_major->tail);
@@ -226,6 +235,11 @@ metis_major_unhook      (tMINOR *a_minor)
    DEBUG_DATA   yLOG_point   ("count"     , a_minor->count);
    --rce;  if (a_minor->count > 0) {
       DEBUG_DATA   yLOG_note    ("minor has children, can not unhook");
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DATA   yLOG_point   ("->major"   , a_minor->major);
+   --rce;  if (a_minor->major == NULL) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }

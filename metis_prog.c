@@ -203,12 +203,14 @@ PROG__args              (int a_argc, char *a_argv [])
       else                 b = NULL;
       l = strlen(a);
       /*---(pre-yJOBS)-------------------*/
-      /*> if (strstr  (a, "register") != NULL || strstr (a, "withdraw") != NULL) {    <* 
-       *>    if (strcmp (b, "dir") == 0)  b = x_empty;                                <* 
-       *> }                                                                           <*/
       if (strcmp  (a, "--sources"       ) == 0)  {
          my.source = DATA_SOURCES;
          strlcpy (my.file, my.cwd, LEN_PATH);
+         a = "--normal";
+      }
+      else if (strcmp  (a, "--central"       ) == 0)  {
+         my.source = DATA_DATABASE;
+         strlcpy (my.file, "", LEN_PATH);
          a = "--normal";
       }
       /*---(yJOBS arguments)-------------*/

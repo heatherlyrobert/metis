@@ -1,6 +1,11 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
+/*
+ * metis § tn2<· § unit test all minor requiring majors functions                         § N2H2BU §  · §
+ * metis § dn2<· § unit test minor requiring task functions                               § N2H2Bn §  · §
+ *
+ */
 
 
 /*====================------------------------------------====================*/
@@ -216,6 +221,11 @@ metis_minor_hook        (tMINOR *a_minor, tTASK *a_task)
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   DEBUG_DATA   yLOG_point   ("->minor"   , a_task->minor);
+   --rce;  if (a_task->minor != NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
    /*---(onto major)---------------------*/
    DEBUG_DATA   yLOG_value   ("count"     , a_minor->count);
    DEBUG_DATA   yLOG_point   ("head"      , a_minor->head);
@@ -258,6 +268,11 @@ metis_minor_unhook      (tTASK *a_task)
    /*---(defense)------------------------*/
    DEBUG_DATA   yLOG_point   ("a_task"    , a_task);
    --rce;  if (a_task == NULL) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
+   }
+   DEBUG_DATA   yLOG_point   ("->minor"   , a_task->minor);
+   --rce;  if (a_task->minor == NULL) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }

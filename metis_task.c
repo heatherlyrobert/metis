@@ -43,7 +43,7 @@ metis_task_wipe         (tTASK *a_dst)
    a_dst->ysort    = NULL;
    a_dst->unique   = NULL;
    /*---(complete)--------------------*/
-   return 0;
+   return 1;
 }
 
 

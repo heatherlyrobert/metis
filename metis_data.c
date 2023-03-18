@@ -5,8 +5,6 @@
 
 /*
  *
- * metis § tn4<· § dump tasks in current system to clipboard (all data)                   § N2GIrx §  · §
- * metis § tn2<· § dump urg/imp matrix to clipboard with counts                           § N2GItU §  · §
  * metis § wg4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y       § M1FDig §  · §
  * metis § mn4·· § trouble leaving search mode with escape, just locks for a while        § M323rW §  · §
  *

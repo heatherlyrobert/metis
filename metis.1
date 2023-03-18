@@ -1,4 +1,4 @@
-.TH metis 1 2010-10 "linux" "heatherly custom tools manual"
+.TH metis 1 2010-10 "linux" "end-user command line, arguments, and options"
 
 .SH NAME
 .B metis
@@ -18,10 +18,14 @@ capture, consistent categorization, clean hierarchy for grouping, and meaningful
 fields for sorting, searching and filtering.
 
 .SH DOCUMENTATION FILES (see also)
- metis (1)    ***   end-user command line, arguments, and options
- metis (5)          data standards, streams, files, and configuration
- metis (6)          interactive system usage and navigation
- metis (7)          decision rationale, objectives, and overview
+.nf
+metis (1)····´´´´··end-user command line, arguments, and options
+.nf
+metis (5)          data standards, streams, files, and configuration
+.nf
+metis (6)          interactive system usage and navigation
+.nf
+metis (7)          decision rationale, objectives, and overview
 
 .SH TABLE OF CONTENTS
  synopsis           initiate the program from the command line
@@ -36,6 +40,48 @@ fields for sorting, searching and filtering.
 
 .B metis_debug [URGENTS] [FORMATS] [FILTERS] [SEARCH]
    which is full production, but with debugging and tracing added
+
+.SH SOURCES
+
+.B --local <file>
+.RS 0
+retrieves and dislays all tasks from a local file, i.e., can not include a path.
+please see metis (5) to understand the data format
+.RE
+
+.B --sources
+.RS 0
+retrieves all tasks from c source code and headers in thee local directory.
+please see metis (5) to understand the data format
+.RE
+
+.B --central
+.RS 0
+retrieves all tasks from the central database, previously source from the
+world file.
+.RE
+
+.SH CENTRAL
+
+.B --register dir, --withdraw dir
+.RS 0
+adds/removes the current directory to the world file for systematic gathering
+and collection.
+.RE
+
+.B --register <file>, --withdraw <file>
+.RS 0
+adds/removes a specific file in current directory to the world file for
+systematic gathering and collection.
+.RE
+
+.B --gather
+.RS 0
+creates a central database using all directories and files registered in
+the world file.
+.RE
+
+
 
 .SH FORMATS
 
