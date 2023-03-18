@@ -2,7 +2,6 @@
 #include   "metis.h"
 
 /*
- * metis § tn2<· § unit test all minor requiring majors functions                         § N2H2BU §  · §
  * metis § dn2<· § unit test minor requiring task functions                               § N2H2Bn §  · §
  *
  */
