@@ -127,7 +127,7 @@ metis_rptg__number      (int x, int v, char *a_out)
 }
 
 char
-metis_rptg_matrix       (void)
+metis_rptg_matrix       (FILE *f)
 {
    int         x, y;
    int         v [10][10];
@@ -178,39 +178,39 @@ metis_rptg_matrix       (void)
    metis_rptg__number (1, q [1][0], t [1][0]);
    metis_rptg__number (2, q [0][1], t [0][1]);
    metis_rptg__number (3, q [1][1], t [1][1]);
-   /*  */ printf ("                                                       \n");
-   /*  */ printf ("           7+       urgency       6-                   \n");
-   /*  */ printf (" II                                         I          \n");
-   /*  */ printf ("    %3s  -   y   m   w   d   s   t   !  %3s            \n", t [0][0], t [1][0]);
-   /*  */ printf ("       ƒ€€€€€€€‰€€€€€€€‰€€€€€€€‰€€€€€€€‚               \n");
-   y = 0; printf ("     a %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s a %3s absolute\n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("        focus Œ              Œ drive                \n");
-   y = 1; printf ("     n %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s n %3s need    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("  i    ‡·······Š·······Š·······Š·······†               \n");
-   y = 2; printf ("  m  v %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s v %3s value   \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("  p           Œ              Œ                      \n");
-   y = 3; printf ("  o  c %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s c %3s crave   \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("  r    ‡€€€€€€€Š€€€€€€€Š€€€€€€€Š€€€€€€€†               \n");
-   y = 4; printf ("  t  w %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s g %3s good    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("  a           Œ              Œ                      \n");
-   y = 5; printf ("  n  l %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s l %3s like    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("  c    ‡·······Š·······Š·······Š·······†               \n");
-   y = 6; printf ("  e  m %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s i %3s idea    \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("        dump  Œ              Œ  weed                \n");
-   y = 7; printf ("     - %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s - %3s backlog \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
-   /*  */ printf ("       „€€€€€€€ˆ€€€€€€€ˆ€€€€€€€ˆ€€€€€€€…               \n");
-   /*  */ printf ("    %3s  -   y   m   w   d   s   t   !  %3s            \n", t [0][1], t [1][1]);
-   /*  */ printf (" IV                                         III        \n");
-   y = 8; printf ("        %3s %3s %3s %3s %3s %3s %3s %3s                \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y]);
-   /*  */ printf ("                                           %3s total   \n", s [8][y]);
-   /*  */ printf ("         b   y   m   w   d   s   t   n                 \n");
-   /*  */ printf ("         a   e   o   e   a   o   o   o                 \n");
-   /*  */ printf ("         c   a   n   e   y   o   d   w                 \n");
-   /*  */ printf ("         k   r   t   k   s   n   a   ·                 \n");
-   /*  */ printf ("         l   s   h   s       e   y   n                 \n");
-   /*  */ printf ("         o       s           s       o                 \n");
-   /*  */ printf ("         g                   t       w                 \n");
-   /*  */ printf ("                                                       \n");
+   /*  */ fprintf (f, "                                                       \n");
+   /*  */ fprintf (f, "                    urgency                            \n");
+   /*  */ fprintf (f, " II                                         I          \n");
+   /*  */ fprintf (f, "    %3s  -   y   m   w   d   s   t   !  %3s            \n", t [0][0], t [1][0]);
+   /*  */ fprintf (f, "       ƒ€€€€€€€‰€€€€€€€‰€€€€€€€‰€€€€€€€‚               \n");
+   y = 0; fprintf (f, "     a %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s a %3s absolute - no choice, core\n"         , s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "              Œ              Œ                      \n");
+   y = 1; fprintf (f, "     n %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s n %3s need     - required as a fact\n"      , s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "  i    ‡·······Š·······Š·······Š·······†               \n");
+   y = 2; fprintf (f, "  m  v %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s v %3s value    - definable value\n"         , s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "  p           Œ              Œ                      \n");
+   y = 3; fprintf (f, "  o  c %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s c %3s crave    - believe its necessary\n"   , s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "  r    ‡€€€€€€€Š€€€€€€€Š€€€€€€€Š€€€€€€€†               \n");
+   y = 4; fprintf (f, "  t  w %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s g %3s good     - not required, but useful\n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "  a           Œ              Œ                      \n");
+   y = 5; fprintf (f, "  n  l %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s l %3s like     - want if easily done\n"     , s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "  c    ‡·······Š·······Š·······Š·······†               \n");
+   y = 6; fprintf (f, "  e  m %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s i %3s idea     - just an idea, no plan\n"   , s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "              Œ              Œ                      \n");
+   y = 7; fprintf (f, "     - %3s %3sŒ%3s %3s%3s %3sŒ%3s %3s - %3s backlog  - just getting on a list\n"  , s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y], s [8][y]);
+   /*  */ fprintf (f, "       „€€€€€€€ˆ€€€€€€€ˆ€€€€€€€ˆ€€€€€€€…               \n");
+   /*  */ fprintf (f, "    %3s  -   y   m   w   d   s   t   !  %3s            \n", t [0][1], t [1][1]);
+   /*  */ fprintf (f, " IV                                         III        \n");
+   y = 8; fprintf (f, "        %3s %3s %3s %3s %3s %3s %3s %3s                \n", s [0][y], s [1][y], s [2][y], s [3][y], s [4][y], s [5][y], s [6][y], s [7][y]);
+   /*  */ fprintf (f, "                                           %3s total   \n", s [8][y]);
+   /*  */ fprintf (f, "         b   y   m   w   d   s   t   n                 \n");
+   /*  */ fprintf (f, "         a   e   o   e   a   o   o   o                 \n");
+   /*  */ fprintf (f, "         c   a   n   e   y   o   d   w                 \n");
+   /*  */ fprintf (f, "         k   r   t   k   s   n   a   ·                 \n");
+   /*  */ fprintf (f, "         l   s   h   s       e   y   n                 \n");
+   /*  */ fprintf (f, "         o       s           s       o                 \n");
+   /*  */ fprintf (f, "         g                   t       w                 \n");
+   /*  */ fprintf (f, "                                                       \n");
    return 0;
 }
 
@@ -223,7 +223,7 @@ metis_reporter           (void)
    --rce;  if (rc < 0)  return rce;
    --rce;  switch (s_abbr) {
    case 'l' : metis_inventory ();  break;
-   case 'm' : metis_rptg_matrix ();  break;
+   /*> case 'm' : metis_rptg_matrix ();  break;                                       <*/
    default  : return rce;
    }
    return 0;

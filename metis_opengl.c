@@ -21,7 +21,9 @@
 
 
 /*
- * metis § sa2<· § command-line is not displaying text as typed                           § N2E3Gd §  · §
+ *
+ *
+ *
  * metis § wv4·· § continuation header-footer that show top/more and bot/more             § M1K24Q §  · §
  *
  * metis § dv2·· § ticker/baseline do not show tasks                                      § M207JN §  · §
@@ -600,15 +602,15 @@ metis_opengl__prg       (uchar a_prg, int z)
       } glEnd();
    } glPopMatrix();
    switch (a_prg) {
-   case '·' :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
-   case '-' :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
-   case '<' :  glColor4f (0.60, 0.60, 0.60, 1.00);   break;
-   case 'o' :  glColor4f (0.45, 0.45, 0.45, 1.00);   break;
-   case '>' :  glColor4f (0.25, 0.25, 0.25, 1.00);   break;
-   case '#' :  glColor4f (0.00, 0.00, 0.00, 1.00);   break;
-   case 'x' :  glColor4f (0.00, 0.00, 0.50, 1.00);   break;
-   case 'r' :  glColor4f (0.50, 0.00, 0.00, 1.00);   break;
-   default  :  glColor4f (1.00, 1.00, 1.00, 1.00);   break;
+   case '·' : case '-' :
+      glColor4f (0.60, 0.60, 0.60, 1.00);
+      break;
+   case '<' : case 'o' : case '>' :
+      glColor4f (1.00, 1.00, 1.00, 1.00);
+      break;
+   case '#' : case 'x' : case 'r' : default :
+      glColor4f (0.00, 0.00, 0.00, 1.00);
+      break;
    }
    glPushMatrix(); {
       glTranslatef( 287.0, -17.0,  40.0);
@@ -620,14 +622,13 @@ metis_opengl__prg       (uchar a_prg, int z)
       } glEnd();
    } glPopMatrix();
    switch (a_prg) {
-   case '·' : case '-' : case '<' : case 'o' :
-      glColor4f (0.00, 0.00, 0.00, 1.00);   break;
-   case '>' : case '#' : case 'x' : case 'r' :
+   case '·' : case '-' : case '<' : case 'o' : case '>' :
+      glColor4f (0.00, 0.00, 0.00, 1.00);
+      break;
+   case '#' : case 'x' : case 'r' : default  :
       glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glColor4f (1.00, 1.00, 1.00, 1.00);   break;
-   default  :
-      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glColor4f (1.00, 1.00, 1.00, 1.00);   break;
+      glColor4f (1.00, 1.00, 1.00, 1.00);
+      break;
    }
    glPushMatrix(); {
       glTranslatef( 292.0, -25.0, 80.0);

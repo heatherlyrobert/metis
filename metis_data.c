@@ -5,7 +5,8 @@
 
 /*
  *
- *
+ * metis § tn4<· § dump tasks in current system to clipboard (all data)                   § N2GIrx §  · §
+ * metis § tn2<· § dump urg/imp matrix to clipboard with counts                           § N2GItU §  · §
  * metis § wg4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y       § M1FDig §  · §
  * metis § mn4·· § trouble leaving search mode with escape, just locks for a while        § M323rW §  · §
  *
@@ -22,8 +23,8 @@
  *
  *         ·   y   m   w   d   s   t   !
  *       ƒ€€€€€€€‰€€€€€€€‰€€€€€€€‰€€€€€€€‚
- *     a  focus Œ              Œ drive  a  absolute      all dies without
- *              Œ              Œ       
+ *     a        Œ              Œ        a  absolute      all dies without
+ *        focus Œ              Œ drive 
  *     n        Œ              Œ        n  need          functions missing/fail
  *  i    ‡·······Š·······Š·······Š·······†
  *  m  v        Œ              Œ        v  value         clear business case
@@ -35,8 +36,8 @@
  *  n  l        Œ              Œ        l  like          kinda cool
  *  c    ‡·······Š·······Š·······Š·······†
  *  e  m        Œ              Œ        i  idea          pondering
- *              Œ              Œ       
- *     ·  dump  Œ              Œ weeds  ·  backlog
+ *        waste Œ              Œ weeds 
+ *     ·        Œ              Œ        ·  backlog
  *       „€€€€€€€ˆ€€€€€€€ˆ€€€€€€€ˆ€€€€€€€…
  *         ·   y   m   w   d   s   t   !
  *

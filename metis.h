@@ -39,8 +39,8 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.7-, catch up to library changes"
-#define     P_VERNUM    "1.7b"
-#define     P_VERTXT    "added database timestamp and eliminated duplicates in gathering"
+#define     P_VERNUM    "1.7c"
+#define     P_VERTXT    "metis § tn2#· § dump urg/imp matrix to clipboard with counts                           § N2GItU §"
 /*········· ··········· ´·····························´········································*/
 #define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
@@ -879,6 +879,7 @@ char        metis_yjobs_stats       (void);
 char        metis_yjobs_write       (void);
 char        metis_yjobs             (cchar a_req, cchar *a_data);
 
+char        metis_rptg_matrix       (FILE *f);
 
 
 #endif

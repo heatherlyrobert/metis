@@ -397,6 +397,8 @@ PROG_dawn          (void)
    /*> rc = FILE_init      ();                                                        <*/
    /*> rc = yFILE_whoami   (P_FULLPATH, P_VERNUM, P_VERTXT, P_ONELINE, P_SUFFIX, P_CONTENT, NULL, NULL, NULL);   <*/
    /*> rc = yVIKEYS_whoami ("metis", "tasks", P_VERNUM, P_VERTXT, "/usr/local/bin/metis", "task consolitation, visualization, and navigation");   <*/
+   rc = yFILE_whoami    (P_FULLPATH, P_VERNUM, P_VERTXT, P_NAMESAKE, P_SUFFIX, P_CONTENT, NULL, NULL, NULL);
+   rc = yFILE_dump_add  ("matrix", "", "create urgent/important matrix", metis_rptg_matrix);
    /*---(open window)---------------------------*/
    api_yvikeys_init      ();
    /*---(create texture)------------------------*/
