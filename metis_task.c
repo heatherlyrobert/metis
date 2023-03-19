@@ -1,6 +1,11 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
+/*
+ * metis § tn4<· § unit test all task functions with little integration                   § N2I0fh §  · §
+ *
+ *
+ */
 
 
 /*====================------------------------------------====================*/
@@ -132,6 +137,7 @@ metis_task_free        (tTASK **r_old)
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
    char        rc          =    0;
+   tMINOR     *x_minor     = NULL;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
@@ -146,6 +152,7 @@ metis_task_free        (tTASK **r_old)
       return rce;
    }
    /*---(unhook from minor)--------------*/
+   x_minor = (*r_old)->minor;
    rc = metis_minor_unhook (*r_old);
    DEBUG_DATA   yLOG_value   ("minor"     , rc);
    --rce;  if (rc < 0) {
@@ -185,9 +192,10 @@ metis_task_free        (tTASK **r_old)
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   /*---(prepare)------------------------*/
-   rc = ySORT_prepare (B_TASK);
-   DEBUG_DATA   yLOG_value   ("prepare"   , rc);
+   /*---(resequence)---------------------*/
+   rc = metis_task_resequence   (x_minor);
+   /*> rc = ySORT_prepare (B_TASK);                                                   <*/
+   DEBUG_DATA   yLOG_value   ("reseq"     , rc);
    --rce;  if (rc < 0) {
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
@@ -297,7 +305,7 @@ metis_task_entry       (int n)
 {
    tTASK      *x_task      = NULL;
    char        t           [LEN_HUND]  = " -åæ";
-   char        s           [LEN_LABEL] = "·";
+   char        s           [LEN_LABEL] = "······";
    DEBUG_PROG   yLOG_enter   (__FUNCTION__);
    metis_task_by_index (n, &x_task);
    if (x_task == NULL) {
@@ -361,6 +369,35 @@ metis_task_purge_all   (void)
    while (x_task != NULL) {
       metis_task_free   (&x_task);
       rc = metis_task_by_cursor (YDLST_HEAD, &x_task);
+   }
+   /*---(complete)-----------------------*/
+   DEBUG_PROG   yLOG_exit    (__FUNCTION__);
+   return 0;
+}
+
+char
+metis_task_resequence   (tMINOR *a_minor)
+{
+   /*---(locals)-----------+-----+-----+-*/
+   char        rce         =  -10;
+   char        rc          =    0;
+   tTASK      *x_task      = NULL;
+   short       c           =    0;
+   /*---(header)-------------------------*/
+   DEBUG_PROG   yLOG_enter   (__FUNCTION__);
+   /*---(walk majors)--------------------*/
+   x_task = a_minor->head;
+   while (x_task != NULL) {
+      x_task->seq = c++;
+      sprintf (x_task->key, "%-20.20s %-30.30s %3d", a_minor->major->name, a_minor->name, x_task->seq);
+      x_task = x_task->m_next;
+   }
+   /*---(prepare)------------------------*/
+   rc = ySORT_prepare (B_TASK);
+   DEBUG_DATA   yLOG_value   ("prepare"   , rc);
+   --rce;  if (rc < 0) {
+      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      return rce;
    }
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit    (__FUNCTION__);

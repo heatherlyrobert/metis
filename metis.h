@@ -39,8 +39,8 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.7-, catch up to library changes"
-#define     P_VERNUM    "1.7f"
-#define     P_VERTXT    "metis : tn2<  : unit test all minor requiring majors functions"
+#define     P_VERNUM    "1.7g"
+#define     P_VERTXT    "metis : tn4<  : unit test all task functions with little integration"
 /*········· ··········· ´·····························´········································*/
 #define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
@@ -310,7 +310,7 @@ struct      cTASK  {
    tSOURCE    *source;
    tTASK      *s_prev;
    tTASK      *s_next;
-   ushort      line;                        /* source line in file             */
+   short       line;                        /* source line in file             */
    /*---(filtering)---------*/
    uchar       show;                        /* filtering mark                  */
    uchar       note;                        /* none (-), regex (r)             */
@@ -766,6 +766,7 @@ char        metis_task_by_aindex    (int n, tTASK**r_task);
 /*---(program)--------------*/
 char        metis_task_init         (void);
 char        metis_task_purge_all    (void);
+char        metis_task_resequence   (tMINOR *a_minor);
 /*---(done)-----------------*/
 
 
