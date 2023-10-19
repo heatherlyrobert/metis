@@ -58,12 +58,12 @@ api_ymap_addressor      (char a_strict, char *a_label, ushort u, ushort x, ushor
       DEBUG_YMAP   yLOG_sexitr  (__FUNCTION__, rce);
       return rce;
    }
-   strlcpy (a_label, "", LEN_LABEL);
+   ystrlcpy (a_label, "", LEN_LABEL);
    /*---(find)---------------------------*/
    metis_task_by_cursor (YDLST_HEAD, &x_task);
    while (x_task != NULL) {
       if (x == x_task->x && y == x_task->y) {
-         strlcpy (a_label, x_task->epoch, LEN_LABEL);
+         ystrlcpy (a_label, x_task->epoch, LEN_LABEL);
          DEBUG_YMAP   yLOG_sexit   (__FUNCTION__);
          return 0;
       }

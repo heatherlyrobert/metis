@@ -9,7 +9,7 @@ NAME_BASE  = metis
 # additional standard and outside libraries
 LIB_STD    = $(LIB_OGLSTD) -lXext
 # all heatherly libraries used, debug versions whenever available
-LIB_MINE   = $(LIB_OPENGL) -lyJOBS_debug -lyEXEC_debug -lyREGEX_debug -lySORT_debug
+LIB_MINE   = $(LIB_OPENGL) -lyJOBS_debug -lyEXEC_debug -lyGLTEX_debug -lyREGEX_debug -lySORT_debug -lyASCII_debug
 # directory for production code, no trailing slash
 INST_DIR   = /usr/local/bin
 

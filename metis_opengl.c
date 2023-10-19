@@ -1,35 +1,15 @@
-/*============================----eg-of-source---============================*/
-/*===[[ HEADER ]]=============================================================*
-
- *   focus         : (MH) mind_hacking
- *   niche         : (ta) task_mgmt
- *   application   : metis       (titan goddess of cunning and wise counsel)
- *   purpose       : simple, light, clean, and powerful task management system
- *
- *   module        : metis_opengl
- *   purpose       : segregate opengl code from other program elements
- * 
- */
-/*============================================================================*/
-
-
-
+/*============================---beg-of-source---============================*/
 #include   "metis.h"
 
 
-
-
-
 /*
- *
- *
- *
- * metis § wv4·· § continuation header-footer that show top/more and bot/more             § M1K24Q §  · §
- *
- * metis § dv2·· § ticker/baseline do not show tasks                                      § M207JN §  · §
- * metis § dv4·· § projects/wide formats seem to just hide, invisible                     § M207K9 §  · §
- *
+ * metis § wv4·· § find metis_opengl__card init issue which ruins first card              § N9G5jV §  · §
+ * metis § wg2·· § simplifed card layout without major/minor (2 line)                     § N9GMiK §  · §
+ * metis § wg2·· § simplified card for radial layout                                      § N9GMki §  · §
  */
+
+
+
 
 float     g_alpha     = 0.0;
 float     step      = 0;
@@ -73,6 +53,7 @@ metis_opengl_color      (char *a_valid, char a_color, float a_alpha)
 {
    char       *p           = NULL;
    char        i           =    0;
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    DEBUG_GRAF   yLOG_info     ("a_valid"    , a_valid);
    DEBUG_GRAF   yLOG_char     ("a_color"    , a_color);
    if      (a_color == 0  ) i = 100;
@@ -83,18 +64,45 @@ metis_opengl_color      (char *a_valid, char a_color, float a_alpha)
       else              i = p - a_valid;
    }
    DEBUG_GRAF   yLOG_value    ("i"          , i);
-   /*> glColor4f (  0.000,  0.800,  0.000, 1.0);                                      <*/
    switch (i) {
-   case  0  : glColor4f (  0.800,  0.100,  0.100, a_alpha); break;
-   case  1  : glColor4f (  0.800,  0.400,  0.000, a_alpha); break;
-   case  2  : glColor4f (  0.800,  0.800,  0.000, a_alpha); break;
-   case  3  : glColor4f (  0.000,  0.800,  0.000, a_alpha); break;
-   case  4  : glColor4f (  0.000,  0.800,  0.800, a_alpha); break;
-   case  5  : glColor4f (  0.300,  0.300,  1.000, a_alpha); break;
-   case  6  : glColor4f (  0.800,  0.000,  0.800, a_alpha); break;
-   case  7  : glColor4f (  0.700,  0.700,  0.700, a_alpha); break;
-   default  : glColor4f (  0.000,  0.000,  0.000, a_alpha); break;
+   case  0  :
+      DEBUG_GRAF   yLOG_note     ("0) red");
+      glColor4f (  0.800,  0.100,  0.100, a_alpha);
+      break;
+   case  1  :
+      DEBUG_GRAF   yLOG_note     ("1) orange");
+      glColor4f (  0.800,  0.400,  0.000, a_alpha);
+      break;
+   case  2  :
+      DEBUG_GRAF   yLOG_note     ("2) yellow");
+      glColor4f (  0.800,  0.800,  0.000, a_alpha);
+      break;
+   case  3  :
+      DEBUG_GRAF   yLOG_note     ("3) green");
+      glColor4f (  0.000,  0.800,  0.000, a_alpha);
+      break;
+   case  4  :
+      DEBUG_GRAF   yLOG_note     ("4) cyan");
+      glColor4f (  0.000,  0.800,  0.800, a_alpha);
+      break;
+   case  5  :
+      DEBUG_GRAF   yLOG_note     ("5) blue");
+      glColor4f (  0.300,  0.300,  1.000, a_alpha);
+      break;
+   case  6  :
+      DEBUG_GRAF   yLOG_note     ("6) purple");
+      glColor4f (  0.800,  0.000,  0.800, a_alpha);
+      break;
+   case  7  :
+      DEBUG_GRAF   yLOG_note     ("7) grey");
+      glColor4f (  0.700,  0.700,  0.700, a_alpha);
+      break;
+   default  :
+      DEBUG_GRAF   yLOG_note     ("default black");
+      glColor4f (  0.000,  0.000,  0.000, a_alpha);
+      break;
    }
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -386,7 +394,7 @@ metis_opengl_show  (void)
    DEBUG_GRAF   yLOG_char     ("x_stat"    , x_stat);
    DEBUG_GRAF   yLOG_char     ("x_statsave", x_statsave);
    /*---(force mask redraw)--------------*/
-   metis_opengl_mask ();
+   /*> metis_opengl_mask ();                                                          <*/
    /*> if (x_mode != x_modesave) {                                                    <* 
     *>    switch (x_mode) {                                                           <* 
     *>    case SMOD_MENUS   : metis_opengl_mask ();  break;                           <* 
@@ -446,15 +454,15 @@ metis_opengl_blank      (short a_warn)
    switch (a_warn) {
    case WARN_NODATA :
       glColor4f (  1.000,  0.000,  0.000,  1.000);
-      strlcpy (t, "no data is available"            , LEN_HUND);
+      ystrlcpy (t, "no data is available"            , LEN_HUND);
       break;
    case WARN_FILTER :
       glColor4f (  1.000,  1.000,  0.000,  1.000);
-      strlcpy (t, "no data matches current filter"  , LEN_HUND);
+      ystrlcpy (t, "no data matches current filter"  , LEN_HUND);
       break;
    case WARN_SPACER :
       glColor4f (  0.750,  0.750,  0.750,  1.000);
-      strlcpy (t, "blank spacer"                    , LEN_HUND);
+      ystrlcpy (t, "blank spacer"                    , LEN_HUND);
       break;
    }
    DEBUG_GRAF   yLOG_info     ("t"         , t);
@@ -490,11 +498,17 @@ static void      o___TASKS___________________o (void) {;}
 char          /*----: lay down the base color --------------------------------*/
 metis_opengl__base      (char  a_urg)
 {
-   DEBUG_GRAF   yLOG_senter   (__FUNCTION__);
-   DEBUG_GRAF   yLOG_sint     (a_urg);
+   DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
+   DEBUG_GRAF   yLOG_char     ("a_urg"     , a_urg);
    /*---(back)---------------------------*/
-   if (a_urg != 0)  glColor4f (  1.000,  1.000,  1.000,  1.000);
-   else             glColor4f (  0.650,  0.650,  0.650,  1.000);
+   if (a_urg != 0) {
+      glColor4f (  1.000,  1.000,  1.000,  1.000);
+      DEBUG_GRAF   yLOG_note     ("white background color");
+   } else {
+      DEBUG_GRAF   yLOG_note     ("grey background color");
+      glColor4f (  0.650,  0.650,  0.650,  1.000);
+   }
+   DEBUG_GRAF   yLOG_complex  ("background", "%4dw, %4dt", my.c_wide, my.r_tall);
    glBegin(GL_POLYGON); {
       glVertex3f (      0.0,        0.0,  -10.0);
       glVertex3f (my.c_wide,        0.0,  -10.0);
@@ -503,6 +517,7 @@ metis_opengl__base      (char  a_urg)
    } glEnd();
    /*---(aesthetic tint)-----------------*/
    if (a_urg != 0) {
+      DEBUG_GRAF   yLOG_note     ("real card, set background color");
       metis_opengl_color  (METIS_URGS, a_urg, 0.3);
       glBegin(GL_POLYGON); {
          glVertex3f (      0.0,        0.0,  -10.0);
@@ -512,7 +527,7 @@ metis_opengl__base      (char  a_urg)
       } glEnd();
    }
    /*---(complete)-----------------------*/
-   DEBUG_GRAF   yLOG_sexit    (__FUNCTION__);
+   DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -654,8 +669,8 @@ metis_opengl__age       (uchar a_prg, uchar *a_epoch, uchar a_days, short a_line
       if (a_days > 0)  sprintf (t, "%dd", a_days);
       else             sprintf (t, "???");
    } else {
-      str4mongo (a_epoch, &v);
-      strlage (v, '-', t);
+      ystr4mongo (a_epoch, &v);
+      ystrlage (v, '-', t);
    }
    glColor4f (0.0, 0.0, 0.0, 1.0);
    glPushMatrix(); {
@@ -731,9 +746,8 @@ char
 metis_opengl__cats      (char a_urg, char a_imp, char a_est)
 {
    char        temp        [LEN_LABEL];
-   /*> glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);                                  <*/
    glPushMatrix(); {
-      glColor4f (0.1, 0.1, 0.1, 1.0);
+      glColor4f (0.0, 0.0, 0.0, 1.0);
       glTranslatef(  22.0,  -5.0,  40.0);
       glTranslatef(   0.0, txf_off,   0.0);
       snprintf (temp, 4, "%c", a_urg);
@@ -745,7 +759,6 @@ metis_opengl__cats      (char a_urg, char a_imp, char a_est)
       snprintf (temp, 4, "%c", a_est);
       yFONT_print (my.pretty,  9, YF_BASCEN, temp);
    } glPopMatrix();
-   /*> glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);                            <*/
    return 0;
 }
 
@@ -845,13 +858,20 @@ metis_opengl__layout    (void)
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(run)----------------------------*/
+   n = metis_place_get (x_col, y_row);
+   glPushMatrix(); {
+      glTranslatef (x_pos, y_pos + 100, 0.0);
+      if (n >= WARN_NODATA)   metis_opengl_blank (n);
+      else                    metis_opengl__card (n);
+   } glPopMatrix();
+   /*---(run)----------------------------*/
    for (x_col = 0; x_col < TCOLS; ++x_col) {
       x_pos = x_col * my.c_offset;
       for (y_row = 0; y_row < TROWS; ++y_row) {
          y_pos = -(y_row * my.r_offset);
          n = metis_place_get (x_col, y_row);
-         if (n <  0    )  continue;
-         DEBUG_GRAF   yLOG_complex  ("current"   , "%3dc, %3dr, %3dn", x_col, y_row, n);
+         /*> if (n <  0    )  continue;                                               <*/
+         DEBUG_GRAF   yLOG_complex  ("current"   , "%3dc / %4dx, %3dr / %4dy, %3dn", x_col, x_pos, y_row, y_pos, n);
          glPushMatrix(); {
             glTranslatef (x_pos, y_pos, 0.0);
             if (n >= WARN_NODATA)   metis_opengl_blank (n);
@@ -877,7 +897,7 @@ metis_opengl__prep      (void)
    yGLTEX_new (&my.g_tex, &my.g_fbo, &my.g_dep, my.t_wide, my.t_tall);
    /*---(setup)--------------------------*/
    DEBUG_GRAF   yLOG_note     ("setup opengl view");
-   yGLTEX_draw (my.g_fbo, YGLTEX_TOPLEF, my.t_wide, my.t_tall, 1.0);
+   yGLTEX_draw (my.g_tex, my.g_fbo, YGLTEX_TOPLEF, my.t_wide, my.t_tall, 1.0);
    glColor4f (0.0f, 0.0f, 0.0f, 1.0f);
    /*---(complete)-------------------------*/
    DEBUG_GRAF   yLOG_exit     (__FUNCTION__);
@@ -941,9 +961,12 @@ metis_opengl_draw        (void)
       break;
    }
    /*---(mipmaps)------------------------*/
+   DEBUG_GRAF   yLOG_char     ("my.png"    , my.png);
    if (strchr ("y+", my.png) != NULL) {
-      yGLTEX_tex2png ("/tmp/metis.png", my.t_wide, my.t_tall);
-      my.png = '-';
+      DEBUG_GRAF   yLOG_note     ("taking snapshot");
+      rc = yGLTEX_tex2png ("/tmp/metis_snapshot.png", my.t_wide, my.t_tall);
+      DEBUG_GRAF   yLOG_value    ("tex2png"   , rc);
+      if (my.png == 'y')  my.png = '-';
    }
    yGLTEX_done    (my.g_tex);
    /*---(complete)-------------------------*/

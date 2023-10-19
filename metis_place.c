@@ -229,9 +229,9 @@ metis_place__unit       (char *a_question, int a_num)
          else if (g_map [a_num][i] == WARN_SPACER)  sprintf (s, "°");
          else if (g_map [a_num][i] >  -1)           sprintf (s, "%c", YSTR_MUCHO [g_map [a_num][i]]);
          else                                       sprintf (s, "·");
-         strlcat (t, s, LEN_HUND);
+         ystrlcat (t, s, LEN_HUND);
       }
-      strlcat (t, "æ", LEN_HUND);
+      ystrlcat (t, "æ", LEN_HUND);
       snprintf (unit_answer, LEN_FULL, "PLACE col   (%2d) : %s", a_num, t);
    }
    /*---(complete)-----------------------*/

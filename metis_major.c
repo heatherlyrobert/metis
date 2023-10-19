@@ -1,10 +1,6 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
-/*
- * metis § tn2<· § unit test major requiring minor functions                              § N2H2A3 §  · §
- *
- */
 
 
 /*====================------------------------------------====================*/
@@ -89,7 +85,7 @@ metis_major_new         (char a_name [LEN_LABEL], char a_force, tMAJOR **r_new)
       return rce;
    }
    /*---(populate)-----------------------*/
-   strlcpy (x_exist->name, a_name, LEN_LABEL);
+   ystrlcpy (x_exist->name, a_name, LEN_LABEL);
    /*---(hook)---------------------------*/
    rc = ySORT_hook (B_MAJOR, x_exist, x_exist->name, &(x_exist->ysort));
    DEBUG_DATA   yLOG_value   ("hook"      , rc);

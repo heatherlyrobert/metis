@@ -2,15 +2,6 @@
 #include   "metis.h"
 
 
-
-/*
- *
- * metis § wg4-· § allow forced voids for appearance, like row 18 or col 2 or 2x/4y       § M1FDig §  · §
- * metis § mn4·· § trouble leaving search mode with escape, just locks for a while        § M323rW §  · §
- *
- *
- */
-
 /*
  *
  *
@@ -72,7 +63,7 @@ const tDECODE g_decode   [] = {
    { METIS_URG, '-', "backlog"     , "not been assigned an urgency"                                 },
    /*---(importance)---------------------*/
    { METIS_IMP, 'a', "absolute"    , "this is a true life or death for project, app, or me"         },
-   { METIS_IMP, 'n', "need"        , "must be completed, fact it is required to meeet objective"    },
+   { METIS_IMP, 'r', "require"     , "must be completed, fact it is required to meeet objective"    },
    { METIS_IMP, 'v', "value"       , "adds solid, logic additional value to the objective"          },
    { METIS_IMP, 'c', "crave"       , "very strong want, true belief that this is necessary"         },
    { METIS_IMP, 'g', "good"        , "good idea, but not absolutely needed, in the final product"   },
@@ -91,12 +82,12 @@ const tDECODE g_decode   [] = {
    /*---(progress)-----------------------*/
    { METIS_PRG, '-', "backlog"     , "work that has not been prepared or acted upon yet"            },
    { METIS_PRG, '<', "planned"     , "task is set for immediate focus and starting"                 },
-   { METIS_PRG, 'o', "active"      , "selected for today and/or working it right now"               },
-   { METIS_PRG, 'u', "paused"      , "waiting on change, something is holding this task up"         },
+   { METIS_PRG, '*', "active"      , "selected for today and/or working it right now"               },
+   { METIS_PRG, ',', "paused"      , "waiting on change, something is holding this task up"         },
    { METIS_PRG, '>', "verify"      , "task awaiting some kind of verification or final check"       },
    { METIS_PRG, '#', "done"        , "successfully completed and any checking done"                 },
    { METIS_PRG, 'x', "cancelled"   , "detiremened this effort is no longer necessary"               },
-   { METIS_PRG, 'r', "reduntant"   , "covered by another task, but maybe additional detail"         },
+   { METIS_PRG, '/', "reduntant"   , "covered by another task, but maybe additional detail"         },
    /*---(share)--------------------------*/
    { METIS_SHR, '¤', "focus"       , "keep on focus/primary task list"                              },
    { METIS_SHR, ' ', "private"     , "do not allow into shared database"                            },
@@ -126,23 +117,23 @@ metis_data_purge_all    (void)
    char        rce         =  -10;
    char        rc          =    0;
    /*---(header)-------------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
+   DEBUG_INPT   yLOG_enter    (__FUNCTION__);
    rc = metis_task_purge_all ();
-   DEBUG_DATA   yLOG_value    ("tasks"     , rc);
+   DEBUG_INPT   yLOG_value    ("tasks"     , rc);
    rc = metis_source_cleanse ();
-   DEBUG_DATA   yLOG_value    ("sources"   , rc);
+   DEBUG_INPT   yLOG_value    ("sources"   , rc);
    rc = metis_minor_cleanse  ();
-   DEBUG_DATA   yLOG_value    ("minors"    , rc);
+   DEBUG_INPT   yLOG_value    ("minors"    , rc);
    rc = metis_major_cleanse  ();
-   DEBUG_DATA   yLOG_value    ("majors"    , rc);
+   DEBUG_INPT   yLOG_value    ("majors"    , rc);
    /*---(feedback)-----------------------*/
-   DEBUG_DATA   yLOG_value    ("majors"    , metis_major_count  ());
-   DEBUG_DATA   yLOG_value    ("minors"    , metis_minor_count  ());
-   DEBUG_DATA   yLOG_value    ("tasks"     , metis_task_count   ());
-   DEBUG_DATA   yLOG_value    ("sources"   , metis_source_count ());
-   DEBUG_DATA   yLOG_value    ("unique"    , metis_epoch_count  ());
+   DEBUG_INPT   yLOG_value    ("majors"    , metis_major_count  ());
+   DEBUG_INPT   yLOG_value    ("minors"    , metis_minor_count  ());
+   DEBUG_INPT   yLOG_value    ("tasks"     , metis_task_count   ());
+   DEBUG_INPT   yLOG_value    ("sources"   , metis_source_count ());
+   DEBUG_INPT   yLOG_value    ("unique"    , metis_epoch_count  ());
    /*---(complete)-----------------------*/
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
+   DEBUG_INPT   yLOG_exit     (__FUNCTION__);
    return 0;
 }
 
@@ -164,20 +155,20 @@ metis_data_init         (void)
    /*---(purge tasks)--------------------*/
    metis_data_purge_all ();
    /*---(create validation strings)------*/
-   strlcpy (METIS_URGS, "", LEN_LABEL);
-   strlcpy (METIS_IMPS, "", LEN_LABEL);
-   strlcpy (METIS_ESTS, "", LEN_LABEL);
-   strlcpy (METIS_PRGS, "", LEN_LABEL);
-   strlcpy (METIS_SHRS, "", LEN_LABEL);
+   ystrlcpy (METIS_URGS, "", LEN_LABEL);
+   ystrlcpy (METIS_IMPS, "", LEN_LABEL);
+   ystrlcpy (METIS_ESTS, "", LEN_LABEL);
+   ystrlcpy (METIS_PRGS, "", LEN_LABEL);
+   ystrlcpy (METIS_SHRS, "", LEN_LABEL);
    for (i = 0; i < MAX_DECODE; ++i) {
       if (g_decode [i].cat == 0)                   break;
       sprintf (t, "%c", g_decode [i].sub);
       switch (g_decode [i].cat) {
-      case METIS_URG : strlcat (METIS_URGS, t, LEN_LABEL);   break;
-      case METIS_IMP : strlcat (METIS_IMPS, t, LEN_LABEL);   break;
-      case METIS_EST : strlcat (METIS_ESTS, t, LEN_LABEL);   break;
-      case METIS_PRG : strlcat (METIS_PRGS, t, LEN_LABEL);   break;
-      case METIS_SHR : strlcat (METIS_SHRS, t, LEN_LABEL);   break;
+      case METIS_URG : ystrlcat (METIS_URGS, t, LEN_LABEL);   break;
+      case METIS_IMP : ystrlcat (METIS_IMPS, t, LEN_LABEL);   break;
+      case METIS_EST : ystrlcat (METIS_ESTS, t, LEN_LABEL);   break;
+      case METIS_PRG : ystrlcat (METIS_PRGS, t, LEN_LABEL);   break;
+      case METIS_SHR : ystrlcat (METIS_SHRS, t, LEN_LABEL);   break;
       }
    }
    DEBUG_INPT   yLOG_info     ("my.urgs"   , METIS_URGS);
@@ -223,17 +214,17 @@ metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel,
    /*---(locals)-----------+-----+-----+-*/
    int         i           =    0;
    /*---(defaults)-----------------------*/
-   if (a_clabel != NULL)  strlcpy (a_clabel, "unknown", LEN_LABEL);
-   if (a_slabel != NULL)  strlcpy (a_slabel, "unknown", LEN_LABEL);
-   if (a_desc   != NULL)  strlcpy (a_desc  , "unknown", LEN_HUND );
+   if (a_clabel != NULL)  ystrlcpy (a_clabel, "unknown", LEN_LABEL);
+   if (a_slabel != NULL)  ystrlcpy (a_slabel, "unknown", LEN_LABEL);
+   if (a_desc   != NULL)  ystrlcpy (a_desc  , "unknown", LEN_HUND );
    /*---(take care of cat)---------------*/
    if (a_clabel != NULL) {
       switch (a_cat) {
-      case METIS_URG : strlcpy (a_clabel, "urgency"     , LEN_LABEL); break;
-      case METIS_IMP : strlcpy (a_clabel, "importance"  , LEN_LABEL); break;
-      case METIS_EST : strlcpy (a_clabel, "estimate"    , LEN_LABEL); break;
-      case METIS_PRG : strlcpy (a_clabel, "progress"    , LEN_LABEL); break;
-      case METIS_SHR : strlcpy (a_clabel, "sharing"     , LEN_LABEL); break;
+      case METIS_URG : ystrlcpy (a_clabel, "urgency"     , LEN_LABEL); break;
+      case METIS_IMP : ystrlcpy (a_clabel, "importance"  , LEN_LABEL); break;
+      case METIS_EST : ystrlcpy (a_clabel, "estimate"    , LEN_LABEL); break;
+      case METIS_PRG : ystrlcpy (a_clabel, "progress"    , LEN_LABEL); break;
+      case METIS_SHR : ystrlcpy (a_clabel, "sharing"     , LEN_LABEL); break;
       }
    }
    /*---(walk thru subs)-----------------*/
@@ -241,8 +232,8 @@ metis_data_catinfo      (char a_cat, char a_sub, char *a_clabel, char *a_slabel,
       if (g_decode [i].cat == 0)       break;
       if (g_decode [i].cat != a_cat)  continue;
       if (g_decode [i].sub != a_sub)  continue;
-      if (a_slabel != NULL)  strlcpy (a_slabel, g_decode [i].label, LEN_LABEL);
-      if (a_desc   != NULL)  strlcpy (a_desc  , g_decode [i].desc , LEN_HUND );
+      if (a_slabel != NULL)  ystrlcpy (a_slabel, g_decode [i].label, LEN_LABEL);
+      if (a_desc   != NULL)  ystrlcpy (a_desc  , g_decode [i].desc , LEN_HUND );
       return 0;
    }
    /*---(complete)-----------------------*/
@@ -352,7 +343,7 @@ metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor)
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
-   strlcpy (x_recd, a_recd, LEN_RECD);
+   ystrlcpy (x_recd, a_recd, LEN_RECD);
    /*---(create major)-------------------*/
    p = strtok  (x_recd, q);
    DEBUG_INPT   yLOG_point   ("p"         , p);
@@ -360,7 +351,7 @@ metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor)
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
-   strltrim (p, ySTR_BOTH, LEN_LABEL);
+   ystrltrim (p, ySTR_BOTH, LEN_LABEL);
    rc = metis_major_new (p, '-', r_major);
    DEBUG_INPT   yLOG_value   ("new"       , rc);
    DEBUG_INPT   yLOG_point   ("*r_major"  , *r_major);
@@ -376,9 +367,7 @@ metis_data_header       (char *a_recd, tMAJOR **r_major, tMINOR **r_minor)
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }
-   strltrim (p, ySTR_BOTH, LEN_LABEL);
-   l = strlen (*r_major);
-   if (strncmp (p, *r_major, l) == 0)  p += l;
+   ystrltrim (p, ySTR_BOTH, LEN_LABEL);
    rc = metis_minor_new (*r_major, p, '-', r_minor);
    DEBUG_INPT   yLOG_value   ("new"       , rc);
    DEBUG_INPT   yLOG_point   ("*r_minor"  , *r_minor);
@@ -425,7 +414,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       return  rce;
    }
    DEBUG_INPT   yLOG_info     ("a_recd"    , a_recd);
-   strlcpy (x_recd, a_recd, LEN_RECD);
+   ystrlcpy (x_recd, a_recd, LEN_RECD);
    x_len = strlen (x_recd);
    DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
    --rce;  if (x_len <  10) {
@@ -454,7 +443,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
-   strltrim (p, ySTR_BOTH, LEN_LABEL);
+   ystrltrim (p, ySTR_BOTH, LEN_LABEL);
    rc = metis_data_stats (x_task, p);
    --rce;  if (rc < 0) {
       metis_task_free (&x_task);
@@ -469,14 +458,14 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
-   strltrim (p, ySTR_BOTH, LEN_HUND);
+   ystrltrim (p, ySTR_BOTH, LEN_HUND);
    if (strlen (p) <= 0) {
       yURG_err ('f', "record contains no text for task");
       metis_task_free (&x_task);
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
-   strlcpy  (x_task->txt, p, LEN_HUND);
+   ystrlcpy  (x_task->txt, p, LEN_HUND);
    /*---(unique/start)------------------*/
    p = strtok  (NULL, q);
    if (p == NULL) {
@@ -485,7 +474,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);
       return  rce;
    }
-   strltrim (p, ySTR_BOTH, LEN_LABEL);
+   ystrltrim (p, ySTR_BOTH, LEN_LABEL);
    x_len = strlen (p);
    DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
    --rce; if (x_len ==  0) {
@@ -496,7 +485,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    }
    --rce;  if (x_len ==  6) {
       DEBUG_INPT   yLOG_note     ("date/epoch in mongo form");
-      str4mongo (p, &x_date);
+      ystr4mongo (p, &x_date);
       if (x_date > time (NULL) + 86400 * 3) {
          DEBUG_INPT   yLOG_note     ("date in future more than 3 days, illegal");
          yURG_err ('f', "time code å%sæå%dæ more than three days in future", p, x_date);
@@ -511,7 +500,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
        *>    DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);                               <* 
        *>    return  rce;                                                                  <* 
        *> }                                                                                <*/
-      strlcpy (x_task->epoch, p, LEN_TERSE);
+      ystrlcpy (x_task->epoch, p, LEN_TERSE);
    } else if   (x_len == 10) {
       DEBUG_INPT   yLOG_note     ("date/epoch in epoch form");
       if (atoi (p) > time (NULL) + 86400 * 3) {
@@ -528,8 +517,8 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
        *>    DEBUG_INPT   yLOG_exitr    (__FUNCTION__, rce);                                        <* 
        *>    return  rce;                                                                           <* 
        *> }                                                                                         <*/
-      str2mongo (atoi (p), x_mongo);
-      strlcpy (x_task->epoch, x_mongo, LEN_TERSE);
+      ystr2mongo (atoi (p), x_mongo);
+      ystrlcpy (x_task->epoch, x_mongo, LEN_TERSE);
    } else {
       yURG_err ('f', "unique epoch/date is neither an epoch or mongo date");
       metis_task_free (&x_task);
@@ -537,7 +526,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
       return  rce;
    }
    metis_epoch_by_name (x_task->epoch, &x_exist);
-   DEBUG_DATA   yLOG_point   ("x_exist"   , x_exist);
+   DEBUG_INPT   yLOG_point   ("x_exist"   , x_exist);
    --rce;  if (x_exist != NULL) {
       yURG_err ('f', "time code å%sæ matches another task (illegal)", x_task->epoch);
       metis_task_free (&x_task);
@@ -546,9 +535,9 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    }
    /*---(hook to unique)-----------------*/
    rc = ySORT_hook (B_UNIQUE, x_task, x_task->epoch, &(x_task->unique));
-   DEBUG_DATA   yLOG_value   ("hook"      , rc);
+   DEBUG_INPT   yLOG_value   ("hook"      , rc);
    --rce;  if (rc < 0) {
-      DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
+      DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
    rc = ySORT_prepare (B_UNIQUE);
@@ -563,7 +552,7 @@ metis_data_parsing      (tMINOR *a_minor, tSOURCE *a_source, int a_line, char *a
    /*---(check days)--------------------*/
    p = strtok  (NULL, q);
    if (p != NULL) {
-      strltrim (p, ySTR_BOTH, LEN_LABEL);
+      ystrltrim (p, ySTR_BOTH, LEN_LABEL);
       x_task->days = atoi (p);
    }
    /*---(source)------------------------*/
@@ -623,8 +612,8 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
       DEBUG_INPT   yLOG_value    ("x_line"    , x_line);
       if (feof (f))    break;
       /*---(filter)----------------------*/
-      strldchg (x_recd, '', '§', LEN_RECD);
-      strltrim (x_recd, ySTR_SINGLE, LEN_RECD);
+      ystrldchg (x_recd, '', '§', LEN_RECD);
+      ystrltrim (x_recd, ySTR_SINGLE, LEN_RECD);
       x_len = strlen (x_recd);
       DEBUG_INPT   yLOG_value    ("x_len"     , x_len);
       if (x_len < 10)    continue;
@@ -726,7 +715,7 @@ metis_data_directory    (tMAJOR *a_major, char *a_home)
       if (x_file == NULL)  break;
       ++x_read;
       /*---(filter by name)--------------*/
-      strlcpy (x_name, x_file->d_name, LEN_TITLE);
+      ystrlcpy (x_name, x_file->d_name, LEN_TITLE);
       DEBUG_INPT   yLOG_info    ("x_name"    , x_name);
       if (x_name [0] == '.')  {
          DEBUG_INPT   yLOG_note    ("hidden, SKIP");
@@ -807,8 +796,8 @@ metis_data_project      (void)
    /*---(header)-------------------------*/
    DEBUG_INPT   yLOG_enter   (__FUNCTION__);
    /*---(defense)------------------------*/
-   rc = strlhere (x_home, x_name);
-   DEBUG_INPT   yLOG_value   ("strlhere"  , rc);
+   rc = ystrlhere (x_home, x_name);
+   DEBUG_INPT   yLOG_value   ("ystrlhere"  , rc);
    if (rc < 0) {
       DEBUG_INPT   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
@@ -907,8 +896,8 @@ metis_data_read         (char *a_file)
       if (g_recd [0] == '\0')  continue;
       /*---(handle real lines)-----------*/
       if (g_recd [0] == ' ') {
-         strlcpy  (x_prefix, g_recd, LEN_LABEL);
-         strltrim (x_prefix, ySTR_BOTH, LEN_LABEL);
+         ystrlcpy  (x_prefix, g_recd, LEN_LABEL);
+         ystrltrim (x_prefix, ySTR_BOTH, LEN_LABEL);
          if (strncmp ("metis ", x_prefix, 6) == 0) {
             rc = metis_data_parsing (x_minor, x_source, x_line, g_recd);
          } else {

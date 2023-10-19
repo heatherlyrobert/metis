@@ -1,11 +1,6 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
-/*
- *
- *
- *
- */
 
 
 /*====================------------------------------------====================*/
@@ -92,7 +87,7 @@ metis_source_new         (char *a_path, char a_type, char a_force, tSOURCE **r_n
       return rce;
    }
    /*---(populate)-----------------------*/
-   strlcpy (x_exist->path, a_path, LEN_PATH);
+   ystrlcpy (x_exist->path, a_path, LEN_PATH);
    x_exist->type = a_type;
    /*---(hook)---------------------------*/
    rc = ySORT_hook (B_SOURCE, x_exist, x_exist->path, &(x_exist->ysort));
@@ -409,7 +404,7 @@ metis_source_purge_code  (char *a_dir)
          x_good = '-';
       }
       DEBUG_PROG   yLOG_info    ("tail"      , x_source->path + x_len + 1);
-      if (strldcnt (x_source->path + x_len + 1, '/', LEN_PATH) > 0) {
+      if (ystrldcnt (x_source->path + x_len + 1, '/', LEN_PATH) > 0) {
          DEBUG_PROG   yLOG_note    ("skipping, contains futher sub-directories");
          x_good = '-';
       }

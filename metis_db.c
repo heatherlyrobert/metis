@@ -35,7 +35,7 @@ metis_db_cli            (char *a_name, char a_loud)
       return rce;
    }
    DEBUG_ARGS  yLOG_info    ("a_name"    , a_name);
-   strlcpy (x_recd, a_name, LEN_RECD);
+   ystrlcpy (x_recd, a_name, LEN_RECD);
    /*---(check length)-------------------*/
    l = strlen (x_recd);
    DEBUG_ARGS  yLOG_value   ("l"         , l);
@@ -54,11 +54,11 @@ metis_db_cli            (char *a_name, char a_loud)
    }
    /*---(check extension)----------------*/
    if (l >= 4 && strcmp (x_recd + l - 3, ".db") != 0) {
-      strlcat (x_recd, ".db", LEN_RECD);
+      ystrlcat (x_recd, ".db", LEN_RECD);
       DEBUG_ARGS  yLOG_info    ("fixed"     , x_recd);
    }
    /*---(copy)---------------------------*/
-   strlcpy (my.n_db, x_recd, LEN_RECD);
+   ystrlcpy (my.n_db, x_recd, LEN_RECD);
    DEBUG_ARGS  yLOG_info    ("database"  , my.n_db);
    /*---(complete)-----------------------*/
    DEBUG_FILE   yLOG_exit    (__FUNCTION__);
@@ -154,10 +154,10 @@ metis_db__open          (char a_name [LEN_PATH], char a_mode, short *b_nmajor, s
    DEBUG_FILE   yLOG_char    ("a_mode"    , a_mode);
    --rce;  switch (a_mode) {
    case 'r' :
-      strlcpy (x_mode, "rb", LEN_TERSE);
+      ystrlcpy (x_mode, "rb", LEN_TERSE);
       break;
    case 'w' :
-      strlcpy (x_mode, "wb", LEN_TERSE);
+      ystrlcpy (x_mode, "wb", LEN_TERSE);
       break;
    default  :
       DEBUG_FILE   yLOG_exitr   (__FUNCTION__, rce);
@@ -194,12 +194,12 @@ metis_db__open          (char a_name [LEN_PATH], char a_mode, short *b_nmajor, s
    case 'w' :
       /*---(name)------------------------*/
       for (n = 0; n < LEN_LABEL; n++)  t [n] = '·';
-      strlcpy (t, P_BASENAME, LEN_LABEL);
+      ystrlcpy (t, P_BASENAME, LEN_LABEL);
       fwrite (t, LEN_LABEL, 1, f);
       DEBUG_FILE   yLOG_info    ("name"      , t);
       /*---(version)---------------------*/
       for (n = 0; n < LEN_LABEL; n++)  t [n] = '·';
-      strlcpy (t, P_VERNUM  , LEN_SHORT);
+      ystrlcpy (t, P_VERNUM  , LEN_SHORT);
       fwrite (t, LEN_SHORT, 1, f);
       DEBUG_FILE   yLOG_info    ("vernum"    , t);
       /*---(stats)-----------------------*/
@@ -209,7 +209,7 @@ metis_db__open          (char a_name [LEN_PATH], char a_mode, short *b_nmajor, s
       metis_db__write_head (f, "task"  , *b_ntask);   
       /*---(heartbeat)-------------------*/
       for (n = 0; n < LEN_DESC;  n++)  t [n] = '·';
-      strlcpy (t, a_heartbeat, LEN_DESC);
+      ystrlcpy (t, a_heartbeat, LEN_DESC);
       fwrite (t, LEN_DESC , 1, f);
       /*---(done)------------------------*/
       fflush (f);
@@ -491,8 +491,8 @@ metis_db__read_task     (tMINOR *a_minor, ushort n)
       x_task->est    = x_raw.est;
       x_task->prg    = x_raw.prg;
       x_task->shr    = x_raw.shr;
-      strlcpy (x_task->txt  , x_raw.txt  , LEN_HUND);
-      strlcpy (x_task->epoch, x_raw.epoch, LEN_TERSE);
+      ystrlcpy (x_task->txt  , x_raw.txt  , LEN_HUND);
+      ystrlcpy (x_task->epoch, x_raw.epoch, LEN_TERSE);
       x_task->days   = x_raw.days;
       x_task->line   = x_raw.line;
       /*---(hook to source)-----------------*/

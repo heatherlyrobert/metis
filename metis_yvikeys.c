@@ -390,14 +390,14 @@ api_yvikeys_filter      (char *a_which, char *a_string)
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    if (a_which  == NULL) return -1;
    if (a_string == NULL) return -2;
-   if      (strcmp (a_which, "major"   ) == 0)   strlcpy (my.cmaj, a_string, LEN_LABEL);
-   else if (strcmp (a_which, "minor"   ) == 0)   strlcpy (my.cmin, a_string, LEN_TITLE);
+   if      (strcmp (a_which, "major"   ) == 0)   ystrlcpy (my.cmaj, a_string, LEN_LABEL);
+   else if (strcmp (a_which, "minor"   ) == 0)   ystrlcpy (my.cmin, a_string, LEN_TITLE);
    else if (strcmp (a_which, "urg"     ) == 0)   my.curg  = a_string [0];
    else if (strcmp (a_which, "imp"     ) == 0)   my.cimp  = a_string [0];
    else if (strcmp (a_which, "est"     ) == 0)   my.cest  = a_string [0];
    else if (strcmp (a_which, "prg"     ) == 0)   my.cprg  = a_string [0];
    else if (strcmp (a_which, "shr"     ) == 0)   my.cshr  = a_string [0];
-   else if (strcmp (a_which, "txt"     ) == 0)   strlcpy (my.ctxt, a_string, LEN_HUND);
+   else if (strcmp (a_which, "txt"     ) == 0)   ystrlcpy (my.ctxt, a_string, LEN_HUND);
    else if (strcmp (a_which, "clear"   ) == 0)   metis_filter_clear ();
    else                                        return -3;
    metis_refresh ();

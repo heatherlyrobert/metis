@@ -2,6 +2,7 @@
 #include   "metis.h"
 
 
+
 char
 metis_yjobs_read        (void)
 {
@@ -29,13 +30,13 @@ metis_yjobs_stats       (void)
    printf ("db     å%sæ\n" , my.n_db);
    printf ("name   å%sæ\n" , g_audit.name);
    printf ("ver    å%sæ\n" , g_audit.vernum);
-   strl4main (g_audit.major , t , 0, 'c', '-', LEN_LABEL);
+   ystrl4main (g_audit.major , t , 0, 'c', '-', LEN_LABEL);
    printf ("major  %7.7s\n", t);
-   strl4main (g_audit.minor , t , 0, 'c', '-', LEN_LABEL);
+   ystrl4main (g_audit.minor , t , 0, 'c', '-', LEN_LABEL);
    printf ("minor  %7.7s\n", t);
-   strl4main (g_audit.source, t , 0, 'c', '-', LEN_LABEL);
+   ystrl4main (g_audit.source, t , 0, 'c', '-', LEN_LABEL);
    printf ("source %7.7s\n", t);
-   strl4main (g_audit.task  , t , 0, 'c', '-', LEN_LABEL);
+   ystrl4main (g_audit.task  , t , 0, 'c', '-', LEN_LABEL);
    printf ("task   %7.7s\n", t);
    printf ("stamp  å%sæ\n" , g_audit.heartbeat);
    /*---(complete)-----------------------*/
@@ -115,7 +116,7 @@ metis_yjobs             (cchar a_req, cchar *a_data)
       if (a_data [l - 1] == '/')   my.source = DATA_SOURCES;
       else                         my.source = DATA_FILE;
       my.source = DATA_FILE;
-      strlcpy (my.file, a_data, LEN_PATH);
+      ystrlcpy (my.file, a_data, LEN_PATH);
       break;
    case YJOBS_REPORT   :
       DEBUG_PROG    yLOG_note    ("called for report");

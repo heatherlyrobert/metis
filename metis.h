@@ -9,10 +9,10 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_FOCUS     "PT (productivity/time mgmt)"
 #define     P_NICHE     "td (todo list)"
-#define     P_SUBJECT   "system-wide task management"
+#define     P_SUBJECT   "task consolidation/visualization"
 #define     P_PURPOSE   "task consolitation, visualization, and navigation system"
 /*········· ··········· ´·····························´········································*/
-#define     P_NAMESAKE  "metis-okeanides (wise-counsel)"
+#define     P_NAMESAKE  "metis-okeanides (ocean-born)"
 #define     P_PRONOUNCE "meh·tihs oh·kah·nee·days"
 #define     P_HERITAGE  "titan goddess of deep thought, wisdom, wise counsel, and cunning"
 #define     P_BRIEFLY   "deep thought and wise counsel"
@@ -39,8 +39,8 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.7-, catch up to library changes"
-#define     P_VERNUM    "1.7g"
-#define     P_VERTXT    "metis : tn4<  : unit test all task functions with little integration"
+#define     P_VERNUM    "1.7h"
+#define     P_VERTXT    "decent text backlog report for a single program"
 /*········· ··········· ´·····························´········································*/
 #define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
@@ -182,9 +182,11 @@
 /*---(specialty)-------------------------*/
 #include    <yJOBS.h>             /* heatherly job execution and control      */
 #include    <yEXEC.h>             /* heatherly job execution and control      */
+#include    <yGLTEX.h>
 #include    <yREGEX.h>       /* CUSTOM  heatherly regular expressions         */
 #include    <ySORT.h>        /* CUSTOM  heatherly sort and search             */
 #include    <yDLST_solo.h>   /* heatherly                                     */
+#include    <yASCII.h>
 
 
 
@@ -263,6 +265,7 @@ struct      cMINOR {
    tMAJOR     *major;
    /*---(master data)-------*/
    uchar       name        [LEN_TITLE];     /* minor category                 */
+   uchar       disp        [LEN_LABEL];     /* display version                */
    /*---(in major)----------*/
    tMINOR     *prev;
    tMINOR     *next;
@@ -597,7 +600,7 @@ char        PROG_urgents            (int a_argc, char *a_argv []);
 char        PROG_reset_yjobs        (void);
 char        PROG__init              (int a_argc, char *a_argv []);
 char        PROG__args              (int a_argc, char *a_argv []);
-char        PROG__begin             (void);
+char        PROG__begin             (int a_argc, char *a_argv []);
 char        PROG_startup            (int a_argc, char *a_argv []);
 /*---(execution)------------*/
 char        PROG_dawn               (void);
@@ -846,37 +849,6 @@ char*       metis_db__unit          (char *a_question);
 /*---(done)-----------------*/
 
 
-/*===[[ metis_world.c ]]======================================================*/
-/*345678901-12345678901-12345678901-12345678901-12345678901-12345678901-123456*/
-/*---(support)--------------*/
-/*> char        metis_world_cli         (char *a_name, char a_loud);                  <*/
-/*---(cleanse)--------------*/
-/*> char        metis_world__wipe       (tWORLD *a_world);                            <*/
-/*---(memory)---------------*/
-/*> char        metis_world_new         (char a_type, char* a_path, char a_force, tWORLD **r_new);   <*/
-/*> char        metis_world_free        (tWORLD **r_old);                             <*/
-/*---(search)---------------*/
-/*> int         metis_world_count       (void);                                       <*/
-/*> char        metis_world_by_path     (uchar *a_path, tWORLD **r_world);            <*/
-/*> char        metis_world_by_index    (int n, tWORLD **r_world);                    <*/
-/*> char        metis_world_by_cursor   (char a_dir, tWORLD **r_world);               <*/
-/*> char*       metis_world_entry       (int n);                                      <*/
-/*---(exim)-----------------*/
-/*> char        metis_world__open       (char a_dir);                                 <*/
-/*> char        metis_world__close      (void);                                       <*/
-/*> char        metis_world__import     (void);                                       <*/
-/*> char        metis_world__export     (void);                                       <*/
-/*---(register)-------------*/
-/*> char        metis_world_register    (void);                                       <*/
-/*> char        metis_world_unregister  (void);                                       <*/
-/*> char        metis_world_system      (void);                                       <*/
-/*---(program)--------------*/
-/*> char        metis_world_init        (void);                                       <*/
-/*> char        metis_world_purge_all   (void);                                       <*/
-/*> char        metis_world_wrap        (void);                                       <*/
-/*---(unittest)-------------*/
-char*       metis_world__unit       (char *a_question, int i);
-/*---(done)-----------------*/
 
 char        metis_yjobs_read        (void);
 char        metis_yjobs_stats       (void);
@@ -884,7 +856,11 @@ char        metis_yjobs_write       (void);
 char        metis_yjobs             (cchar a_req, cchar *a_data);
 
 char        metis_rptg_matrix       (FILE *f);
+char        metis_rptg_block        (int a_x, int a_y);
 char        metis_inventory         (FILE *f);
+
+char        metis_text_driver       (void);
+
 
 
 #endif

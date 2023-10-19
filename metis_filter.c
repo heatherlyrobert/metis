@@ -106,8 +106,8 @@ metis_filter_set        (void)
       }
    }
    /*---(clean)--------------------------*/
-   strlcpy (x_prgs, METIS_PRGS, LEN_LABEL);
-   strlcat (x_prgs, "AC"      , LEN_LABEL);
+   ystrlcpy (x_prgs, METIS_PRGS, LEN_LABEL);
+   ystrlcat (x_prgs, "AC"      , LEN_LABEL);
    if (my.curg == 0 || strchr (METIS_URGS, my.curg) == NULL)  my.curg = ' ';
    if (my.cimp == 0 || strchr (METIS_IMPS, my.cimp) == NULL)  my.cimp = ' ';
    if (my.cest == 0 || strchr (METIS_ESTS, my.cest) == NULL)  my.cest = ' ';

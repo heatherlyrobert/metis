@@ -22,21 +22,24 @@ main               (int argc, char *argv[])
    IF_RUNNING   x_show = 'y';
    IF_LOCALRPT  x_show = 'y';
    /*---(main loop)----------------------*/
-   DEBUG_DATA   yLOG_enter    (__FUNCTION__);
    if (x_show == 'y') {
+      DEBUG_DATA   yLOG_enter    (__FUNCTION__);
       /*---(visual setup)-------------------*/
       rc = PROG_dawn    ();
       DEBUG_PROG   yLOG_value    ("dawn"      , rc);
       if (rc <  0) { PROG_shutdown (); return -3; }
       /*---(main-loop)----------------------*/
-      rc = yVIOPENGL_main  ("keys", "every", NULL);
-      DEBUG_PROG   yLOG_value    ("main"      , rc);
+      metis_text_driver ();
+      if (my.png == '-') {
+         rc = yVIOPENGL_main  ("keys", "every", NULL);
+         DEBUG_PROG   yLOG_value    ("main"      , rc);
+      }
       /*---(visual teardown)----------------*/
       rc = PROG_dusk     ();
       DEBUG_PROG   yLOG_value    ("dusk"      , rc);
+      DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    }
    /*---(wrap-up)------------------------*/
-   DEBUG_DATA   yLOG_exit     (__FUNCTION__);
    PROG_shutdown ();
    /*---(complete)-----------------------*/
    return rc;

@@ -1,10 +1,6 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
-/*
- * metis § dn2<· § unit test minor requiring task functions                               § N2H2Bn §  · §
- *
- */
 
 
 /*====================------------------------------------====================*/
@@ -20,6 +16,7 @@ metis_minor_wipe        (tMINOR *a_dst)
    a_dst->major     = NULL;
    /*---(overall)-----------*/
    a_dst->name     [0] = '\0';
+   a_dst->disp     [0] = '\0';
    /*---(within parent)-----*/
    a_dst->prev      = NULL;
    a_dst->next      = NULL;
@@ -51,6 +48,8 @@ metis_minor_new         (tMAJOR *a_major, char *a_name, char a_force, tMINOR **r
    char        rce         =  -10;
    char        rc          =    0;
    tMINOR     *x_exist     = NULL;
+   int         l           =    0;
+   char       *p           = NULL;
    /*---(header)-------------------------*/
    DEBUG_DATA   yLOG_enter   (__FUNCTION__);
    DEBUG_DATA   yLOG_char    ("a_force"   , a_force);
@@ -105,7 +104,7 @@ metis_minor_new         (tMAJOR *a_major, char *a_name, char a_force, tMINOR **r
       return rce;
    }
    /*---(populate)-----------------------*/
-   strlcpy (x_exist->name, a_name, LEN_LABEL);
+   ystrlcpy (x_exist->name, a_name, LEN_LABEL);
    /*---(hook)---------------------------*/
    rc = ySORT_hook (B_MINOR, x_exist, x_exist->name, &(x_exist->ysort));
    DEBUG_DATA   yLOG_value   ("hook"      , rc);
@@ -129,6 +128,11 @@ metis_minor_new         (tMAJOR *a_major, char *a_name, char a_force, tMINOR **r
       DEBUG_DATA   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
+   /*---(display name)-------------------*/
+   l = strlen (a_major);
+   p = a_name;
+   if (strncmp (a_name, a_major, l) == 0)  p += l;
+   ystrlcpy (x_exist->disp, p, LEN_LABEL);
    /*---(save back)----------------------*/
    *r_new = x_exist;
    /*---(complete)-----------------------*/

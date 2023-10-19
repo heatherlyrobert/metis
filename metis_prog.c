@@ -88,6 +88,7 @@ PROG__init              (int a_argc, char *a_argv [])
    char        rce         =  -10;
    char        rc          =    0;
    char       *p           = NULL;
+   char        t           [LEN_PATH]  = "";
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(log header)---------------------*/
@@ -131,7 +132,7 @@ PROG__init              (int a_argc, char *a_argv [])
    format_column ();
    my.quit    = '-';
    my.trouble = '-';
-   strlcpy (my.win_title, "metis_tasklist", LEN_DESC);
+   ystrlcpy (my.win_title, "metis_tasklist", LEN_DESC);
    my.png     = '-';
    /*---(elements)-----------------------*/
    metis_major_init  ();
@@ -154,13 +155,16 @@ PROG__init              (int a_argc, char *a_argv [])
    rc = yJOBS_runas (a_argv [0], &(my.run_as), P_HEADERS, NULL);
    DEBUG_PROG  yLOG_char    ("run_as"    , my.run_as);
    /*---(get the home)-------------------*/
-   p = getcwd (my.cwd, LEN_PATH);
+   p = getcwd (t, LEN_PATH);
    DEBUG_YJOBS   yLOG_point   ("getcwd"    , p);
    --rce;  if (p == NULL) {
       DEBUG_YJOBS   yLOG_exitr   (__FUNCTION__, rce);
       return rce;
    }
-   strlcat (my.cwd, "/", LEN_PATH);
+   p = strrchr (t, '/');
+   if (p != NULL)   ystrlcpy (my.cwd, p + 1, LEN_PATH);
+   else             ystrlcpy (my.cwd, t    , LEN_PATH);
+   ystrlcat (my.cwd, "/", LEN_PATH);
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -195,7 +199,7 @@ PROG__args              (int a_argc, char *a_argv [])
       }
       ++x_total;
       /*---(screen urgents)--------------*/
-      if (a[0] == '@')  continue;
+      if (a [0] == '@')  continue;
       /*---(prepare)---------------------*/
       DEBUG_ARGS  yLOG_info    ("cli arg", a);
       ++x_args;
@@ -205,13 +209,20 @@ PROG__args              (int a_argc, char *a_argv [])
       /*---(pre-yJOBS)-------------------*/
       if (strcmp  (a, "--sources"       ) == 0)  {
          my.source = DATA_SOURCES;
-         strlcpy (my.file, my.cwd, LEN_PATH);
-         a = "--normal";
+         ystrlcpy (my.file, my.cwd, LEN_PATH);
+         a = "--local";
+         b = my.file;
       }
       else if (strcmp  (a, "--central"       ) == 0)  {
          my.source = DATA_DATABASE;
-         strlcpy (my.file, "", LEN_PATH);
+         ystrlcpy (my.file, "", LEN_PATH);
          a = "--normal";
+      }
+      else if (strncmp (a, "-"           ,  1) != 0)  {
+         my.source = DATA_FILE;
+         strncpy (my.file, a, LEN_RECD);
+         a = "--local";
+         b = my.file;
       }
       /*---(yJOBS arguments)-------------*/
       ++x_args;
@@ -240,7 +251,7 @@ PROG__args              (int a_argc, char *a_argv [])
             DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
             return rce;
          }
-         str2mongo (atoi (b), x_mongo);
+         ystr2mongo (atoi (b), x_mongo);
          printf ("%s\n", x_mongo);
          DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
          return rce;
@@ -248,6 +259,7 @@ PROG__args              (int a_argc, char *a_argv [])
       /*---(configuration)---------------*/
       /*> else if (strcmp  (a, "--local"         ) == 0)  rc = metis_db_cli  ("metis_local.db", 'y');   <*/
       else if (strcmp  (a, "--database"      ) == 0)  TWOARG rc = metis_db_cli      (a_argv [i], 'y');
+      else if (strncmp (a, "--123456789-", 12) == 0)  ;
       /*> else if (strcmp  (a, "--world"         ) == 0)  TWOARG rc = metis_world_cli   (a_argv [i], 'y');   <*/
       /*---(initial format)--------------*/
       else if (strcmp  (a, "--ticker"        ) == 0)  my.format = FORMAT_TICKER;
@@ -268,11 +280,6 @@ PROG__args              (int a_argc, char *a_argv [])
       else if (strcmp  (a, "--pngalso"       ) == 0)  my.png    = '+';
       else if (strcmp  (a, "--lines"         ) == 0)  my.lines  = 'y';
       else if (strcmp  (a, "--foreground"    ) == 0)  my.daemon = '-';
-      /*---(file)------------------------*/
-      else if (strncmp (a, "-"           ,  1) != 0)  {
-         my.source = DATA_FILE;
-         strncpy (my.file, a, LEN_RECD);
-      }
       /*---(unknown)---------------------*/
       else {
          DEBUG_PROG  yLOG_note  ("argument not understood");
@@ -286,6 +293,11 @@ PROG__args              (int a_argc, char *a_argv [])
          return rce;
       }
    }
+   --rce;  if (my.run_mode == ACT_NONE && my.quick == '-') {
+      DEBUG_PROG  yLOG_note  ("no run mode selected, exiting");
+      DEBUG_PROG  yLOG_exitr (__FUNCTION__, rce);
+      return rce;
+   }
    metis_format_refresh ();
    /*---(complete)-----------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
@@ -293,7 +305,7 @@ PROG__args              (int a_argc, char *a_argv [])
 }
 
 char             /* [------] drive program setup activities ------------------*/
-PROG__begin             (void)
+PROG__begin             (int a_argc, char *a_argv [])
 {
    /*---(locals)-----------+-----+-----+-*/
    char        rce         =  -10;
@@ -301,15 +313,18 @@ PROG__begin             (void)
    long        x_now       =    0;
    char        x_mongo     [LEN_TERSE] = "";
    long        x_back      =    0;
+   int         x_max       =    0;
+   char        t           [LEN_HUND]  = "";
    /*---(header)-------------------------*/
    DEBUG_PROG   yLOG_enter    (__FUNCTION__);
    /*---(quick line creation)------------*/
    --rce;  if (my.quick != '-') {
+      DEBUG_PROG   yLOG_note     ("writing a metis line");
       x_now = time (NULL);
-      str2mongo (x_now, x_mongo);
+      ystr2mongo (x_now, x_mongo);
       if      (my.quick == 'u')  printf ("#> ");
       else                       printf (" * ");
-      /*> str4mongo (x_mongo, &x_back);                                               <*/
+      /*> ystr4mongo (x_mongo, &x_back);                                               <*/
       printf ("metis § ····· § tbd                                                                    § %6s §  · §\n", x_mongo);
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
@@ -331,6 +346,12 @@ PROG__begin             (void)
     *> }                                                                              <*/
    /*> rc = metis_format_refresh ();                                                        <*/
    DEBUG_PROG   yLOG_value    ("format"    , rc);
+   /*---(change name to greek)-----------*/
+   rc = yEXEC_maxname (a_argc, a_argv, &x_max);
+   sprintf (t, "%s %s", P_NAMESAKE, P_BRIEFLY);
+   ystrlpad (t, a_argv [0], '?', '<', x_max);
+   /*---(prepare yASCII)-----------------*/
+   yASCII_displayer (yASCII_print);
    /*---(overall)------------------------*/
    DEBUG_PROG   yLOG_exit     (__FUNCTION__);
    return 0;
@@ -357,8 +378,8 @@ PROG_startup            (int a_argc, char *a_argv [])
    }
    /*---(begin)--------------------------*/
    if (rc >= 0) {
-      rc = PROG__begin   ();
-      DEBUG_PROG  yLOG_value   ("args"      , rc);
+      rc = PROG__begin   (a_argc, a_argv);
+      DEBUG_PROG  yLOG_value   ("begin"     , rc);
    }
    /*---(complete)-----------------------*/
    DEBUG_PROG  yLOG_exit  (__FUNCTION__);
@@ -388,7 +409,7 @@ PROG_dawn          (void)
       rc = yEXEC_daemon (x_logger, NULL);
       DEBUG_PROG   yLOG_value    ("daemon"    , rc);
       /*> rc = daemon (1, 0);                                                         <*/
-      if (rc != 0) return rc;
+      if (rc != 0) exit (0);
    }
    rc = yVIOPENGL_dawn ();
    DEBUG_PROG   yLOG_value    ("yVIOPENGL" , rc);
