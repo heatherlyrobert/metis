@@ -3,7 +3,11 @@
 
 /*
  * metis § mi2·· § simplier card text format for mind map layout                          § N9I18A §  · § maybe no seq numbers, or age and source line
- * metis § tv1·· § text report should not open window/opengl (faster)                     § N9I1Bd §  · §
+ * metis § tv1#· § text report should not open window/opengl (faster)                     § N9I1Bd §  · §
+ * metis § dv1#· § switch report output to a metis specific file                          § N9I4rM §  · §
+ * metis § dv4#· § design and build a text layout to show all of a programs todos         § N9I53q §  · §
+ *
+ *
  */
 
 char
@@ -70,7 +74,8 @@ metis_text__card        (char n, int x, int y, tTASK *a_task)
    sprintf (t, "Œ %02d·%02d", n, a_task->seq);
    yASCII_print  (x +  0, y + 0, t, YASCII_CLEAR);
    /*---(characteristics)----------------*/
-   sprintf (t, "Œ %c·%c·%c", a_task->imp, a_task->urg, a_task->est);
+   sprintf (t, "Œ %c%c·%c%c", a_task->imp, a_task->urg, a_task->est, a_task->prg);
+   if (t [6] == '-')  t [6] = '·';
    yASCII_print  (x +  0, y + 1, t, YASCII_CLEAR);
    /*---(text)---------------------------*/
    yASCII_printw (x +  9, y, 33, 2, a_task->txt, YASCII_FILL);
@@ -78,9 +83,13 @@ metis_text__card        (char n, int x, int y, tTASK *a_task)
    sprintf (t, "%3d Œ", a_task->line);
    yASCII_print  (x + 43, y + 0, t, YASCII_CLEAR);
    /*---(age)----------------------------*/
-   ystr4mongo (a_task->epoch, &v);
-   ystrlage (v, '-', t);
-   sprintf (t, "%3s Œ", t);
+   if (strchr ("#x/", a_task->prg) == NULL) {
+      ystr4mongo (a_task->epoch, &v);
+      ystrlage (v, '-', t);
+      sprintf (t, "%3s Œ", t);
+   } else {
+      strcpy  (t, " ·· Œ");
+   }
    yASCII_print  (x + 43, y + 1, t, YASCII_CLEAR);
    /*---(blank line)---------------------*/
    yASCII_print  (x +  0, y + 2, "Œ", YASCII_CLEAR);
@@ -192,18 +201,20 @@ metis_text_driver       (void)
          metis_text__holder (x, y);
          x += 49;
          ++x_sub;
-      /*> } else if (x_task->minor->major->name [0] == 'y' && strcmp (x_task->minor->name, "_priv.h") == 0) {   <* 
-       *>    metis_text__block  (&n, 85, 25, &x_task, 136, 44, '<', -4, 0, -2, 1, -1);                          <*/
-      /*> } else if (x_task->minor->major->name [0] != 'y' && strcmp (x_task->minor->name, ".h") == 0) {   <* 
-       *>    metis_text__block  (&n, 85, 25, &x_task, 136, 44, '<', -4, 0, -2, 1, -1);                     <*/
-      } else {
-         metis_text__block  (&n, x, y, &x_task, xt, yt, x_align, xe, ye, xl, yl, x_sub);
-         x += 49;
-         ++x_sub;
-      }
+         /*> } else if (x_task->minor->major->name [0] == 'y' && strcmp (x_task->minor->name, "_priv.h") == 0) {   <* 
+          *>    metis_text__block  (&n, 85, 25, &x_task, 136, 44, '<', -4, 0, -2, 1, -1);                          <*/
+         /*> } else if (x_task->minor->major->name [0] != 'y' && strcmp (x_task->minor->name, ".h") == 0) {   <* 
+          *>    metis_text__block  (&n, 85, 25, &x_task, 136, 44, '<', -4, 0, -2, 1, -1);                     <*/
+   } else {
+      metis_text__block  (&n, x, y, &x_task, xt, yt, x_align, xe, ye, xl, yl, x_sub);
+      x += 49;
+      ++x_sub;
+   }
    }
    /*---(application)--------------------*/
    ystrlpad (P_NAMESAKE, x_txt, '?', '|', 35);
+   yASCII_print  ( 49, 35, x_txt, YASCII_CLEAR);
+   ystrlpad (P_BRIEFLY , x_txt, '?', '|', 35);
    yASCII_print  ( 49, 36, x_txt, YASCII_CLEAR);
    ystrlpad (P_SUBJECT , x_txt, '?', '|', 35);
    yASCII_print  ( 49, 37, x_txt, YASCII_CLEAR);
@@ -222,9 +233,9 @@ metis_text_driver       (void)
    yASCII_print  (136, 40, "l·like      m·months    8·hours   ", YASCII_CLEAR);
    yASCII_print  (136, 41, "i·idea      y·years     +·longer  ", YASCII_CLEAR);
    yASCII_print  (136, 42, "-·backlog   -·backlog   -·backlog ", YASCII_CLEAR);
-   yASCII_print  (136, 44, "  prg    -  <  *  ,  >  #  x  /   ", YASCII_CLEAR);
+   yASCII_print  (136, 44, "[prg]  ·  -  <  *  ,  >  #  x  /  ", YASCII_CLEAR);
    /*---(write result)-------------------*/
-   rc = yASCII_write ();
+   rc = yASCII_write ("/tmp/metis_text.txt");
    DEBUG_PROG   yLOG_value    ("write"     , rc);
    /*---(free space)---------------------*/
    rc = yASCII_free  ();

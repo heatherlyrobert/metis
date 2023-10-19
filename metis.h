@@ -39,8 +39,8 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.7-, catch up to library changes"
-#define     P_VERNUM    "1.7h"
-#define     P_VERTXT    "decent text backlog report for a single program"
+#define     P_VERNUM    "1.7i"
+#define     P_VERTXT    "few small updates to support text report"
 /*········· ··········· ´·····························´········································*/
 #define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"

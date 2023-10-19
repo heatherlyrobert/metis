@@ -20,16 +20,18 @@ main               (int argc, char *argv[])
    rc = yJOBS_driver (P_ONELINE, metis_yjobs);
    DEBUG_PROG   yLOG_value    ("driver"    , rc);
    IF_RUNNING   x_show = 'y';
-   IF_LOCALRPT  x_show = 'y';
+   /*---(handle report)------------------*/
+   IF_LOCALRPT  {
+      metis_text_driver ();
+   }
    /*---(main loop)----------------------*/
-   if (x_show == 'y') {
+   else if (x_show == 'y') {
       DEBUG_DATA   yLOG_enter    (__FUNCTION__);
       /*---(visual setup)-------------------*/
       rc = PROG_dawn    ();
       DEBUG_PROG   yLOG_value    ("dawn"      , rc);
       if (rc <  0) { PROG_shutdown (); return -3; }
       /*---(main-loop)----------------------*/
-      metis_text_driver ();
       if (my.png == '-') {
          rc = yVIOPENGL_main  ("keys", "every", NULL);
          DEBUG_PROG   yLOG_value    ("main"      , rc);
