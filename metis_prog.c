@@ -2,7 +2,7 @@
 #include   "metis.h"
 
 /*
- *
+ * METIS § mv1·· § macro ,m to give metis line needs to adapt when in unit test           § N9L6ZS §  · §
  *
  */
 
@@ -213,6 +213,12 @@ PROG__args              (int a_argc, char *a_argv [])
          a = "--local";
          b = my.file;
       }
+      if (strcmp  (a, "--program"       ) == 0)  {
+         my.source = DATA_SOURCES;
+         ystrlcpy (my.file, my.cwd, LEN_PATH);
+         a = "--normal";
+         b = my.file;
+      }
       else if (strcmp  (a, "--central"       ) == 0)  {
          my.source = DATA_DATABASE;
          ystrlcpy (my.file, "", LEN_PATH);
@@ -325,7 +331,7 @@ PROG__begin             (int a_argc, char *a_argv [])
       if      (my.quick == 'u')  printf ("#> ");
       else                       printf (" * ");
       /*> ystr4mongo (x_mongo, &x_back);                                               <*/
-      printf ("metis § ····· § tbd                                                                    § %6s §  · §\n", x_mongo);
+      printf ("METIS § ····· § tbd                                                                    § %6s §  · §\n", x_mongo);
       DEBUG_PROG   yLOG_exitr    (__FUNCTION__, rce);
       return rce;
    }

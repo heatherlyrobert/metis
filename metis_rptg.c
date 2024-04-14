@@ -302,9 +302,7 @@ metis_rptg_block        (int a_x, int a_y)
    yASCII_print (a_x, ++a_y, t, YASCII_CLEAR);
    /*           */ sprintf (t, " IV waste                             weeds III");
    yASCII_print (a_x, ++a_y, t, YASCII_CLEAR);
-   x = -1;  y = 8; sprintf (t, "        %3s %3s %3s %3s %3s %3s %3s %3s        ", s_vals [0][y], s_vals [1][y], s_vals [2][y], s_vals [3][y], s_vals [4][y], s_vals [5][y], s_vals [6][y], s_vals [7][y]);
-   yASCII_print (a_x, ++a_y, t, YASCII_CLEAR);
-   /*           */ sprintf (t, "                                     total %3s ", s_vals [8][y]);
+   x = -1;  y = 8; sprintf (t, "        %3s %3s %3s %3s %3s %3s %3s %3s   [%3s]", s_vals [0][y], s_vals [1][y], s_vals [2][y], s_vals [3][y], s_vals [4][y], s_vals [5][y], s_vals [6][y], s_vals [7][y], s_vals [8][8]);
    yASCII_print (a_x, ++a_y, t, YASCII_CLEAR);
    return 0;
 }

@@ -2,11 +2,10 @@
 #include   "metis.h"
 
 /*
- * metis § mi2·· § simplier card text format for mind map layout                          § N9I18A §  · § maybe no seq numbers, or age and source line
- * metis § tv1#· § text report should not open window/opengl (faster)                     § N9I1Bd §  · §
- * metis § dv1#· § switch report output to a metis specific file                          § N9I4rM §  · §
- * metis § dv4#· § design and build a text layout to show all of a programs todos         § N9I53q §  · §
- *
+ * metis § mv2·· § card format that is just text (compact)                                § N9IMFa §  · §
+ * metis § mv2·· § card format that is text and imp, urg, est, and prg only (smaller)     § N9IMGE §  · §
+ * METIS § mv2·· § show stats on bad imp, urg, ... using ?                                § N9L6X4 §  · §
+ * METIS § wg1·· § count ? with - on central imp/urg matrix                               § N9L6dc §  · §
  *
  */
 
@@ -71,7 +70,8 @@ metis_text__card        (char n, int x, int y, tTASK *a_task)
    DEBUG_PROG  yLOG_enter   (__FUNCTION__);
    /*---(numbers)------------------------*/
    DEBUG_PROG  yLOG_value   ("n"         , n);
-   sprintf (t, "Œ %02d·%02d", n, a_task->seq);
+   sprintf (t, "Œ %02d·%1d %c", n, a_task->seq, a_task->shr);
+   if (t [7] == '-')  t [7] = '·';
    yASCII_print  (x +  0, y + 0, t, YASCII_CLEAR);
    /*---(characteristics)----------------*/
    sprintf (t, "Œ %c%c·%c%c", a_task->imp, a_task->urg, a_task->est, a_task->prg);
@@ -214,7 +214,8 @@ metis_text_driver       (void)
    /*---(application)--------------------*/
    ystrlpad (P_NAMESAKE, x_txt, '?', '|', 35);
    yASCII_print  ( 49, 35, x_txt, YASCII_CLEAR);
-   ystrlpad (P_BRIEFLY , x_txt, '?', '|', 35);
+   sprintf (t, "~ %s ~", P_BRIEFLY);
+   ystrlpad (t , x_txt, '?', '|', 35);
    yASCII_print  ( 49, 36, x_txt, YASCII_CLEAR);
    ystrlpad (P_SUBJECT , x_txt, '?', '|', 35);
    yASCII_print  ( 49, 37, x_txt, YASCII_CLEAR);
@@ -224,18 +225,19 @@ metis_text_driver       (void)
    /*---(matrix)-------------------------*/
    metis_rptg_block  (87, 26);
    /*---(legend)-------------------------*/
-   yASCII_print  (136, 34, "---imp---   ---urg---   ---est--- ", YASCII_CLEAR);
-   yASCII_print  (136, 35, "a·absolute  !·now-now   q·quick   ", YASCII_CLEAR);
-   yASCII_print  (136, 36, "r·require   t·today     h·30 min  ", YASCII_CLEAR);
-   yASCII_print  (136, 37, "v·value     s·soonest   1·hour    ", YASCII_CLEAR);
-   yASCII_print  (136, 38, "c·crave     d·days      2·hours   ", YASCII_CLEAR);
-   yASCII_print  (136, 39, "g·good      w·weeks     4·hours   ", YASCII_CLEAR);
-   yASCII_print  (136, 40, "l·like      m·months    8·hours   ", YASCII_CLEAR);
-   yASCII_print  (136, 41, "i·idea      y·years     +·longer  ", YASCII_CLEAR);
-   yASCII_print  (136, 42, "-·backlog   -·backlog   -·backlog ", YASCII_CLEAR);
-   yASCII_print  (136, 44, "[prg]  ·  -  <  *  ,  >  #  x  /  ", YASCII_CLEAR);
+   yASCII_print  (136, 33, "---imp---   ---urg---   ---est--- ", YASCII_CLEAR);
+   yASCII_print  (136, 34, "a·absolute  !·now-now   q·quick   ", YASCII_CLEAR);
+   yASCII_print  (136, 35, "r·require   t·today     h·30 min  ", YASCII_CLEAR);
+   yASCII_print  (136, 36, "v·value     s·soonest   1·hour    ", YASCII_CLEAR);
+   yASCII_print  (136, 37, "c·crave     d·days      2·hours   ", YASCII_CLEAR);
+   yASCII_print  (136, 38, "g·good      w·weeks     4·hours   ", YASCII_CLEAR);
+   yASCII_print  (136, 39, "l·like      m·months    8·hours   ", YASCII_CLEAR);
+   yASCII_print  (136, 40, "i·idea      y·years     +·longer  ", YASCII_CLEAR);
+   yASCII_print  (136, 41, "-·backlog   -·backlog   -·backlog ", YASCII_CLEAR);
+   yASCII_print  (136, 43, "[prg]  ·  -  <  =  ,  >  #  x  /  ", YASCII_CLEAR);
+   yASCII_print  (136, 44, "[shr]  ·  -  °  *     ´           ", YASCII_CLEAR);
    /*---(write result)-------------------*/
-   rc = yASCII_write ("/tmp/metis_text.txt");
+   rc = yASCII_write ("metis_summary.rptg");
    DEBUG_PROG   yLOG_value    ("write"     , rc);
    /*---(free space)---------------------*/
    rc = yASCII_free  ();

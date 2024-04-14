@@ -4,8 +4,9 @@
 
 /*
  * metis § wv4·· § find metis_opengl__card init issue which ruins first card              § N9G5jV §  · §
- * metis § wg2·· § simplifed card layout without major/minor (2 line)                     § N9GMiK §  · §
- * metis § wg2·· § simplified card for radial layout                                      § N9GMki §  · §
+ * metis § mv2·· § card format that is just text (compact)                                § N9IMIZ §  · §
+ * metis § mv2·· § card format that is text and imp, urg, est, and prg only (smaller)     § N9IMIp §  · §
+ *
  */
 
 
@@ -1031,9 +1032,6 @@ metis_opengl_mask             (void)
    /*---(header)-------------------------*/
    DEBUG_GRAF   yLOG_enter    (__FUNCTION__);
    /*---(prepare)------------------------*/
-   /*> if (yVIEW_showing (YVIEW_STATUS)) {                                                       <* 
-    *>    yVIEW_bounds (YVIEW_STATUS, NULL, NULL, NULL, NULL, NULL, NULL, NULL, &y_dif);   <* 
-    *> }                                                                                         <*/
    bounds    = XCreatePixmap (YX_DISP, YX_BASE, my.w_wide, my.w_ftall + y_dif, 1);
    gc        = XCreateGC     (YX_DISP, bounds, 0, NULL);
    x_mode = yMODE_curr ();
@@ -1048,7 +1046,6 @@ metis_opengl_mask             (void)
    XFillRectangle (YX_DISP, bounds, gc, 0, 0, my.w_wide, my.w_ftall);
    XSetForeground (YX_DISP, gc, 1);
    /*---(establish mask)-----------------*/
-   /*> x_help = yVIKEYS_help ();                                                      <*/
    switch (my.format) {
    case FORMAT_TICKER   : case FORMAT_BASELINE :
       x_max = WCOLS + my.c_over;

@@ -1,6 +1,9 @@
 /*============================----beg-of-source---============================*/
 #include   "metis.h"
 
+/*
+ *
+ */
 
 /*
  *
@@ -59,40 +62,41 @@ const tDECODE g_decode   [] = {
    { METIS_URG, 'd', "days"        , "complete in a couple of days, or at least this week"          },
    { METIS_URG, 'w', "weeks"       , "complete in a couple weeks, or at least this month"           },
    { METIS_URG, 'm', "months"      , "complete in a couple months, or at least under a year"        },
-   { METIS_URG, 'y', "years"       , "this task is long-term and is expected to by over a year"     },
+   { METIS_URG, 'y', "years"       , "this task is long-term and is expected to be over a year"     },
    { METIS_URG, '-', "backlog"     , "not been assigned an urgency"                                 },
    /*---(importance)---------------------*/
-   { METIS_IMP, 'a', "absolute"    , "this is a true life or death for project, app, or me"         },
-   { METIS_IMP, 'r', "require"     , "must be completed, fact it is required to meeet objective"    },
-   { METIS_IMP, 'v', "value"       , "adds solid, logic additional value to the objective"          },
+   { METIS_IMP, 'a', "absolute"    , "true work/life or fail/death for project, app, or me"         },
+   { METIS_IMP, 'r', "require"     , "no choice, it is required to meet objectives"                 },
+   { METIS_IMP, 'v', "value"       , "adds solid, quantifiable value to the objective"              },
    { METIS_IMP, 'c', "crave"       , "very strong want, true belief that this is necessary"         },
    { METIS_IMP, 'g', "good"        , "good idea, but not absolutely needed, in the final product"   },
    { METIS_IMP, 'l', "like"        , "nice to have, but only if it comes unforced/naturally"        },
    { METIS_IMP, 'i', "idea"        , "plausable, could be done, but there is no real push"          },
    { METIS_IMP, '-', "backlog"     , "not been assigned an importance"                              },
    /*---(estimate)-----------------------*/
-   { METIS_EST, '+', "huge"        , "longer than a full day of work"                               },
-   { METIS_EST, '8', "480m"        , "full day of work, or possibly until start of the next day"    },
-   { METIS_EST, '4', "240m"        , "half day of work, which means serious focus and dedication"   },
-   { METIS_EST, '2', "120m"        , "couple hours, meaning dedicated focus and continuous time"    },
-   { METIS_EST, '1', "60m"         , "full hour of work is a moderate task that needs focus"        },
+   { METIS_EST, '+', "longer"      , "longer than a full day of work"                               },
+   { METIS_EST, '8', "8hrs"        , "full day of work, or possibly until start of the next day"    },
+   { METIS_EST, '4', "4hrs"        , "half day of work, which means serious focus and dedication"   },
+   { METIS_EST, '2', "2hrs"        , "couple hours, meaning dedicated focus and continuous time"    },
+   { METIS_EST, '1', "1hr"         , "full hour of work is a moderate task that needs focus"        },
    { METIS_EST, 'h', "30m"         , "half hour of work is usually smaller, but needs attention"    },
-   { METIS_EST, 'q', "15m"         , "quick task that likely takes a little thought and prep"       },
+   { METIS_EST, 'q', "quick"       , "quick task that likely takes a little thought and prep"       },
    { METIS_EST, '-', "backlog"     , "not been assigned an estimate yet"                            },
    /*---(progress)-----------------------*/
    { METIS_PRG, '-', "backlog"     , "work that has not been prepared or acted upon yet"            },
    { METIS_PRG, '<', "planned"     , "task is set for immediate focus and starting"                 },
-   { METIS_PRG, '*', "active"      , "selected for today and/or working it right now"               },
+   { METIS_PRG, '=', "active"      , "selected for today and/or working it right now"               },
    { METIS_PRG, ',', "paused"      , "waiting on change, something is holding this task up"         },
    { METIS_PRG, '>', "verify"      , "task awaiting some kind of verification or final check"       },
    { METIS_PRG, '#', "done"        , "successfully completed and any checking done"                 },
    { METIS_PRG, 'x', "cancelled"   , "detiremened this effort is no longer necessary"               },
    { METIS_PRG, '/', "reduntant"   , "covered by another task, but maybe additional detail"         },
    /*---(share)--------------------------*/
-   { METIS_SHR, '¤', "focus"       , "keep on focus/primary task list"                              },
+   { METIS_SHR, '°', "focus"       , "keep on focus/primary task list"                              },
+   { METIS_SHR, '*', "public"      , "allow to be picked up by shared database"                     },
+   { METIS_SHR, '-', "normal"      , "locally shared, not important enough for public"              },
    { METIS_SHR, ' ', "private"     , "do not allow into shared database"                            },
-   { METIS_SHR, '-', "shared"      , "allow to be picked up by shared database"                     },
-   { METIS_SHR, '³', "kept"        , "kept in archive"                                              },
+   { METIS_SHR, '´', "kept"        , "kept in archive for some historical reason"                   },
    /*---(done)---------------------------*/
    {  0       ,  0 , ""            , ""                                                             },
 };
@@ -621,21 +625,21 @@ metis_data_file         (tMINOR *a_minor, tSOURCE *a_source, char a_type)
       if (x_recd [x_len - 1] == '\n')  x_recd [--x_len] = '\0';
       DEBUG_INPT   yLOG_info     ("x_recd"    , x_recd);
       /*---(check prefix)----------------*/
-      if        (strchr ("ch", a_type) != NULL && strncmp (x_recd, "/* metis "   ,  9) == 0) {
+      if        (strchr ("ch", a_type) != NULL && (strncmp (x_recd, "/* metis "   ,  9) == 0 || strncmp (x_recd, "/* METIS "   ,  9) == 0)) {
          if (strncmp (x_recd + 9, "§ ", 2) == 0) {
             DEBUG_INPT   yLOG_note     ("FOUND single-line or open comment (1) version");
          } else {
             DEBUG_INPT   yLOG_note     ("prefixed as single-line or open comment, but no field separator");
             continue;
          }
-      } else if (strchr ("ch", a_type) != NULL && strncmp (x_recd, "* metis "    ,  8) == 0) {
+      } else if (strchr ("ch", a_type) != NULL && (strncmp (x_recd, "* metis "    ,  8) == 0 ||strncmp (x_recd, "* METIS "    ,  8) == 0)) {
          if (strncmp (x_recd + 8, "§ ", 2) == 0) {
             DEBUG_INPT   yLOG_note     ("FOUND continuing comment (2) version");
          } else {
             DEBUG_INPT   yLOG_note     ("prefixed as continuing comment, but no field separator");
             continue;
          }
-      } else if (a_type == 'u'                 && strncmp (x_recd, "#> metis "   ,  9) == 0) {
+      } else if (a_type == 'u'                 && (strncmp (x_recd, "#> metis "   ,  9) == 0 || strncmp (x_recd, "#> METIS "   ,  9) == 0)) {
          if (strncmp (x_recd + 9, "§ ", 2) == 0) {
             DEBUG_INPT   yLOG_note     ("FOUND traditional non-code comment (3) version");
          } else {

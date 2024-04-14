@@ -39,8 +39,8 @@
 /*········· ··········· ´·····························´········································*/
 #define     P_VERMAJOR  "1.--, improve for more and more use and value"
 #define     P_VERMINOR  "1.7-, catch up to library changes"
-#define     P_VERNUM    "1.7i"
-#define     P_VERTXT    "few small updates to support text report"
+#define     P_VERNUM    "1.7j"
+#define     P_VERTXT    "minor changes for library updates"
 /*········· ··········· ´·····························´········································*/
 #define     P_TOPOFMIND "wild ideas, big experimental code base, single maintainer"
 #define     P_PRIORITY  "direct, simple, brief, vigorous, and lucid (h.w. fowler)"
@@ -66,7 +66,7 @@
  * x metis § wg··· § ƒ€‰€‚‡€Š€†„€ˆ€…Œ‘”•œžŸŽ’“–—                                        § M2B3UB §  · §
  * x metis § wg··· § èéêëìíîïðñòóôõö÷øùúûüýþÿ                                               § M2ANqZ §  · §
  *
- *
+ * METIS § ····· § testing                                                                § O06M37 §  · §
  */
 
 
